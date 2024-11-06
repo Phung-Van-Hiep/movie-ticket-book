@@ -109,13 +109,13 @@ const AdminCast = () => {
     const birthdayFormat = formatToDateString(new Date(birthday));
     
     let tempImagesUuid = imagesUuid; 
-    console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
+    // console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
     if (fileList.length > 0 && fileList[0].originFileObj) {
       try {
         const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
         if (uploadResponse?.status === 200) {
           tempImagesUuid = uploadResponse.data.data;
-    console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
+    // console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
 
           setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
         } else {
