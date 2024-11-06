@@ -150,10 +150,6 @@ const AdminCast = () => {
       message.error(errorMessage);
     }
   };
-  
-  
-  
-
   const getAllCast = async () => {
     try {
       const res = await APIGetAllCast({ pageSize: 1000, page: 1 });
