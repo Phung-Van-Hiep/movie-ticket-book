@@ -58,11 +58,11 @@ const AdminDirector = () => {
   const [listCinemas, setListCinemas] = useState([]);
 
   const handleChangeStatus = (value) =>{
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   }
 
   const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   };
   
   const handlePreviewCreateImage = async (file) => {
@@ -75,11 +75,11 @@ const AdminDirector = () => {
   };
   // console.log('fileList,', fileList);
   const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
+
     const res = await APIUploadImage(file, '3');
-    console.log('Check var' + res);
+
     if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
+
       setImagesUuid(res.data.data);
     }
     onSuccess('ok');
@@ -97,7 +97,6 @@ const AdminDirector = () => {
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetDirectorDetail({ uuid });
-      console.log('update', res);
       if (res && res.status === 200) {
         const directorDetail = res.data.data;
         setDirectorDetail(directorDetail);
@@ -175,7 +174,7 @@ const AdminDirector = () => {
   const getAllDirector = async () => {
     try {
       const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
+
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredDirectors = res.data?.data?.items.filter(
@@ -199,7 +198,7 @@ const AdminDirector = () => {
     };
     try {
       const res = await APICreateDirector(dataDirector);
-      console.log(res);
+
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -223,7 +222,7 @@ const AdminDirector = () => {
     }
   };
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    // console.log('Failed:', errorInfo);
   };
   const showModal = () => {
     setIsModalOpen(true);
@@ -286,8 +285,7 @@ const AdminDirector = () => {
   const getAllCinemas = async () => {
     try {
       const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      console.log('API Response:', res);
-      if (res && res.data && Array.isArray(res.data.data.items)) {
+ if (res && res.data && Array.isArray(res.data.data.items)) {
         const cinemas = res.data.data.items;
         const cinemasOptions = cinemas.map((cinema) => ({
           value: cinema.uuid,

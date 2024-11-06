@@ -2,9 +2,6 @@ import { Button, Form, Input, message, Modal } from "antd";
 import "../../css/Button.css";
 import "../../css/Input.css";
 import { APILogin } from "../../services/service.api";
-
-
-
 const LoginPage = ({
   showModalRegister,
   handleModalLoginCancel,
@@ -12,10 +9,10 @@ const LoginPage = ({
 }) => {
   const [form] = Form.useForm();
   const onFinish = async (values) => {
-    console.log(values);
+
     try {
       const res = (await APILogin(values)) ;
-      console.log(res.data.data.role);
+
       if (res && res?.data?.data !== null) {
         message.success("Đăng Nhập Thành Công!!");
         handleModalLoginCancel();

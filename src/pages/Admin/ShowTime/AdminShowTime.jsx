@@ -175,7 +175,6 @@ const AdminShowTime = () => {
   const getAllDirector = async () => {
     try {
       const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredDirectors = res.data?.data?.items.filter(

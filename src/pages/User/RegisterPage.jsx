@@ -14,7 +14,7 @@ const RegisterPage = ({
   const [form] = Form.useForm();
 
   const onChange = (e) => {
-    console.log("radio checked", e.target.value);
+
     setValue(e.target.value);
   };
 
@@ -47,7 +47,7 @@ const RegisterPage = ({
 
     try {
       const res = await APIRegister(dataRegister);
-      console.log(res);
+
 
       if (res && res.status === 200) {
         message.success("Đăng Ký thành công !!!");

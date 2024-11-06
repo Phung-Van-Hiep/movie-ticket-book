@@ -66,19 +66,19 @@ const AdminMovies = () => {
   const [listRegion, setListRegion] = useState([]);
   const [listCast, setListCast] = useState([]);
   const handleChangeStatus = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   };
   const handleChangeDirector = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   };
   const handleChangeGenre = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   };
   const handleChangeRegion = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   };
   const handleChangeCast = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   };
   // const baseURL = import.meta.env.VITE_BASE_URL; // Lấy base URL từ biến môi trường
   const handlePreviewCreateImage = async (file) => {
@@ -91,11 +91,8 @@ const AdminMovies = () => {
   };
   // console.log('fileList,', fileList);
   const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
     const res = await APIUploadImage(file, '2');
-    console.log('Check var' + res);
     if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
       setImagesUuid(res.data.data);
     }
     // form.setFieldsValue({ avatar: file as string });
@@ -119,10 +116,10 @@ const AdminMovies = () => {
   //     if (res && res.status === 200) {
   //       const moviesDetail = res.data.data;
   //       setMoviesDetail(moviesDetail);
-  //       console.log(moviesDetail.birthday);
+  //       console.log(moviesDetail.realeaseDate);
   //       formUpdate.setFieldsValue({
   //         moviesName: moviesDetail.moviesName,
-  //         birthday: moment(moviesDetail.birthday, 'YYYY-MM-DD'),
+  //         realeaseDate: moment(moviesDetail.realeaseDate, 'YYYY-MM-DD'),
   //         description: moviesDetail.description
   //       });
   //       setIsModalUpdateOpen(true);
@@ -153,14 +150,14 @@ const AdminMovies = () => {
   // const onFinishUpdateMoviesInfor: FormProps<FieldType>['onFinish'] = async (
   //   values
   // ) => {
-  //   const { birthday } = values;
-  //   const birthdayObj = new Date(birthday);
+  //   const { realeaseDate } = values;
+  //   const birthdayObj = new Date(realeaseDate);
   //   const birthdayFormat = formatToDateString(birthdayObj);
   //   try {
   //     const res = await APICreateMovies({
   //       uuid: moviesDetail.uuid,
   //       moviesName: values.moviesName,
-  //       birthday: birthdayFormat,
+  //       realeaseDate: birthdayFormat,
   //       description: values.description
   //     });
   //     console.log('adasdasd', res);
@@ -192,7 +189,6 @@ const AdminMovies = () => {
   const getAllMovies = async () => {
     try {
       const res = await APIGetAllMovies({ pageSize: 1000, page: 1 });
-      console.log("Dadadyaydyad" , res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredMovies = res.data?.data?.items.filter(
@@ -203,22 +199,33 @@ const AdminMovies = () => {
         handleCancel();
       }
     } catch (error) {
-      console.log(error);
       message.error('Đã xảy ra lỗi khi lấy danh sách phim.');
     }
   };
-  console.log('imagesUuid', imagesUuid);
   const onFinish = async (values) => {
-    console.log('values', values);
-
+    const { realeaseDate, ...restValues } = values;
+    const birthdayFormat = formatToDateString(new Date(realeaseDate));
+    let tempImagesUuid = imagesUuid;
+    if (fileList.length > 0) {
+      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '2');
+      if (uploadResponse && uploadResponse.status === 200) {
+        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+      }
+    }
+    const dataCast = {
+      ...restValues,
+      realeaseDate: birthdayFormat,
+      imagesUuid: tempImagesUuid
+    };
     try {
-      const res = await APICreateMovies({ ...values, imagesUuid });
-      console.log(res);
+      const res = await APICreateCast(dataCast);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
-        getAllMovies();
+        form.resetFields();
+        setFileList([]);
+        setImagesUuid('');
+        getAllCast();
       }
-      // console.log("Success:", values);
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -235,7 +242,7 @@ const AdminMovies = () => {
     }
   };
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    // console.log('Failed:', errorInfo);
   };
   const showModal = () => {
     setIsModalOpen(true);
@@ -298,7 +305,6 @@ const AdminMovies = () => {
   const fetchData = async (apiCall, mapDataToOptions, setState) => {
     try {
       const res = await apiCall({ pageSize: 10, page: 1 });
-      console.log('API Response:', res);
       if (res && res.data && Array.isArray(res.data.data.items)) {
         const dataItems = res.data.data.items;
         const options = dataItems.map(mapDataToOptions);
@@ -429,7 +435,7 @@ const AdminMovies = () => {
   });
   const listMoviesMap = listMovies.map((movies, index) => ({
     key: index + 1,
-    ...movies
+    ...movies,
   }));
   const columns = [
     {
@@ -437,7 +443,7 @@ const AdminMovies = () => {
       dataIndex: 'key'
       // width: 30
     },
-    
+
     {
       title: 'Tên phim',
       dataIndex: 'title',
@@ -461,16 +467,17 @@ const AdminMovies = () => {
       )
     },
     {
-      title: 'Ngày tạo',
+      title: 'Ngày phát hành',
       dataIndex: 'realeaseDate',
       key: 'realeaseDate',
-      render: (realeaseDate) => {
-        const date = new Date(realeaseDate);
-        return <div className="truncate-description">{date.toLocaleDateString('vi-VN')}</div>;
-      }
     },
     {
-      title: 'Trạng Thái Phim',
+      title: 'Ngày tạo',
+      dataIndex: 'timeCreated',
+      key: 'timeCreated',
+    },
+    {
+      title: 'Trạng thái phim',
       dataIndex: 'status',
       key: 'status',
       width: 150,
@@ -486,8 +493,10 @@ const AdminMovies = () => {
           case 3:
             statusText = 'Chiếu sớm';
             break;
+          case 4:
+            statusText = 'Không còn chiếu';
           default:
-            statusText = 'Không còn'; // Giá trị mặc định nếu không khớp với bất kỳ trạng thái nào
+            statusText = 'Không sử dụng'; // Giá trị mặc định nếu không khớp với bất kỳ trạng thái nào
         }
         return <div className="truncate-description">{statusText}</div>;
       }
@@ -521,13 +530,12 @@ const AdminMovies = () => {
   ];
   useEffect(() => {
     getAllMovies();
-  }, []);
-  useEffect(() => {
     getAllDirector();
     getAllGenre();
     getAllCast();
     getAllRegion();
   }, []);
+
   return (
     <>
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
@@ -639,7 +647,7 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item
                 label="Thể loại phim"
-                name="genreUuid"
+                name="genre"
                 rules={[{ required: true, message: 'Hãy chọn thể loại phim!' }]}
               >
                 <Select
@@ -700,7 +708,7 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item
                 label="Diễn viên"
-                name="castUuid"
+                name="cast"
                 rules={[{ required: true, message: 'Hãy chọn các diễn viên tham gia bộ phim!' }]}
               >
                 <Select
@@ -718,29 +726,21 @@ const AdminMovies = () => {
           </Row>
           <Row gutter={16}>
             <Col className="gutter-row" span={12}>
-              <Form.Item label="Image" name="imageUrl" rules={[]}>
-                <Upload
-                  action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-                  listType="picture-card"
-                  fileList={fileList}
-                  onPreview={handlePreviewCreateImage}
-                  onChange={handleChangeCreateImage}
-                  customRequest={dummyRequestCreateImageCast}
-                >
-                  {fileList.length >= 1 ? null : uploadButton}
-                </Upload>
-                {previewImage && (
-                  <Image
-                    wrapperStyle={{ display: 'none' }}
-                    preview={{
-                      visible: previewOpen,
-                      onVisibleChange: (visible) => setPreviewOpen(visible),
-                      afterOpenChange: (visible) =>
-                        !visible && setPreviewImage('')
-                    }}
-                    src={previewImage}
-                  />
-                )}
+              <Form.Item
+                label="Ngày phát hành"
+                name="realeaseDate"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập ngày phát hành của phim!'
+                  }
+                ]}
+              >
+                <DatePicker
+                  // placeholder="Ngày sinh"
+                  variant="filled"
+                  className="w-full"
+                />
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={12}>
@@ -767,23 +767,52 @@ const AdminMovies = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item
-            label="Mô Tả"
-            name="description"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập mô tả phim của bạn!'
-              }
-            ]}
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Mô Tả"
+                name="description"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập mô tả phim của bạn!'
+                  }
+                ]}
 
-          >
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 3, maxRows: 8 }}
-              width={300}
-            />
-          </Form.Item>
+              >
+                <Input.TextArea
+                  placeholder="Nhập mô tả...."
+                  autoSize={{ minRows: 3, maxRows: 8 }}
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item label="Ảnh phim" name="imageUrl" rules={[]}>
+                <Upload
+                  action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                  listType="picture-card"
+                  fileList={fileList}
+                  onPreview={handlePreviewCreateImage}
+                  onChange={handleChangeCreateImage}
+                  customRequest={dummyRequestCreateImageCast}
+                >
+                  {fileList.length >= 1 ? null : uploadButton}
+                </Upload>
+                {previewImage && (
+                  <Image
+                    wrapperStyle={{ display: 'none' }}
+                    preview={{
+                      visible: previewOpen,
+                      onVisibleChange: (visible) => setPreviewOpen(visible),
+                      afterOpenChange: (visible) =>
+                        !visible && setPreviewImage('')
+                    }}
+                    src={previewImage}
+                  />
+                )}
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Thêm mới
@@ -820,7 +849,7 @@ const AdminMovies = () => {
 
           <Form.Item
             label="Ngày sinh"
-            name="birthday"
+            name="realeaseDate"
             rules={[
               {
                 required: true,

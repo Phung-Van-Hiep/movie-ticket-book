@@ -1,33 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  DeleteOutlined,
-  EditOutlined,
-  SearchOutlined,
-  TableOutlined
-} from '@ant-design/icons';
-
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Modal,
-  Popconfirm,
-  Select,
-  Space,
-  Table
-} from 'antd';
+import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { Avatar, Button, DatePicker, Form, Input, message, Modal, Popconfirm, Space, Table } from 'antd';
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
-  APIUploadImage,
-  APIGetAllCinemas
+  APICreateCast,
+  APIGetAllUser,
+  APIGetCastDetail,
+  APIDeleteCast,
+  APIUploadImage
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
@@ -40,31 +21,21 @@ const getBase64 = (file) =>
     reader.onerror = (error) => reject(error);
   });
 
-const AdminCombo = () => {
+const AdminCast = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listCast, setListCast] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [castDetail, setCastDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState([]);
   const [imagesUuid, setImagesUuid] = useState('');
-  const [listCinemas, setListCinemas] = useState([]);
-
-  const handleChangeStatus = (value) => {
-    console.log(`selected ${value}`);
-  }
-
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
-  };
-
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -75,11 +46,9 @@ const AdminCombo = () => {
   };
   // console.log('fileList,', fileList);
   const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-
     const res = await APIUploadImage(file, '3');
 
     if (res && res.status === 200) {
-
       setImagesUuid(res.data.data);
     }
     onSuccess('ok');
@@ -93,25 +62,25 @@ const AdminCombo = () => {
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
-
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetDirectorDetail({ uuid });
+      const res = await APIGetCastDetail({ uuid });
       if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
+        const castDetail = res.data.data;
+        setCastDetail(castDetail);
+        const birthdayFormat = 'YYYY-MM-DD';
         const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${directorDetail.imageUrl}`;
+          }/resources/images/${castDetail.imageUrl}`;
         formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
+          castName: castDetail.castName,
+          birthday: castDetail.birthday
+            ? moment(castDetail.birthday, birthdayFormat)
+            : null,
+          description: castDetail.description,
+          imageUrl: castDetail.imageUrl
         });
         setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
-        // setFileList([]);
         setPreviewImage('');
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
@@ -134,26 +103,36 @@ const AdminCombo = () => {
     const day = String(dateObj.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  const onFinishUpdateDirectorInfor = async (values) => {
+
+  const onFinishUpdateCastInfor = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayObj = new Date(birthday);
     const birthdayFormat = formatToDateString(birthdayObj);
+    // console.log(birthdayFormat);
+    let tempImagesUuid = imagesUuid;
+    if (fileList.length > 0) {
+      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+      if (uploadResponse && uploadResponse.status === 200) {
+        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+      }
+    }
     try {
-      const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
+      const res = await APICreateCast({
+        uuid: castDetail?.uuid,
+        castName: restValues.castName,
         birthday: birthdayFormat,
         description: restValues.description,
-        imagesUuid // Gửi URL của ảnh nếu có
+        imagesUuid: tempImagesUuid
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         setFileList([]);
         setImagesUuid('');
-        getAllDirector();
+        getAllUser();
         handleCancelUpdate();
       }
+      // console.log("Success:", values);
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -170,39 +149,46 @@ const AdminCombo = () => {
     }
   };
 
-  const getAllDirector = async () => {
+  const getAllUser = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllUser({ pageSize: 1000, page: 1 });
       if (res && res.data && res.data.data) {
-        // Lọc các region có status khác "0"
-        const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+        // Lọc các cast có status khác "0"
+        const filteredCasts = res.data?.data?.items.filter(
+          (cast) => cast.status !== 0
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListCast(filteredCasts); // Cập nhật danh sách cast đã lọc
         form.resetFields();
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách diễn viên.');
     }
   };
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
+    let tempImagesUuid = imagesUuid;
+    if (fileList.length > 0) {
+      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+      if (uploadResponse && uploadResponse.status === 200) {
+        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+      }
+    }
+    const dataCast = {
       ...restValues,
       birthday: birthdayFormat,
-      imagesUuid
+      imagesUuid: tempImagesUuid
     };
     try {
-      const res = await APICreateDirector(dataDirector);
+      const res = await APICreateCast(dataCast);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         setFileList([]);
-        getAllDirector();
+        setImagesUuid('');
+        getAllUser();
       }
-      // console.log("Success:", values);
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -218,6 +204,7 @@ const AdminCombo = () => {
       }
     }
   };
+
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
@@ -257,10 +244,10 @@ const AdminCombo = () => {
   };
   const confirm = async (uuid) => {
     try {
-      const res = await APIDeleteDirector({ uuid, status: 0 });
+      const res = await APIDeleteCast({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
+        getAllUser(); // Cập nhật lại danh sách cast sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -279,24 +266,6 @@ const AdminCombo = () => {
       }
     }
   };
-  const getAllCinemas = async () => {
-    try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas.map((cinema) => ({
-          value: cinema.uuid,
-          label: cinema.cinemaName
-        }));
-
-        setListCinemas(cinemasOptions); // Cập nhật state
-      } else {
-        message.error('Không có dữ liệu đạo diễn hợp lệ.');
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
-    }
-  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -309,7 +278,7 @@ const AdminCombo = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
+          placeholder={`Tìm kiếm tên diễn viên`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -379,9 +348,9 @@ const AdminCombo = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listCastMap = listCast.map((cast, index) => ({
     key: index + 1,
-    ...director
+    ...cast
   }));
   const columns = [
     {
@@ -390,55 +359,89 @@ const AdminCombo = () => {
       width: 50
     },
     {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
-      width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      title: 'Ảnh đại diện',
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      width: 60,
+      render: (text, record) => {
+        const fullURL = record?.imageUrl
+          ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${record?.imageUrl}`
+          : null;
+    
+        return fullURL ? (
+          <Image
+            width={70}
+            height={70}
+            src={fullURL}
+            alt="Ảnh diễn viên"
+            className="rounded-full object-cover"
+          />
+        ) : (
+          <Avatar className="flex items-center justify-center w-16 h-16 bg-slate-400 text-white rounded-full text-lg font-semibold">
+            {record?.fullname?.charAt(0).toUpperCase() || '?'}
+          </Avatar>
+        );
+      }
+    },
+    {
+      title: 'Họ tên',
+      dataIndex: 'fullname',
+      key: 'fullname',
+      ...getColumnSearchProps('fullname'),
+      width: 70,
+      sorter: (a, b) => a.fullname.length - b.fullname.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (fullname, record) => {
         return (
-          <div>
-            {director} {/* Hiển thị tên quốc gia */}
+          <div
+          // className="hover:text-[#4096ff] cursor-pointer"
+          // onClick={() => showDrawer(record.uuid)} // Gọi hàm showDrawer với uuid
+          >
+            {fullname} {/* Hiển thị tên diễn viên */}
           </div>
         );
       }
     },
     {
-      title: 'Loại phòng chiếu',
-      dataIndex: 'screenType',
-      key: 'screenType',
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
       width: 50
     },
     {
-      title: 'Số hàng',
-      dataIndex: 'rowScreen',
-      key: 'rowScreen',
+      title: 'Số điện thoại',
+      dataIndex: 'phoneNumber',
+      key: 'phoneNumber',
       width: 50
     },
     {
-      title: 'Số cột',
-      dataIndex: 'colScreen',
-      key: 'colScreen',
+      title: 'Quyền',
+      dataIndex: 'role',
+      key: 'role',
+      width: 50,
+      render: (role) => (role === 0 ? 'Admin' : 'User')
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 50,
+      render: (status) => (status === 1 ? 'Hoạt động' : 'Đang khoá')
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'timeCreated',
+      key: 'timeCreated',
       width: 50
     },
-
     {
       title: '',
       width: 50,
       render: (record) => (
         <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined />
-          </Button>
           <Popconfirm
-            title="Xoá đạo diễn"
-            description="Bạn muốn xoá đạo diễn này?"
+            title="Xoá diễn viên"
+            description="Bạn muốn xoá diễn viên này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
@@ -459,16 +462,16 @@ const AdminCombo = () => {
     }
   ];
   useEffect(() => {
-    getAllDirector();
-    getAllCinemas();
+    getAllUser();
   }, []);
   return (
     <>
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới phòng chiếu
+        Thêm mới người dùng
       </Button>
+
       <Modal
-        title="Thêm mới phòng chiếu"
+        title="Thêm mới người dùng"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -486,90 +489,9 @@ const AdminCombo = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Rạp phim"
-            name="cinemaUuid"
-            rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-          >
-            <Select
-              showSearch
-              defaultValue=""
-              onChange={handleChangeCinemas}
-              options={listCinemas}
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              allowClear
-            />
-          </Form.Item>
-          <Form.Item
-            label="Tên phòng chiếu"
-            name="screenName"
-            rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Loại phòng chiếu"
-            name="screenType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn loại phòng chiếu!'
-              }
-            ]}
-          >
-            <Select
-              defaultValue=""
-              onChange={handleChangeStatus}
-              options={[
-                { value: 1, label: '2D' },
-                { value: 2, label: '3D' },
-                { value: 3, label: 'IMax' }
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item label="Số hàng" name="rowScreen" rules={[{ required: true, message: 'Nhập số hàng' }]}>
-            <Input
-              placeholder="Nhập số hàng"
-            />
-          </Form.Item>
-          <Form.Item label="Số cột" name="colScreen" rules={[{ required: true, message: 'Nhập số cột' }]}>
-            <Input
-              placeholder="Nhập số cột"
-            />
-          </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Thêm mới
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="Cập nhật đạo diễn"
-        open={isModalUpdateOpen}
-        onCancel={() => setIsModalUpdateOpen(false)}
-        footer={
-          <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
-        }
-      >
-        <Form
-          form={formUpdate}
-          name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinishUpdateDirectorInfor}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Tên đạo diễn"
-            name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên đạo diễn!' }]}
+            label="Tên diên viên"
+            name="castName"
+            rules={[{ required: true, message: 'Hãy nhập tên diễn viên!' }]}
           >
             <Input />
           </Form.Item>
@@ -595,19 +517,104 @@ const AdminCombo = () => {
             <Input.TextArea
               placeholder="Nhập mô tả...."
               autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
             />
           </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
+          <Form.Item label="Image" name="imagesUuid" rules={[]}>
             <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
               listType="picture-circle"
               fileList={fileList}
               onPreview={handlePreviewCreateImage}
               onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
+              beforeUpload={(file) => {
+                setFileList([file]);
+                return false; // Prevents automatic upload
+              }}
+            >
+              {fileList.length >= 1 ? null : uploadButton}
+            </Upload>
+
+            {previewImage && (
+              <Image
+                wrapperStyle={{ display: 'none' }}
+                preview={{
+                  visible: previewOpen,
+                  onVisibleChange: (visible) => setPreviewOpen(visible),
+                  afterOpenChange: (visible) => !visible && setPreviewImage('')
+                }}
+                src={previewImage}
+              />
+            )}
+          </Form.Item>
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Button type="primary" htmlType="submit">
+              Thêm mới
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="Cập nhật diễn viên"
+        open={isModalUpdateOpen}
+        onCancel={() => setIsModalUpdateOpen(false)}
+        footer={
+          <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
+        }
+      >
+        <Form
+          form={formUpdate}
+          name="basic"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          style={{ maxWidth: 600 }}
+          initialValues={{ remember: true }}
+          onFinish={onFinishUpdateCastInfor}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Tên diễn viên"
+            name="castName"
+            rules={[{ required: true, message: 'Hãy nhập tên diễn viên!' }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Ngày sinh"
+            name="birthday"
+            rules={[
+              {
+                required: true,
+                message: 'Hãy nhập ngày sinh của bạn!'
+              }
+            ]}
+          >
+            <DatePicker
+              placeholder="Ngày sinh"
+              variant="filled"
+              className="w-full"
+            />
+          </Form.Item>
+
+          <Form.Item label="Mô tả" name="description" rules={[]}>
+            <Input.TextArea
+              placeholder="Nhập mô tả...."
+              autoSize={{ minRows: 2, maxRows: 6 }}
+            // onChange={(e) => {
+            //   // Optional: Handle text area change if needed
+            // }}
+            />
+          </Form.Item>
+          <Form.Item label="Image" name="imagesUuid" rules={[]}>
+            <Upload
+              listType="picture-circle"
+              fileList={fileList}
+              onPreview={handlePreviewCreateImage}
+              onChange={handleChangeCreateImage}
+              beforeUpload={(file) => {
+                setFileList([file]);
+                return false;
+              }}
             >
               {fileList.length >= 1 ? null : uploadButton}
             </Upload>
@@ -623,6 +630,7 @@ const AdminCombo = () => {
               />
             )}
           </Form.Item>
+
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Cập nhật
@@ -632,7 +640,7 @@ const AdminCombo = () => {
       </Modal>
       <Table
         columns={columns}
-        dataSource={listDirectorMap}
+        dataSource={listCastMap}
         scroll={{ x: 1000, y: 500 }}
         pagination={{
           showTotal: (total, range) => {
@@ -647,4 +655,4 @@ const AdminCombo = () => {
   );
 };
 
-export default AdminCombo;
+export default AdminCast;

@@ -46,9 +46,8 @@ const AdminCast = () => {
   };
   // console.log('fileList,', fileList);
   const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log(file);
     const res = await APIUploadImage(file, '3');
-    console.log(res);
+
     if (res && res.status === 200) {
       setImagesUuid(res.data.data);
     }
@@ -153,7 +152,6 @@ const AdminCast = () => {
   const getAllCast = async () => {
     try {
       const res = await APIGetAllCast({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các cast có status khác "0"
         const filteredCasts = res.data?.data?.items.filter(
@@ -191,7 +189,6 @@ const AdminCast = () => {
         setImagesUuid('');
         getAllCast();
       }
-      // console.log("Success:", values);
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -367,12 +364,10 @@ const AdminCast = () => {
       key: 'imageUrl',
       width: 60,
       render: (text, record) => {
-        console.log(record);
         const fullURL = record?.imageUrl
           ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${record?.imageUrl
           }`
           : null;
-        // console.log(fullURL);
         return fullURL ? (
           <Image
             width={70}
@@ -407,6 +402,13 @@ const AdminCast = () => {
       title: 'Ngày sinh',
       dataIndex: 'birthday',
       key: 'birthday',
+      // ...getColumnSearchProps("birthday"),
+      width: 50
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'timeCreated',
+      key: 'timeCreated',
       // ...getColumnSearchProps("birthday"),
       width: 50
     },
@@ -600,7 +602,7 @@ const AdminCast = () => {
               onChange={handleChangeCreateImage}
               beforeUpload={(file) => {
                 setFileList([file]);
-                return false; 
+                return false;
               }}
             >
               {fileList.length >= 1 ? null : uploadButton}

@@ -25,6 +25,7 @@ import {
   APIDeleteCinemas,
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
+import { time } from 'console';
 
 const AdminCinemas = () => {
   const [searchText, setSearchText] = useState('');
@@ -42,12 +43,12 @@ const AdminCinemas = () => {
   const handleLocationSelect = (loc) => {
     setMapUrl(loc.target.value); // Lưu tọa độ vào state
   };
-  console.log("Địa chỉ map: ", mapUrl)
+  // console.log("Địa chỉ map: ", mapUrl)
 
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetCinemasDetail({ uuid });
-      console.log('update 1234', res);
+      // console.log('update 1234', res);
       if (res && res.status === 200) {
         const cinemaDetail = res.data.data;
         setCinemasDetail(cinemaDetail);
@@ -82,7 +83,7 @@ const AdminCinemas = () => {
         location: values.location,
       });
 
-      console.log('Response:', res);
+      // console.log('Response:', res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -108,7 +109,7 @@ const AdminCinemas = () => {
   const getAllCinemas = async () => {
     try {
       const res = await APIGetAllCinemas({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
+      // console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredCinemas = res.data?.data?.items.filter(
@@ -126,13 +127,13 @@ const AdminCinemas = () => {
     const dataCinemas = { ...values };
     try {
       const res = await APICreateCinemas(dataCinemas);
-      console.log("1234455", res);
+      // console.log("1234455", res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         getAllCinemas();
       }
-      console.log("Success:", dataCinemas);
+      // console.log("Success:", dataCinemas);
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -149,7 +150,7 @@ const AdminCinemas = () => {
     }
   };
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    // console.log('Failed:', errorInfo);
   };
   const showModal = () => {
     setIsModalOpen(true);
@@ -317,6 +318,12 @@ const AdminCinemas = () => {
           </div>
         );
       }
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'timeCreated',
+      key: 'timeCreated',
+      width: 50
     },
     {
       title: 'Địa chỉ',

@@ -27,6 +27,10 @@ const router = createBrowserRouter([
     element: <HomePage />,
   },
   {
+    path: "/informationMovie",
+    element: <SeatLayout />,
+  },
+  {
     path: "/login/admin",
     element: <LoginAdminPage />, // Trang đăng nhập admin
   },
@@ -83,7 +87,6 @@ const router = createBrowserRouter([
         path: "news",
         element: <AdminNew />,
       },
-
       {
         path: "genre",
         element: <AdminGenre />,

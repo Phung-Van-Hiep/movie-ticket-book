@@ -6,8 +6,13 @@ export const APILogin = (data) => {
     }
   });
 };
+
+//User
 export const APIRegister = (data) => {
   return instance.post('/api/v1/User/register', data);
+};
+export const APIGetAllUser = (data) => {
+  return instance.post('/api/v1/User/page_list_user', data);
 };
 
 //Genre

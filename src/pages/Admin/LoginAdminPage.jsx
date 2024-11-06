@@ -3,8 +3,6 @@ import { Button, Form, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { APILogin } from '../../services/service.api';
 
-
-
 const LoginAdminPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -14,7 +12,7 @@ const LoginAdminPage = () => {
     setLoading(true);
     try {
       const res = (await APILogin(values)) ;
-      console.log(res);
+
       if (res && res?.data?.data !== null) {
         message.success("Đăng Nhập Thành Công!!");
         localStorage.setItem("access_token", res.data.data.token);
