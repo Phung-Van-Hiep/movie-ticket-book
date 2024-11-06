@@ -106,48 +106,53 @@ const AdminCast = () => {
 
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
-    // console.log(birthdayFormat);
-    let tempImagesUuid = imagesUuid;
-    if (fileList.length > 0) {
-      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
-      if (uploadResponse && uploadResponse.status === 200) {
-        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+    const birthdayFormat = formatToDateString(new Date(birthday));
+    
+    let tempImagesUuid = imagesUuid; 
+    console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      try {
+        const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+        if (uploadResponse?.status === 200) {
+          tempImagesUuid = uploadResponse.data.data;
+    console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
+
+          setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
+        } else {
+          message.error('Upload ảnh không thành công. Vui lòng thử lại.');
+          return;
+        }
+      } catch {
+        message.error('Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        return;
       }
     }
+  
     try {
       const res = await APICreateCast({
         uuid: castDetail?.uuid,
         castName: restValues.castName,
         birthday: birthdayFormat,
         description: restValues.description,
-        imagesUuid: tempImagesUuid
+        imagesUuid: tempImagesUuid,
       });
-      if (res && res.status === 200) {
+  
+      if (res?.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setFileList([]);
-        setImagesUuid('');
-        getAllCast();
+        setFileList([]); // Reset fileList sau khi cập nhật
+        setImagesUuid(''); // Reset imagesUuid để tránh dùng lại giá trị cũ
+        getAllCast(); // Tải lại danh sách cast sau khi cập nhật
         handleCancelUpdate();
       }
-      // console.log("Success:", values);
     } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi update.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
+      const errorMessage = error.response?.data?.error?.errorMessage || 'Đã xảy ra lỗi khi cập nhật.';
+      message.error(errorMessage);
     }
   };
+  
+  
+  
 
   const getAllCast = async () => {
     try {
