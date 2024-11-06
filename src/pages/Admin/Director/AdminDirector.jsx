@@ -123,11 +123,25 @@ const AdminDirector = () => {
     const { birthday, ...restValues } = values;
     const birthdayObj = new Date(birthday);
     const birthdayFormat = formatToDateString(birthdayObj);
-    let tempImagesUuid = imagesUuid
-    if(fileList.length > 0) {
-      const resupload = await APIUploadImage(fileList[0].originFileObj, '3')
-      if(resupload && resupload.status === 200){
-        tempImagesUuid = resupload.data.data
+
+    let tempImagesUuid = imagesUuid;
+    
+    console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      try {
+        const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+        if (uploadResponse?.status === 200) {
+          tempImagesUuid = uploadResponse.data.data;
+    // console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
+
+          setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
+        } else {
+          message.error('Upload ảnh không thành công. Vui lòng thử lại.');
+          return;
+        }
+      } catch {
+        message.error('Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        return;
       }
     }
     try {
