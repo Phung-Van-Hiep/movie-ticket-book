@@ -32,18 +32,19 @@ const HeaderApp = () => {
   const showModalRegister = () => {
     setIsModalRegisterOpen(true);
   };
+
   return (
     <>
-      <div className="header-wrapper max-h-[6.4rem] shadow ">
-        <div className="header-container max-w-[100rem] mx-auto h-[6.4rem] flex items-center justify-between">
-          <div className="logo-header w-[10rem] h-[6.4rem]">
+      <div className="fixed top-0 left-0 right-0 z-50 shadow-md bg-white max-h-[6.4rem]">
+        <div className="max-w-[100rem] mx-auto h-[6.4rem] flex items-center justify-between px-5">
+          <div className="w-[10rem] h-[6.4rem]">
             <img
               className="h-[6.4rem]"
               src="/images/logo-movie.png"
               alt="Logo-movie"
             />
           </div>
-          <div className="list-items-header grid grid-cols-6 min-w-[65rem] text-center items-center font-semibold text-[1.5rem] h-[4rem] gap-5 ">
+          <div className="grid grid-cols-6 min-w-[65rem] text-center items-center font-semibold text-[1.5rem] h-[4rem] gap-5">
             <div className="item-header">Trang Chủ</div>
             <Dropdown menu={{ items }}>
               <div className="item-header cursor-pointer">
@@ -53,7 +54,7 @@ const HeaderApp = () => {
             <div className="item-header">Review Phim</div>
             <div className="item-header">Tin Tức</div>
             <div
-              className="item-header cursor-pointer border rounded-2xl p-3 "
+              className="item-header cursor-pointer border rounded-2xl p-3"
               onClick={showModalRegister}
             >
               Đăng ký

@@ -1,6 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Form, Input, message, Modal, Popconfirm, Space, Table } from 'antd';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  SearchOutlined
+} from '@ant-design/icons';
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Space,
+  Table
+} from 'antd';
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
@@ -69,8 +83,9 @@ const AdminCast = () => {
         const castDetail = res.data.data;
         setCastDetail(castDetail);
         const birthdayFormat = 'YYYY-MM-DD';
-        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${castDetail.imageUrl}`;
+        const imageUrl = `${
+          import.meta.env.VITE_BACKEND_URL
+        }/resources/images/${castDetail.imageUrl}`;
         formUpdate.setFieldsValue({
           castName: castDetail.castName,
           birthday: castDetail.birthday
@@ -107,15 +122,18 @@ const AdminCast = () => {
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-    
-    let tempImagesUuid = imagesUuid; 
-    console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
+
+    let tempImagesUuid = imagesUuid;
+    console.log('Đây là uuid trước khi cập nhật', tempImagesUuid);
     if (fileList.length > 0 && fileList[0].originFileObj) {
       try {
-        const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+        const uploadResponse = await APIUploadImage(
+          fileList[0].originFileObj,
+          '3'
+        );
         if (uploadResponse?.status === 200) {
           tempImagesUuid = uploadResponse.data.data;
-    console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
+          console.log('Đây là uuid sau khi cập nhật', tempImagesUuid);
 
           setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
         } else {
@@ -123,20 +141,22 @@ const AdminCast = () => {
           return;
         }
       } catch {
-        message.error('Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        message.error(
+          'Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.'
+        );
         return;
       }
     }
-  
+
     try {
       const res = await APICreateCast({
         uuid: castDetail?.uuid,
         castName: restValues.castName,
         birthday: birthdayFormat,
         description: restValues.description,
-        imagesUuid: tempImagesUuid,
+        imagesUuid: tempImagesUuid
       });
-  
+
       if (res?.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -146,23 +166,21 @@ const AdminCast = () => {
         handleCancelUpdate();
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.error?.errorMessage || 'Đã xảy ra lỗi khi cập nhật.';
+      const errorMessage =
+        error.response?.data?.error?.errorMessage ||
+        'Đã xảy ra lỗi khi cập nhật.';
       message.error(errorMessage);
     }
   };
-  
-  
-  
 
   const getAllCast = async () => {
     try {
       const res = await APIGetAllCast({ pageSize: 1000, page: 1 });
       if (res && res.data && res.data.data) {
-        // Lọc các cast có status khác "0"
         const filteredCasts = res.data?.data?.items.filter(
           (cast) => cast.status !== 0
         );
-        setListCast(filteredCasts); // Cập nhật danh sách cast đã lọc
+        setListCast(filteredCasts);
         form.resetFields();
         handleCancel();
       }
@@ -175,9 +193,12 @@ const AdminCast = () => {
     const birthdayFormat = formatToDateString(new Date(birthday));
     let tempImagesUuid = imagesUuid;
     if (fileList.length > 0) {
-      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+      const uploadResponse = await APIUploadImage(
+        fileList[0].originFileObj,
+        '3'
+      );
       if (uploadResponse && uploadResponse.status === 200) {
-        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+        tempImagesUuid = uploadResponse.data.data;
       }
     }
     const dataCast = {
@@ -370,8 +391,9 @@ const AdminCast = () => {
       width: 60,
       render: (text, record) => {
         const fullURL = record?.imageUrl
-          ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${record?.imageUrl
-          }`
+          ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${
+              record?.imageUrl
+            }`
           : null;
         return fullURL ? (
           <Image
@@ -594,9 +616,9 @@ const AdminCast = () => {
             <Input.TextArea
               placeholder="Nhập mô tả...."
               autoSize={{ minRows: 2, maxRows: 6 }}
-            // onChange={(e) => {
-            //   // Optional: Handle text area change if needed
-            // }}
+              // onChange={(e) => {
+              //   // Optional: Handle text area change if needed
+              // }}
             />
           </Form.Item>
           <Form.Item label="Image" name="imagesUuid" rules={[]}>
