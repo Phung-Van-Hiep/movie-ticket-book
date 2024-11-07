@@ -109,7 +109,9 @@ const AdminMovies = () => {
         const moviesDetail = res.data.data;
         setMoviesDetail(moviesDetail);
         // console.log('update', moviesDetail);
-        const imageUrl = `${import.meta.env.VITE_BACKEND_URL}/resources/poster/${moviesDetail.imageUrl}`;
+        const imageUrl = moviesDetail.imageUrl
+        ? `${import.meta.env.VITE_BACKEND_URL}/resources/poster/${moviesDetail.imageUrl}`
+        : null;
         console.log('imageUrl', imageUrl);
         formUpdate.setFieldsValue({
           title: moviesDetail.title,
@@ -127,7 +129,7 @@ const AdminMovies = () => {
           trailer: moviesDetail.trailer,
           status: moviesDetail.status
         });
-        setFileList([{ url: imageUrl }]);
+        setFileList(imageUrl ? [{ url: imageUrl }] : []);
         setIsModalUpdateOpen(true);
         setPreviewImage('');
       } else {
@@ -151,7 +153,7 @@ const AdminMovies = () => {
   };
 
   const onFinishUpdateMoviesInfor = async (values) => {
-    const { realeaseDate, region, imageUrl, ...restValues } = values;
+    const { realeaseDate, region,imageUrl, ...restValues } = values;
     const realeaseFormat = formatToDateString(new Date(realeaseDate));
     let tempImagesUuid = imageUrl;
     // Kiểm tra nếu có ảnh mới được tải lên
@@ -170,6 +172,10 @@ const AdminMovies = () => {
         return;
       }
     }
+    else {
+      // Nếu không có ảnh trong fileList, đặt tempImagesUuid là null hoặc bỏ qua field này
+      tempImagesUuid = null;
+    }
 
     // Đổi tên region thành regionUuid trước khi gửi lên API
     const dataMovie = {
@@ -177,7 +183,7 @@ const AdminMovies = () => {
       ...restValues,
       realeaseDate: realeaseFormat,
       regionUuid: region, // Đổi từ region thành regionUuid
-      imagesUuid: tempImagesUuid // Gửi imagesUuid khi có ảnh mới
+       imagesUuid: tempImagesUuid  // Gửi imagesUuid khi có ảnh mới
     };
 
     // console.log("Dữ liệu gửi lên API", dataMovie);
@@ -694,7 +700,6 @@ const AdminMovies = () => {
                   defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 0, label: 'Không sử dụng' },
                     { value: 1, label: 'Đang chiếu' },
                     { value: 2, label: 'Sắp chiếu' },
                     { value: 3, label: 'Chiếu sớm' },
@@ -807,7 +812,6 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item label="Ảnh phim" name="imageUrl" rules={[]}>
                 <Upload
-
                   listType="picture-card"
                   fileList={fileList}
                   onPreview={handlePreviewCreateImage}
@@ -981,7 +985,6 @@ const AdminMovies = () => {
                   defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 0, label: 'Không sử dụng' },
                     { value: 1, label: 'Đang chiếu' },
                     { value: 2, label: 'Sắp chiếu' },
                     { value: 3, label: 'Chiếu sớm' },
