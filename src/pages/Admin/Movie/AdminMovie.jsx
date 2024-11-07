@@ -101,6 +101,12 @@ const AdminMovies = () => {
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
+  const formatToDateString = (dateObj) => {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const showModalUpdate = async (uuid) => {
     try {
@@ -108,11 +114,10 @@ const AdminMovies = () => {
       if (res && res.status === 200) {
         const moviesDetail = res.data.data;
         setMoviesDetail(moviesDetail);
-        // console.log('update', moviesDetail);
         const imageUrl = moviesDetail.imageUrl
-        ? `${import.meta.env.VITE_BACKEND_URL}/resources/poster/${moviesDetail.imageUrl}`
-        : null;
-        console.log('imageUrl', imageUrl);
+          ? `${import.meta.env.VITE_BACKEND_URL}/resources/poster/${moviesDetail.imageUrl}`
+          : null;
+  
         formUpdate.setFieldsValue({
           title: moviesDetail.title,
           realeaseDate: moment(moviesDetail.realeaseDate, 'YYYY-MM-DD'),
@@ -127,8 +132,10 @@ const AdminMovies = () => {
           rated: moviesDetail.rated,
           region: moviesDetail.region.map((item) => item.uuid),
           trailer: moviesDetail.trailer,
-          status: moviesDetail.status
+          status: moviesDetail.status,
         });
+  
+        // Set file list only if imageUrl exists
         setFileList(imageUrl ? [{ url: imageUrl }] : []);
         setIsModalUpdateOpen(true);
         setPreviewImage('');
@@ -136,28 +143,22 @@ const AdminMovies = () => {
         message.error('Không tìm thấy thông tin chi tiết.');
       }
     } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage || 'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-        message.error(errorMessage);
-      } else {
-        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-      }
+      const errorMessage =
+        error.response?.data?.error?.errorMessage || 'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
+      message.error(errorMessage);
     }
   };
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
+  
   const onFinishUpdateMoviesInfor = async (values) => {
-    const { realeaseDate, region,imageUrl, ...restValues } = values;
+    const { realeaseDate, region, imageUrl, ...restValues } = values;
     const realeaseFormat = formatToDateString(new Date(realeaseDate));
     let tempImagesUuid = imageUrl;
-    // Kiểm tra nếu có ảnh mới được tải lên
-    if (fileList.length > 0 && fileList[0].originFileObj) {
+  
+    // Kiểm tra nếu không có file trong fileList
+    if (fileList.length === 0) {
+      tempImagesUuid = null;
+    } else if (fileList[0].originFileObj) {
+      // Có file mới được tải lên
       try {
         const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '2');
         if (uploadResponse?.status === 200) {
@@ -172,22 +173,16 @@ const AdminMovies = () => {
         return;
       }
     }
-    else {
-      // Nếu không có ảnh trong fileList, đặt tempImagesUuid là null hoặc bỏ qua field này
-      tempImagesUuid = null;
-    }
-
+  
     // Đổi tên region thành regionUuid trước khi gửi lên API
     const dataMovie = {
       uuid: moviesDetail.uuid,
       ...restValues,
       realeaseDate: realeaseFormat,
-      regionUuid: region, // Đổi từ region thành regionUuid
-       imagesUuid: tempImagesUuid  // Gửi imagesUuid khi có ảnh mới
+      regionUuid: region,
+      imagesUuid: tempImagesUuid // Gửi imagesUuid, có thể là null nếu không có ảnh
     };
-
-    // console.log("Dữ liệu gửi lên API", dataMovie);
-
+  
     try {
       const res = await APICreateMovies(dataMovie);
       if (res && res.status === 200) {
