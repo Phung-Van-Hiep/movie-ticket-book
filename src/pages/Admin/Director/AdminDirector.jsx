@@ -144,6 +144,7 @@ const AdminDirector = () => {
         return;
       }
     }
+    console.log("Update done", restValues)
     try {
       const res = await APICreateDirector({
         uuid: directorDetail.uuid,

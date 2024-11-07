@@ -85,6 +85,9 @@ export const APIGetAllMovies = (data) => {
 export const APIGetMoviesDetail = (data) => {
   return instance.post('/api/v1/Movies/movies_detail', data);
 };
+export const APIDeleteMovie = (data) => {
+  return instance.post('/api/v1/Movies/update_movies_status', data);
+};
 
 //Cinema
 export const APICreateCinemas = (data) => {

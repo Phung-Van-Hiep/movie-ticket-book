@@ -25,12 +25,14 @@ import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
   APICreateMovies,
+  APIGetMoviesDetail,
   APIGetAllDirector,
   APIGetAllGenre,
   APIGetAllCast,
   APIGetAllRegion,
   APIGetAllMovies,
-  APIUploadImage
+  APIUploadImage,
+  APIDeleteMovie
 } from '../../../services/service.api';
 
 import { PlusOutlined } from '@ant-design/icons';
@@ -89,16 +91,7 @@ const AdminMovies = () => {
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
   };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    const res = await APIUploadImage(file, '2');
-    if (res && res.status === 200) {
-      setImagesUuid(res.data.data);
-    }
-    // form.setFieldsValue({ avatar: file as string });
-    // setAvatar(file as string);
-    onSuccess('ok');
-  };
+
   const handleChangeCreateImage = ({ fileList: newFileList }) =>
     setFileList(newFileList);
 
@@ -109,37 +102,47 @@ const AdminMovies = () => {
     </button>
   );
 
-  // const showModalUpdate = async (uuid: string) => {
-  //   try {
-  //     const res = await APIGetMoviesDetail({ uuid });
-  //     console.log('update', res);
-  //     if (res && res.status === 200) {
-  //       const moviesDetail = res.data.data;
-  //       setMoviesDetail(moviesDetail);
-  //       console.log(moviesDetail.realeaseDate);
-  //       formUpdate.setFieldsValue({
-  //         moviesName: moviesDetail.moviesName,
-  //         realeaseDate: moment(moviesDetail.realeaseDate, 'YYYY-MM-DD'),
-  //         description: moviesDetail.description
-  //       });
-  //       setIsModalUpdateOpen(true);
-  //       // setFileList([]);
-  //       // setPreviewImage('');
-  //     } else {
-  //       message.error('Không tìm thấy thông tin chi tiết.');
-  //     }
-  //   } catch (error: any) {
-  //     if (error.response) {
-  //       const errorMessage =
-  //         error.response.data?.error?.errorMessage ||
-  //         'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-  //       message.error(errorMessage);
-  //     } else {
-  //       message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-  //     }
-  //   }
-  // };
-
+  const showModalUpdate = async (uuid) => {
+    try {
+      const res = await APIGetMoviesDetail({ uuid });
+      if (res && res.status === 200) {
+        const moviesDetail = res.data.data;
+        setMoviesDetail(moviesDetail);
+        // console.log('update', moviesDetail);
+        const imageUrl = `${import.meta.env.VITE_BACKEND_URL}/resources/poster/${moviesDetail.imageUrl}`;
+        console.log('imageUrl', imageUrl);
+        formUpdate.setFieldsValue({
+          title: moviesDetail.title,
+          realeaseDate: moment(moviesDetail.realeaseDate, 'YYYY-MM-DD'),
+          description: moviesDetail.description,
+          averageReview: moviesDetail.averageReview,
+          cast: moviesDetail.cast.map((item) => item.uuid),
+          directorUuid: moviesDetail.directorUuid,
+          duration: moviesDetail.duration,
+          engTitle: moviesDetail.engTitle,
+          genre: moviesDetail.genre.map((item) => item.uuid),
+          imageUrl: moviesDetail.imageUrl,
+          rated: moviesDetail.rated,
+          region: moviesDetail.region.map((item) => item.uuid),
+          trailer: moviesDetail.trailer,
+          status: moviesDetail.status
+        });
+        setFileList([{ url: imageUrl }]);
+        setIsModalUpdateOpen(true);
+        setPreviewImage('');
+      } else {
+        message.error('Không tìm thấy thông tin chi tiết.');
+      }
+    } catch (error) {
+      if (error.response) {
+        const errorMessage =
+          error.response.data?.error?.errorMessage || 'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
+        message.error(errorMessage);
+      } else {
+        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
+      }
+    }
+  };
   const formatToDateString = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -147,44 +150,57 @@ const AdminMovies = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // const onFinishUpdateMoviesInfor: FormProps<FieldType>['onFinish'] = async (
-  //   values
-  // ) => {
-  //   const { realeaseDate } = values;
-  //   const birthdayObj = new Date(realeaseDate);
-  //   const birthdayFormat = formatToDateString(birthdayObj);
-  //   try {
-  //     const res = await APICreateMovies({
-  //       uuid: moviesDetail.uuid,
-  //       moviesName: values.moviesName,
-  //       realeaseDate: birthdayFormat,
-  //       description: values.description
-  //     });
-  //     console.log('adasdasd', res);
-  //     if (res && res.status === 200) {
-  //       message.success(res.data.error.errorMessage);
-  //       getAllMovies();
-  //       formUpdate.resetFields();
-  //       handleCancelUpdate();
-  //       setFileList([]);
-  //       setPreviewImage('');
-  //     }
-  //     // console.log("Success:", values);
-  //   } catch (error: any) {
-  //     if (error.response) {
-  //       const errorMessage =
-  //         error.response.data?.error?.errorMessage ||
-  //         'Đã xảy ra lỗi khi update.';
-  //       message.error(errorMessage);
-  //     } else if (error.request) {
-  //       message.error(
-  //         'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-  //       );
-  //     } else {
-  //       message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-  //     }
-  //   }
-  // };
+  const onFinishUpdateMoviesInfor = async (values) => {
+    const { realeaseDate, region, imageUrl, ...restValues } = values;
+    const realeaseFormat = formatToDateString(new Date(realeaseDate));
+    let tempImagesUuid = imageUrl;
+    // Kiểm tra nếu có ảnh mới được tải lên
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      try {
+        const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '2');
+        if (uploadResponse?.status === 200) {
+          tempImagesUuid = uploadResponse.data.data;
+          setImagesUuid(tempImagesUuid); // Lưu lại imagesUuid mới
+        } else {
+          message.error('Upload ảnh không thành công. Vui lòng thử lại.');
+          return;
+        }
+      } catch {
+        message.error('Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        return;
+      }
+    }
+
+    // Đổi tên region thành regionUuid trước khi gửi lên API
+    const dataMovie = {
+      uuid: moviesDetail.uuid,
+      ...restValues,
+      realeaseDate: realeaseFormat,
+      regionUuid: region, // Đổi từ region thành regionUuid
+      imagesUuid: tempImagesUuid // Gửi imagesUuid khi có ảnh mới
+    };
+
+    // console.log("Dữ liệu gửi lên API", dataMovie);
+
+    try {
+      const res = await APICreateMovies(dataMovie);
+      if (res && res.status === 200) {
+        message.success(res.data.error.errorMessage);
+        form.resetFields();
+        setFileList([]); // Dọn dẹp file list sau khi cập nhật
+        setImagesUuid(''); // Xóa imagesUuid đã lưu
+        getAllMovies();
+        handleCancelUpdate();
+      }
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data?.error?.errorMessage || 'Đã xảy ra lỗi khi update.';
+        message.error(errorMessage);
+      } else {
+        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+      }
+    }
+  };
 
   const getAllMovies = async () => {
     try {
@@ -204,7 +220,7 @@ const AdminMovies = () => {
   };
   const onFinish = async (values) => {
     const { realeaseDate, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(realeaseDate));
+    const realeaseFormat = formatToDateString(new Date(realeaseDate));
     let tempImagesUuid = imagesUuid;
     if (fileList.length > 0) {
       const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '2');
@@ -212,19 +228,19 @@ const AdminMovies = () => {
         tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
       }
     }
-    const dataCast = {
+    const dataMovie = {
       ...restValues,
-      realeaseDate: birthdayFormat,
+      realeaseDate: realeaseFormat,
       imagesUuid: tempImagesUuid
     };
     try {
-      const res = await APICreateCast(dataCast);
+      const res = await APICreateMovies(dataMovie);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         setFileList([]);
         setImagesUuid('');
-        getAllCast();
+        getAllMovies();
       }
     } catch (error) {
       if (error.response) {
@@ -276,37 +292,35 @@ const AdminMovies = () => {
     clearFilters();
     setSearchText('');
   };
-  // const confirm: PopconfirmProps['onConfirm'] = async (
-  //   uuid: string
-  // ): Promise<void> => {
-  //   try {
-  //     const res = await APIDeleteMovies({ uuid, status: 0 });
-  //     if (res && res.status === 200) {
-  //       message.success('Đã xoá thành công.');
-  //       getAllMovies(); // Cập nhật lại danh sách movies sau khi xoá
-  //     } else {
-  //       message.error('Xoá thất bại.');
-  //     }
-  //   } catch (error: any) {
-  //     if (error.response) {
-  //       const errorMessage =
-  //         error.response.data?.error?.errorMessage ||
-  //         'Đã xảy ra lỗi khi cập nhật status.';
-  //       message.error(errorMessage);
-  //     } else if (error.request) {
-  //       message.error(
-  //         'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-  //       );
-  //     } else {
-  //       message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-  //     }
-  //   }
-  // };
+  const confirm = async (uuid) => {
+    try {
+      const res = await APIDeleteMovie({ uuid, status: 0 });
+      if (res && res.status === 200) {
+        message.success('Đã xoá thành công.');
+        getAllMovies(); // Cập nhật lại danh sách director sau khi xoá
+      } else {
+        message.error('Xoá thất bại.');
+      }
+    } catch (error) {
+      if (error.response) {
+        const errorMessage =
+          error.response.data?.error?.errorMessage ||
+          'Đã xảy ra lỗi khi cập nhật status.';
+        message.error(errorMessage);
+      } else if (error.request) {
+        message.error(
+          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
+        );
+      } else {
+        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+      }
+    }
+  };
   const fetchData = async (apiCall, mapDataToOptions, setState) => {
     try {
-      const res = await apiCall({ pageSize: 10, page: 1 });
+      const res = await apiCall({ pageSize: 1000, page: 1 });
       if (res && res.data && Array.isArray(res.data.data.items)) {
-        const dataItems = res.data.data.items;
+        const dataItems = res.data.data.items.filter(item => item.status === 1); // Chỉ lấy những mục có status là 1
         const options = dataItems.map(mapDataToOptions);
 
         setState(options); // Cập nhật state
@@ -456,16 +470,14 @@ const AdminMovies = () => {
         return <div>{movies}</div>;
       }
     },
-    {
-      title: 'Lịch chiếu',
-      dataIndex: 'calendar',
-      key: 'calendar',
-      // ...getColumnSearchProps("description"),
-      // width: 70,
-      render: (duration) => (
-        <div className="truncate-description">{duration}</div>
-      )
-    },
+    // {
+    //   title: 'Lịch chiếu',
+    //   dataIndex: 'calendar',
+    //   key: 'calendar',
+    //   render: (duration) => (
+    //     <div className="truncate-description">{duration}</div>
+    //   )
+    // },
     {
       title: 'Ngày phát hành',
       dataIndex: 'realeaseDate',
@@ -475,6 +487,11 @@ const AdminMovies = () => {
       title: 'Ngày tạo',
       dataIndex: 'timeCreated',
       key: 'timeCreated',
+      render: (text) => {
+        const date = new Date(text);
+        const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
+        return formattedDate;
+      },
     },
     {
       title: 'Trạng thái phim',
@@ -520,7 +537,7 @@ const AdminMovies = () => {
           <Button
             type="text"
             className="bg-blue-700 text-white"
-          // onClick={() => showModalUpdate(record.uuid)}
+            onClick={() => showModalUpdate(record.uuid)}
           >
             <EditOutlined />
           </Button>
@@ -677,10 +694,11 @@ const AdminMovies = () => {
                   defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 0, label: 'Không còn' },
+                    { value: 0, label: 'Không sử dụng' },
                     { value: 1, label: 'Đang chiếu' },
                     { value: 2, label: 'Sắp chiếu' },
-                    { value: 3, label: 'Chiếu sớm' }
+                    { value: 3, label: 'Chiếu sớm' },
+                    { value: 4, label: 'Không còn chiếu' },
                   ]}
                 />
               </Form.Item>
@@ -789,12 +807,15 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item label="Ảnh phim" name="imageUrl" rules={[]}>
                 <Upload
-                  action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+
                   listType="picture-card"
                   fileList={fileList}
                   onPreview={handlePreviewCreateImage}
                   onChange={handleChangeCreateImage}
-                  customRequest={dummyRequestCreateImageCast}
+                  beforeUpload={(file) => {
+                    setFileList([file]);
+                    return false;
+                  }}
                 >
                   {fileList.length >= 1 ? null : uploadButton}
                 </Upload>
@@ -823,79 +844,282 @@ const AdminMovies = () => {
       <Modal
         title="Cập nhật phim"
         open={isModalUpdateOpen}
-        onCancel={() => setIsModalUpdateOpen(false)}
+        onCancel={() => {
+          setIsModalUpdateOpen(false)
+          setFileList([])
+        }}
         footer={
           <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
         }
+        width={1200}
       >
         <Form
           form={formUpdate}
           name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          // labelCol={{ span: 8 }}
+          // wrapperCol={{ span: 16 }}
           initialValues={{ remember: true }}
-          // onFinish={onFinishUpdateMoviesInfor}
+          onFinish={onFinishUpdateMoviesInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item
-            label="Tên phim"
-            name="moviesName"
-            rules={[{ required: true, message: 'Hãy nhập tên phim!' }]}
-          >
-            <Input />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Tên phim"
+                name="title"
+                rules={[{ required: true, message: 'Hãy nhập tên phim!' }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Tên Phim (Tiếng Anh)"
+                name="engTitle"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập tên phim của bạn!'
+                  }
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Trailer"
+                name="trailer"
+                rules={[{ required: true, message: 'Hãy nhập tên Trailer!' }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Thời lượng phim"
+                name="duration"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập thời lượng phim của bạn!'
+                  }
+                ]}
+              >
+                <InputNumber className="w-full" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Độ tuổi"
+                name="rated"
+                rules={[{ required: true, message: 'Hãy chọn độ tuổi!' }]}
+              >
+                <Select
+                  defaultValue=""
+                  onChange={handleChangeStatus}
+                  options={[
+                    { value: 0, label: 'P' },
+                    { value: 1, label: 'T13' },
+                    { value: 2, label: 'T16' },
+                    { value: 3, label: 'T18' }
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Đánh giá trung bình"
+                name="averageReview"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập đánh giá trung bình!'
+                  }
+                ]}
+              >
+                <InputNumber className="w-full" placeholder="" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Thể loại phim"
+                name="genre"
+                rules={[{ required: true, message: 'Hãy chọn thể loại phim!' }]}
+              >
+                <Select
+                  showSearch
+                  onChange={handleChangeGenre}
+                  options={listGenre}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '')?.toLowerCase()?.includes(input?.toLowerCase())
+                  }
+                  allowClear
+                  mode="multiple"
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Trạng Thái"
+                name="status"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập trạng thái phim của bạn!'
+                  }
+                ]}
+              >
+                <Select
+                  defaultValue=""
+                  onChange={handleChangeStatus}
+                  options={[
+                    { value: 0, label: 'Không sử dụng' },
+                    { value: 1, label: 'Đang chiếu' },
+                    { value: 2, label: 'Sắp chiếu' },
+                    { value: 3, label: 'Chiếu sớm' },
+                    { value: 4, label: 'Không còn chiếu' },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Quốc gia"
+                name="region"
+                rules={[{ required: true, message: 'Hãy chọn quốc gia!' }]}
+              >
+                <Select
+                  showSearch
+                  onChange={handleChangeRegion}
+                  options={listRegion}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  allowClear
+                  mode="multiple"
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Diễn viên"
+                name="cast"
+                rules={[{ required: true, message: 'Hãy chọn các diễn viên tham gia bộ phim!' }]}
+              >
+                <Select
+                  showSearch
+                  onChange={handleChangeCast}
+                  options={listCast}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  allowClear
+                  mode="multiple"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Ngày phát hành"
+                name="realeaseDate"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập ngày phát hành của phim!'
+                  }
+                ]}
+              >
+                <DatePicker
+                  // placeholder="Ngày sinh"
+                  variant="filled"
+                  className="w-full"
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Đạo diễn"
+                name="directorUuid"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy chọn đạo diễn phim của bạn!'
+                  }
+                ]}
+              >
+                <Select
+                  showSearch
+                  defaultValue=""
+                  onChange={handleChangeDirector}
+                  options={listDirector}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              <Form.Item
+                label="Mô Tả"
+                name="description"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Hãy nhập mô tả phim của bạn!'
+                  }
+                ]}
 
-          <Form.Item
-            label="Ngày sinh"
-            name="realeaseDate"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
-          >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
-            />
-          </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
-            />
-          </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
-            <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
-            >
-              {fileList.length >= 8 ? null : uploadButton}
-            </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
-          </Form.Item>
+              >
+                <Input.TextArea
+                  placeholder="Nhập mô tả...."
+                  autoSize={{ minRows: 3, maxRows: 8 }}
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item label="Ảnh phim" name="imageUrl" rules={[]}>
+                <Upload
+                  listType="picture-card"
+                  fileList={fileList}
+                  onPreview={handlePreviewCreateImage}
+                  onChange={handleChangeCreateImage}
+                  beforeUpload={(file) => {
+                    setFileList([file]);
+                    return false;
+                  }}
+                >
+                  {fileList.length >= 1 ? null : uploadButton}
+                </Upload>
+                {previewImage && (
+                  <Image
+                    wrapperStyle={{ display: 'none' }}
+                    preview={{
+                      visible: previewOpen,
+                      onVisibleChange: (visible) => setPreviewOpen(visible),
+                      afterOpenChange: (visible) =>
+                        !visible && setPreviewImage('')
+                    }}
+                    src={previewImage}
+                  />
+                )}
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Cập nhật

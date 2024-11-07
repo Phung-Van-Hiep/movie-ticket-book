@@ -58,15 +58,6 @@ const AdminCast = () => {
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
   };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    const res = await APIUploadImage(file, '3');
-
-    if (res && res.status === 200) {
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
   const handleChangeCreateImage = ({ fileList: newFileList }) =>
     setFileList(newFileList);
 
@@ -124,17 +115,11 @@ const AdminCast = () => {
     const birthdayFormat = formatToDateString(new Date(birthday));
     
     let tempImagesUuid = imagesUuid; 
-    console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
     if (fileList.length > 0 && fileList[0].originFileObj) {
       try {
-        const uploadResponse = await APIUploadImage(
-          fileList[0].originFileObj,
-          '3'
-        );
+        const uploadResponse = await APIUploadImage(fileList[0].originFileObj,'3');
         if (uploadResponse?.status === 200) {
           tempImagesUuid = uploadResponse.data.data;
-    console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
-
           setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
         } else {
           message.error('Upload ảnh không thành công. Vui lòng thử lại.');
@@ -147,7 +132,6 @@ const AdminCast = () => {
         return;
       }
     }
-
     try {
       const res = await APICreateCast({
         uuid: castDetail?.uuid,
@@ -173,9 +157,6 @@ const AdminCast = () => {
     }
   };
   
-  
-  
-
   const getAllCast = async () => {
     try {
       const res = await APIGetAllCast({ pageSize: 1000, page: 1 });
