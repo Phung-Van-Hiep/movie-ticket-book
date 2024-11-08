@@ -8,6 +8,7 @@ import {
 
 import {
   Button,
+  Col,
   DatePicker,
   Form,
   Input,
@@ -15,6 +16,7 @@ import {
   message,
   Modal,
   Popconfirm,
+  Row,
   Select,
   Space,
   Table
@@ -22,16 +24,17 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
+  APICreateScreen,
+  APIGetAllScreen,
+  APIGetScreenDetail,
+  APIDeleteScreen,
   APIUploadImage,
   APIGetAllCinemas
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
 import moment from 'moment';
+import SeatLayout from './SeatLayOut';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -56,124 +59,96 @@ const AdminDirector = () => {
   const [fileList, setFileList] = useState([]);
   const [imagesUuid, setImagesUuid] = useState('');
   const [listCinemas, setListCinemas] = useState([]);
+  const [rows, setRows] = useState(0); // Default rows
+  const [cols, setCols] = useState(0); // Default columns
 
-  const handleChangeStatus = (value) =>{
+  const handleChangeStatus = (value) => {
     // console.log(`selected ${value}`);
   }
 
   const handleChangeCinemas = (value) => {
     // console.log(`selected ${value}`);
   };
-  
-  const handlePreviewCreateImage = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
 
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
-  };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-
-    const res = await APIUploadImage(file, '3');
-
-    if (res && res.status === 200) {
-
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
-  const handleChangeCreateImage = ({ fileList: newFileList }) =>
-    setFileList(newFileList);
-
-  const uploadButton = (
-    <button style={{ border: 0, background: 'none' }} type="button">
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
-
-  const showModalUpdate = async (uuid) => {
-    try {
-      const res = await APIGetDirectorDetail({ uuid });
-      if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${
-          import.meta.env.VITE_BACKEND_URL
-        }/resources/images/${directorDetail.imageUrl}`;
-        formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
-        });
-        setFileList([{ url: imageUrl }]);
-        setIsModalUpdateOpen(true);
-        // setFileList([]);
-        setPreviewImage('');
-      } else {
-        message.error('Không tìm thấy thông tin chi tiết.');
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-        message.error(errorMessage);
-      } else {
-        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-      }
-    }
-  };
-
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  const onFinishUpdateDirectorInfor = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
-    try {
-      const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
-        birthday: birthdayFormat,
-        description: restValues.description,
-        imagesUuid // Gửi URL của ảnh nếu có
-      });
-      if (res && res.status === 200) {
-        message.success(res.data.error.errorMessage);
-        form.resetFields();
-        setFileList([]);
-        setImagesUuid('');
-        getAllDirector();
-        handleCancelUpdate();
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi update.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
-  };
+  const handleRows = (value) => {
+    setRows(value);
+  }
+  const handleCol = (value) => {
+    setCols(value);
+  }
+  // const showModalUpdate = async (uuid) => {
+  //   try {
+  //     const res = await APIGetDirectorDetail({ uuid });
+  //     if (res && res.status === 200) {
+  //       const directorDetail = res.data.data;
+  //       setDirectorDetail(directorDetail);
+  //       //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
+  //       const imageUrl = `${
+  //         import.meta.env.VITE_BACKEND_URL
+  //       }/resources/images/${directorDetail.imageUrl}`;
+  //       formUpdate.setFieldsValue({
+  //         directorName: directorDetail.directorName,
+  //         birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
+  //         description: directorDetail.description,
+  //         imageUrl: directorDetail.imageUrl
+  //       });
+  //       setFileList([{ url: imageUrl }]);
+  //       setIsModalUpdateOpen(true);
+  //       // setFileList([]);
+  //       setPreviewImage('');
+  //     } else {
+  //       message.error('Không tìm thấy thông tin chi tiết.');
+  //     }
+  //   } catch (error) {
+  //     if (error.response) {
+  //       const errorMessage =
+  //         error.response.data?.error?.errorMessage ||
+  //         'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
+  //       message.error(errorMessage);
+  //     } else {
+  //       message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
+  //     }
+  //   }
+  // };
+  // const onFinishUpdateDirectorInfor = async (values) => {
+  //   const { birthday, ...restValues } = values;
+  //   const birthdayObj = new Date(birthday);
+  //   const birthdayFormat = formatToDateString(birthdayObj);
+  //   try {
+  //     const res = await APICreateDirector({
+  //       uuid: directorDetail.uuid,
+  //       directorName: restValues.directorName,
+  //       birthday: birthdayFormat,
+  //       description: restValues.description,
+  //       imagesUuid // Gửi URL của ảnh nếu có
+  //     });
+  //     if (res && res.status === 200) {
+  //       message.success(res.data.error.errorMessage);
+  //       form.resetFields();
+  //       setFileList([]);
+  //       setImagesUuid('');
+  //       getAllDirector();
+  //       handleCancelUpdate();
+  //     }
+  //   } catch (error) {
+  //     if (error.response) {
+  //       const errorMessage =
+  //         error.response.data?.error?.errorMessage ||
+  //         'Đã xảy ra lỗi khi update.';
+  //       message.error(errorMessage);
+  //     } else if (error.request) {
+  //       message.error(
+  //         'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
+  //       );
+  //     } else {
+  //       message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+  //     }
+  //   }
+  // };
 
   const getAllDirector = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllScreen({ pageSize: 1000, page: 1 });
 
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
@@ -185,20 +160,19 @@ const AdminDirector = () => {
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách phòng chiếu.');
     }
   };
   const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
+    const { rows, columns, ...restValues } = values;
+    const dataScreen = {
       ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
+      capacity: rows * columns,
+      rows: rows,
+      columns: columns,
     };
     try {
-      const res = await APICreateDirector(dataDirector);
-
+      const res = await APICreateScreen(dataScreen);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -227,6 +201,8 @@ const AdminDirector = () => {
   const showModal = () => {
     setIsModalOpen(true);
     setFileList([]);
+    setCols(0);
+    setRows(0);
   };
 
   const handleOk = () => {
@@ -285,7 +261,7 @@ const AdminDirector = () => {
   const getAllCinemas = async () => {
     try {
       const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
- if (res && res.data && Array.isArray(res.data.data.items)) {
+      if (res && res.data && Array.isArray(res.data.data.items)) {
         const cinemas = res.data.data.items;
         const cinemasOptions = cinemas.map((cinema) => ({
           value: cinema.uuid,
@@ -437,7 +413,7 @@ const AdminDirector = () => {
             className="bg-orange-400 text-white"
             onClick={() => showModalTableUpdate(record.uuid)}
           >
-            <TableOutlined /> 
+            <TableOutlined />
           </Button>
           <Popconfirm
             title="Xoá đạo diễn"
@@ -476,24 +452,36 @@ const AdminDirector = () => {
         onOk={handleOk}
         onCancel={handleCancel}
         footer={<></>}
+        width={1200}
+        height={1200}
       >
         <Form
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item
-            label="Rạp phim"
-            name="cinemaUuid"
-            rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-          >
-            <Select
+          <Row gutter={16}>
+          <Col className="gutter-row" span={8}>
+              <Form.Item
+                label="Tên phòng chiếu"
+                name="screenName"
+                rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={8}>
+              <Form.Item
+                label="Rạp phim"
+                name="cinemaUuid"
+                rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
+              >
+                <Select
                   showSearch
                   defaultValue=""
                   onChange={handleChangeCinemas}
@@ -503,54 +491,77 @@ const AdminDirector = () => {
                   }
                   allowClear
                 />
-          </Form.Item>
-          <Form.Item
-            label="Tên phòng chiếu"
-            name="screenName"
-            rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Loại phòng chiếu"
-            name="screenType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn loại phòng chiếu!'
-              }
-            ]}
-          >
-            <Select
+              </Form.Item>
+            </Col>
+            
+            <Col className="gutter-row" span={8}>
+              <Form.Item
+                label="Loại phòng chiếu"
+                name="screenTypeUuid"
+                rules={[{ required: true, message: 'Hãy chọn loại phòng chiếu!' }]}
+              >
+                <Select
                   defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 1, label: '2D' },
-                    { value: 2, label: '3D' },
-                    { value: 3, label: 'IMax' }
+                    { value: '1', label: '2D' },
+                    { value: '2', label: '3D' },
+                    { value: '3', label: 'IMAX2D' },
+                    { value: '4', label: 'IMAX3D' },
                   ]}
                 />
-          </Form.Item>
-
-          <Form.Item label="Số hàng" name="rowScreen" rules={[{required: true, message: 'Nhập số hàng'}]}>
-            <Input
-              placeholder="Nhập số hàng"
-            />
-          </Form.Item>
-          <Form.Item label="Số cột" name="colScreen" rules={[{required: true, message: 'Nhập số cột'}]}>
-            <Input
-              placeholder="Nhập số cột"
-            />
-          </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16} justify="center">
+            <Col className="gutter-row" span={12}>
+              <Form.Item label="Số hàng" name="rows" rules={[
+                { required: true, message: 'Nhập số hàng' },
+                { type: 'number', min: 1, max: 14, message: 'Số hàng phải từ 1 đến 14!' }
+              ]}>
+                <InputNumber
+                  onChange={handleRows}
+                  placeholder="Nhập số hàng"
+                  className='w-9/12'
+                  min={1}  // Minimum value
+                  max={14} // Maximum value
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={12}>
+              <Form.Item label="Số cột" name="columns" rules={[
+                { required: true, message: 'Nhập số cột' },
+                { type: 'number', min: 1, max: 14, message: 'Số cột phải từ 1 đến 14!' }
+              ]}>
+                <InputNumber
+                  onChange={handleCol}
+                  placeholder="Nhập số cột"
+                  className='w-9/12'
+                  min={1}  // Minimum value
+                  max={14} // Maximum value
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          {/* Thêm phần SeatLayout ở đây */}
+          <div className="seat-layout-preview">
+            {rows && cols ? (
+              <SeatLayout
+                rows={rows}
+                cols={cols}
+              // Có thể thêm các props khác nếu cần
+              />
+            ) : null}
+          </div>
+          <div className="flex justify-center mt-10">
+            <Button type="primary" htmlType="submit" form="basic">
               Thêm mới
             </Button>
-          </Form.Item>
+          </div>
         </Form>
       </Modal>
-      <Modal
+
+      {/* <Modal
         title="Cập nhật đạo diễn"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
@@ -626,13 +637,15 @@ const AdminDirector = () => {
               />
             )}
           </Form.Item>
+          <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" form="basic" >
               Cập nhật
             </Button>
           </Form.Item>
+        </div>
         </Form>
-      </Modal>
+      </Modal> */}
       <Table
         columns={columns}
         dataSource={listDirectorMap}

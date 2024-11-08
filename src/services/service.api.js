@@ -104,6 +104,21 @@ export const APIDeleteCinemas = (data) => {
   return instance.post('/api/v1/Cinemas/update_cinema_status', data);
 };
 
+//Screen
+export const APICreateScreen = (data) => {
+  return instance.post('/api/v1/Screen/upsert_screen', data);
+};
+export const APIGetAllScreen = (data) => {
+  return instance.post('/api/v1/Screen/page_list_screen', data);
+};
+export const APIGetScreenDetail = (data) => {
+  return instance.post('/api/v1/Screen/screen_detail', data);
+};
+
+export const APIDeleteScreen = (data) => {
+  return instance.post('/api/v1/Screen/update_screen_status', data);
+};
+
 //Upload Image
 
 export const APIUploadImage = (FileData, Type) => {

@@ -833,11 +833,11 @@ const AdminMovies = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+          <div className="flex justify-center mt-10">
+            <Button type="primary" htmlType="submit" form="basic">
               Thêm mới
             </Button>
-          </Form.Item>
+          </div>
         </Form>
       </Modal>
       <Modal
@@ -1118,11 +1118,13 @@ const AdminMovies = () => {
               </Form.Item>
             </Col>
           </Row>
+          <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" form="basic" >
               Cập nhật
             </Button>
           </Form.Item>
+        </div>
         </Form>
       </Modal>
       <Table
