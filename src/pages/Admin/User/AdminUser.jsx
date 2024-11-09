@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
-import { Avatar, Button, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Radio, Row, Space, Table } from 'antd';
+import { Avatar, Button, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Radio, Row, Select, Space, Table } from 'antd';
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
@@ -82,7 +82,8 @@ const AdminCast = () => {
           birthday: userDetail.birthday
             ? moment(userDetail.birthday, birthdayFormat)
             : null,
-           imageUrl: userDetail.imageUrl,
+          imageUrl: userDetail.imageUrl,
+          status: userDetail.status
         });
         setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
@@ -113,6 +114,7 @@ const AdminCast = () => {
     const { birthday, ...restValues } = values;
     const birthdayObj = new Date(birthday);
     const birthdayFormat = formatToDateString(birthdayObj);
+    console.log("Checking", restValues)
     // console.log(birthdayFormat);
     // let tempImagesUuid = imagesUuid;
     // if (fileList.length > 0) {
@@ -129,7 +131,8 @@ const AdminCast = () => {
         phoneNumber: restValues.phoneNumber,
         gender: restValues.gender,
         // imagesUuid: tempImagesUuid
-        status: 1,
+        status: userDetail.status,
+        role: userDetail.role,
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
@@ -633,7 +636,7 @@ const AdminCast = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật diễn viên"
+        title="Cập nhật người dùng"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -654,124 +657,23 @@ const AdminCast = () => {
           autoComplete="off"
         >
           <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label={<div className="font-semibold">Email</div>}
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Xin hãy nhập Email của bạn!",
-                  },
-                  {
-                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Vui lòng nhập địa chỉ Email hợp lệ!",
-                  },
-                ]}
-              >
-                <Input placeholder="Nhập Email...." />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
+            <Col span={11}>
               <Form.Item
                 label={<div className="font-semibold">Họ Tên</div>}
                 name="fullname"
                 rules={[
-                  {
-                    required: true,
-                    message: "Xin hãy nhập họ và tên bạn!",
-                  },
-                  {
-                    pattern: /^[\p{L}\s]+$/u,
-                    message: "Họ tên chỉ được dùng ký tự!",
-                  },
+                  { required: true, message: "Xin hãy nhập họ và tên bạn!" },
+                  { pattern: /^[\p{L}\s]+$/u, message: "Họ tên chỉ được dùng ký tự!" },
                 ]}
               >
-                <Input
-                  placeholder="Nhập Họ Tên...."
-                  onChange={handleFullnameChange}
-                />
+                <Input placeholder="Nhập Họ Tên...." onChange={handleFullnameChange} />
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Form.Item
-                label={<div className="font-semibold">Số điện thoại</div>}
-                name="phoneNumber"
-                rules={[
-                  {
-                    required: true,
-                    message: "Xin hãy nhập số điện thoại của bạn!",
-                  },
-                  {
-                    pattern: /^0\d{9}$/,
-                    message:
-                      "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!",
-                  },
-                ]}
-              >
-                <Input placeholder="Nhập số điện thoại..." />
-              </Form.Item>
-            </Col>
-
-            <Col span={12}>
-              <Form.Item
-                label={<div className="font-semibold">Ngày sinh</div>}
-                name="birthday"
-                rules={[
-                  {
-                    required: true,
-                    message: "Hãy nhập ngày sinh của bạn!",
-                  },
-                ]}
-              >
-                <DatePicker
-                  placeholder="Ngày sinh"
-                  variant="filled"
-                  className="w-full"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]}>
-            {/* <Col span={12}>
-              <Form.Item
-                label={<div className="font-semibold">Mật khẩu</div>}
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Xin hãy nhập password của bạn!",
-                  },
-                ]}
-              >
-                <Input.Password placeholder="Nhập mật khẩu..." />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={
-                  <div className="font-semibold">Xác nhận mật khẩu </div>
-                }
-                name="password2"
-                rules={[
-                  {
-                    required: true,
-                    message: "Xin hãy nhập lại password của bạn!",
-                  },
-                ]}
-              >
-                <Input.Password placeholder="Xác nhận mật khẩu..." />
-              </Form.Item>
-            </Col> */}
             <Col span={13}>
               <Form.Item
                 label={<div className="font-semibold">Giới tính</div>}
                 name="gender"
-                rules={[
-                  { required: true, message: "Hãy chọn giới tính của bạn" },
-                ]}
+                rules={[{ required: true, message: "Hãy chọn giới tính của bạn" }]}
               >
                 <Radio.Group onChange={onChange} value={value}>
                   <Radio value={0}>Nam</Radio>
@@ -781,13 +683,67 @@ const AdminCast = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          <Row gutter={[16, 16]}>
+            <Col span={11}>
+              <Form.Item
+                label={<div className="font-semibold">Email</div>}
+                name="email"
+                rules={[
+                  { required: true, message: "Xin hãy nhập Email của bạn!" },
+                  { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Vui lòng nhập địa chỉ Email hợp lệ!" },
+                ]}
+              >
+                <Input placeholder="Nhập Email...." />
+              </Form.Item>
+            </Col>
+            <Col span={13}>
+              <Form.Item
+                label={<div className="font-semibold">Số điện thoại</div>}
+                name="phoneNumber"
+                rules={[
+                  { required: true, message: "Xin hãy nhập số điện thoại của bạn!" },
+                  { pattern: /^0\d{9}$/, message: "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!" },
+                ]}
+              >
+                <Input placeholder="Nhập số điện thoại..." />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={[16, 16]}>
+            <Col span={11}>
+              <Form.Item
+                label={<div className="font-semibold">Ngày sinh</div>}
+                name="birthday"
+                rules={[{ required: true, message: "Hãy nhập ngày sinh của bạn!" }]}
+              >
+                <DatePicker placeholder="Ngày sinh" className="w-full" />
+              </Form.Item>
+            </Col>
+            <Col span={13}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[{ required: true, message: 'Hãy chọn trạng thái!' }]}
+              >
+                <Select
+                  defaultValue=""
+                  options={[
+                    { value: 1, label: 'Hoạt động' },
+                    { value: 2, label: 'Đã khoá' },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
           <div className="flex justify-center mt-10">
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" form="basic" >
-              Cập nhật
-            </Button>
-          </Form.Item>
-        </div>
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="primary" htmlType="submit" form="basic" >
+                Cập nhật
+              </Button>
+            </Form.Item>
+          </div>
         </Form>
       </Modal>
       <Table
