@@ -4,19 +4,16 @@ import { EditOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const SeatLayout = ({ rows, cols }) => {
+const SeatLayout = ({ rows, cols, onSeatsChange }) => {
   const [seats, setSeats] = useState([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [seatType, setSeatType] = useState("normal");
+  const [seatType, setSeatType] = useState(1);
 
   // Generate seats when rows or cols change
   useEffect(() => {
-    // console.log("Rows:", rows, "Cols:", cols);
     generateSeats();
   }, [rows, cols]);
-
-  // console.log("Seats:", seats);
 
   const generateSeats = () => {
     const newSeats = [];
@@ -25,12 +22,12 @@ const SeatLayout = ({ rows, cols }) => {
       const rowChar = String.fromCharCode(65 + row);
 
       for (let col = 0; col < cols; col++) {
-        let seatType = "couple";
+        let seatType = 3;
 
         if (["A", "B", "C", "D"].includes(rowChar)) {
-          seatType = "normal";
-        } else if (["E", "F", "G", "H", "I", "J", "K", "L", "M", "N"].includes(rowChar)) {
-          seatType = "vip";
+          seatType = 1;
+        } else if (["E", "F", "G", "H", "I", "J", "K", "L", "M"].includes(rowChar)) {
+          seatType = 2;
         }
 
         seatRow.push({
@@ -41,6 +38,13 @@ const SeatLayout = ({ rows, cols }) => {
       newSeats.push(seatRow);
     }
     setSeats(newSeats);
+
+    // Truyền mảng ghế về AdminScreen khi ghế được tạo xong
+    const flatSeats = newSeats.flat().map(seat => ({
+      seatName: seat.label,
+      seatType: seat.type,
+    }));
+    onSeatsChange(flatSeats);
   };
 
   const openEditModal = (rowIndex) => {
@@ -60,10 +64,10 @@ const SeatLayout = ({ rows, cols }) => {
   };
 
   const getSeatColor = (type) => {
-    if (type === "normal") return "#5A4FCF";
-    if (type === "vip") return "#FF4D4F";
-    if (type === "couple") return "#FF69B4";
-    if (type === "disabled") return "#808080";
+    if (type === 1) return "#5A4FCF";
+    if (type === 2) return "#FF4D4F";
+    if (type === 3) return "#FF69B4";
+    if (type === 4) return "#808080";
   };
 
   return (
@@ -81,7 +85,7 @@ const SeatLayout = ({ rows, cols }) => {
           {seats.map((row, rowIndex) => (
             <Row key={rowIndex} justify="center" gutter={[8, 8]}>
               {row.map((seat, colIndex) => {
-                if (seat.type === "couple" && colIndex % 2 === 0) {
+                if (seat.type === 3 && colIndex % 2 === 0) {
                   if (cols % 2 !== 0 && colIndex === cols - 1) {
                     return null;
                   }
@@ -91,10 +95,10 @@ const SeatLayout = ({ rows, cols }) => {
                         style={{
                           backgroundColor: getSeatColor(seat.type),
                           color: "white",
-                          width: 80,
+                          width: 88,
                           height: 40,
                           borderRadius: 4,
-                          marginRight: -8
+                          marginRight: -8,
                         }}
                       >
                         {`${seat.label} & ${row[colIndex + 1]?.label}`}
@@ -102,7 +106,7 @@ const SeatLayout = ({ rows, cols }) => {
                     </Col>
                   );
                 }
-                if (seat.type === "couple" && colIndex % 2 !== 0) {
+                if (seat.type === 3 && colIndex % 2 !== 0) {
                   return null;
                 }
                 return (
@@ -134,7 +138,7 @@ const SeatLayout = ({ rows, cols }) => {
       </div>
       <Modal
         title="Chọn loại ghế cho cả hàng"
-        visible={editModalVisible}
+        open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onOk={applySeatTypeForRow}
       >
@@ -142,16 +146,15 @@ const SeatLayout = ({ rows, cols }) => {
           style={{ width: "100%" }}
           value={seatType}
           onChange={(value) => setSeatType(value)}
+          defaultValue={1}
         >
-          <Option value="normal">Ghế thường</Option>
-          <Option value="vip">Ghế VIP</Option>
-          <Option value="couple">Ghế couple</Option>
-          <Option value="disabled">Không khả dụng</Option>
+          <Option value={1}>Ghế thường</Option>
+          <Option value={2}>Ghế VIP</Option>
+          <Option value={3}>Ghế couple</Option>
+          <Option value={4}>Không khả dụng</Option>
         </Select>
       </Modal>
     </div>
-
-
   );
 };
 

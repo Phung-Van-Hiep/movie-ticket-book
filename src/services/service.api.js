@@ -14,6 +14,15 @@ export const APIRegister = (data) => {
 export const APIGetAllUser = (data) => {
   return instance.post('/api/v1/User/page_list_user', data);
 };
+export const APIUpdateUser = (data) => {
+  return instance.post('/api/v1/User/update_user', data);
+};
+export const APIGetUserDetail = (data) => {
+  return instance.post('/api/v1/User/detail_user', data);
+};
+export const APIDeleteUser = (data) => {
+  return instance.post('/api/v1/User/update_user_status', data);
+};
 
 //Genre
 export const APICreateGenre = (data) => {
@@ -106,7 +115,7 @@ export const APIDeleteCinemas = (data) => {
 
 //Screen
 export const APICreateScreen = (data) => {
-  return instance.post('/api/v1/Screen/upsert_screen', data);
+  return instance.post('/api/v1/Screen/create_screen', data);
 };
 export const APIGetAllScreen = (data) => {
   return instance.post('/api/v1/Screen/page_list_screen', data);

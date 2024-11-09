@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
-import { Avatar, Button, DatePicker, Form, Input, message, Modal, Popconfirm, Space, Table } from 'antd';
+import { Avatar, Button, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Radio, Row, Space, Table } from 'antd';
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateCast,
+  APIRegister,
   APIGetAllUser,
-  APIGetCastDetail,
-  APIDeleteCast,
+  APIUpdateUser,
+  APIGetUserDetail,
+  APIDeleteUser,
   APIUploadImage
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
@@ -30,12 +31,22 @@ const AdminCast = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [castDetail, setCastDetail] = useState(null);
+  const [userDetail, setUserDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState([]);
   const [imagesUuid, setImagesUuid] = useState('');
+  const [value, setValue] = useState(1);
+  const onChange = (e) => {
+    setValue(e.target.value);
+  };
+  const handleFullnameChange = (e) => {
+    const inputValue = e.target.value;
+    // Chỉ xử lý khi người dùng dừng nhập
+    const formattedValue = inputValue.replace(/\s{2,}/g, ' ');
+    form.setFieldsValue({ fullname: formattedValue });
+  };
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -45,17 +56,8 @@ const AdminCast = () => {
     setPreviewOpen(true);
   };
   // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    const res = await APIUploadImage(file, '3');
-
-    if (res && res.status === 200) {
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
   const handleChangeCreateImage = ({ fileList: newFileList }) =>
     setFileList(newFileList);
-
   const uploadButton = (
     <button style={{ border: 0, background: 'none' }} type="button">
       <PlusOutlined />
@@ -64,20 +66,23 @@ const AdminCast = () => {
   );
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetCastDetail({ uuid });
+      const res = await APIGetUserDetail({ uuid });
       if (res && res.status === 200) {
-        const castDetail = res.data.data;
-        setCastDetail(castDetail);
+        const userDetail = res.data.data;
+        console.log("update gi do ", userDetail);
+        setUserDetail(userDetail);
         const birthdayFormat = 'YYYY-MM-DD';
         const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${castDetail.imageUrl}`;
+          }/resources/images/${userDetail.imageUrl}`;
         formUpdate.setFieldsValue({
-          castName: castDetail.castName,
-          birthday: castDetail.birthday
-            ? moment(castDetail.birthday, birthdayFormat)
+          fullname: userDetail.fullname,
+          email: userDetail.email,
+          gender: userDetail.gender,
+          phoneNumber: userDetail.phoneNumber,
+          birthday: userDetail.birthday
+            ? moment(userDetail.birthday, birthdayFormat)
             : null,
-          description: castDetail.description,
-          imageUrl: castDetail.imageUrl
+           imageUrl: userDetail.imageUrl,
         });
         setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
@@ -109,20 +114,22 @@ const AdminCast = () => {
     const birthdayObj = new Date(birthday);
     const birthdayFormat = formatToDateString(birthdayObj);
     // console.log(birthdayFormat);
-    let tempImagesUuid = imagesUuid;
-    if (fileList.length > 0) {
-      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
-      if (uploadResponse && uploadResponse.status === 200) {
-        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
-      }
-    }
+    // let tempImagesUuid = imagesUuid;
+    // if (fileList.length > 0) {
+    //   const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+    //   if (uploadResponse && uploadResponse.status === 200) {
+    //     tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+    //   }
+    // }
     try {
-      const res = await APICreateCast({
-        uuid: castDetail?.uuid,
-        castName: restValues.castName,
+      const res = await APIUpdateUser({
+        uuid: userDetail?.uuid,
+        fullname: restValues.fullname,
         birthday: birthdayFormat,
-        description: restValues.description,
-        imagesUuid: tempImagesUuid
+        phoneNumber: restValues.phoneNumber,
+        gender: restValues.gender,
+        // imagesUuid: tempImagesUuid
+        status: 1,
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
@@ -168,20 +175,20 @@ const AdminCast = () => {
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-    let tempImagesUuid = imagesUuid;
-    if (fileList.length > 0) {
-      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
-      if (uploadResponse && uploadResponse.status === 200) {
-        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
-      }
-    }
-    const dataCast = {
+    // let tempImagesUuid = imagesUuid;
+    // if (fileList.length > 0) {
+    //   const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+    //   if (uploadResponse && uploadResponse.status === 200) {
+    //     tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+    //   }
+    // }
+    const dataUser = {
       ...restValues,
       birthday: birthdayFormat,
-      imagesUuid: tempImagesUuid
+      // imagesUuid: tempImagesUuid
     };
     try {
-      const res = await APICreateCast(dataCast);
+      const res = await APIRegister(dataUser);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -244,10 +251,10 @@ const AdminCast = () => {
   };
   const confirm = async (uuid) => {
     try {
-      const res = await APIDeleteCast({ uuid, status: 0 });
+      const res = await APIDeleteUser({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllUser(); // Cập nhật lại danh sách cast sau khi xoá
+        getAllUser(); // Cập nhật lại danh sách user sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -367,7 +374,7 @@ const AdminCast = () => {
         const fullURL = record?.imageUrl
           ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${record?.imageUrl}`
           : null;
-    
+
         return fullURL ? (
           <Image
             width={70}
@@ -469,87 +476,160 @@ const AdminCast = () => {
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
         Thêm mới người dùng
       </Button>
-
       <Modal
         title="Thêm mới người dùng"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         footer={<></>}
+        width={900}
+        height={700}
       >
         <Form
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          // style={{ maxWidth: 600 }}
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item
-            label="Tên diên viên"
-            name="castName"
-            rules={[{ required: true, message: 'Hãy nhập tên diễn viên!' }]}
-          >
-            <Input />
-          </Form.Item>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Email</div>}
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập Email của bạn!",
+                  },
+                  {
+                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Vui lòng nhập địa chỉ Email hợp lệ!",
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập Email...." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Họ Tên</div>}
+                name="fullName"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập họ và tên bạn!",
+                  },
+                  {
+                    pattern: /^[\p{L}\s]+$/u,
+                    message: "Họ tên chỉ được dùng ký tự!",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập Họ Tên...."
+                  onChange={handleFullnameChange}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Số điện thoại</div>}
+                name="phoneNumber"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập số điện thoại của bạn!",
+                  },
+                  {
+                    pattern: /^0\d{9}$/,
+                    message:
+                      "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!",
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập số điện thoại..." />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Ngày sinh"
-            name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
-          >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
-            />
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Ngày sinh</div>}
+                name="birthday"
+                rules={[
+                  {
+                    required: true,
+                    message: "Hãy nhập ngày sinh của bạn!",
+                  },
+                ]}
+              >
+                <DatePicker
+                  placeholder="Ngày sinh"
+                  variant="filled"
+                  className="w-full"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Mật khẩu</div>}
+                name="password"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập password của bạn!",
+                  },
+                ]}
+              >
+                <Input.Password placeholder="Nhập mật khẩu..." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label={
+                  <div className="font-semibold">Xác nhận mật khẩu </div>
+                }
+                name="password2"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập lại password của bạn!",
+                  },
+                ]}
+              >
+                <Input.Password placeholder="Xác nhận mật khẩu..." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Giới tính</div>}
+                name="gender"
+                rules={[
+                  { required: true, message: "Hãy chọn giới tính của bạn" },
+                ]}
+              >
+                <Radio.Group onChange={onChange} value={value}>
+                  <Radio value={0}>Nam</Radio>
+                  <Radio value={1}>Nữ</Radio>
+                  <Radio value={2}>Khác</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-            />
-          </Form.Item>
-          <Form.Item label="Image" name="imagesUuid" rules={[]}>
-            <Upload
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              beforeUpload={(file) => {
-                setFileList([file]);
-                return false; // Prevents automatic upload
-              }}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
-
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
-          </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+          <div className="flex justify-center mt-10">
+            <Button type="primary" htmlType="submit" form="basic">
               Thêm mới
             </Button>
-          </Form.Item>
+          </div>
         </Form>
       </Modal>
       <Modal
@@ -559,6 +639,8 @@ const AdminCast = () => {
         footer={
           <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
         }
+        width={700}
+        height={500}
       >
         <Form
           form={formUpdate}
@@ -571,71 +653,141 @@ const AdminCast = () => {
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item
-            label="Tên diễn viên"
-            name="castName"
-            rules={[{ required: true, message: 'Hãy nhập tên diễn viên!' }]}
-          >
-            <Input />
-          </Form.Item>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Email</div>}
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập Email của bạn!",
+                  },
+                  {
+                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Vui lòng nhập địa chỉ Email hợp lệ!",
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập Email...." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Họ Tên</div>}
+                name="fullname"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập họ và tên bạn!",
+                  },
+                  {
+                    pattern: /^[\p{L}\s]+$/u,
+                    message: "Họ tên chỉ được dùng ký tự!",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập Họ Tên...."
+                  onChange={handleFullnameChange}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Số điện thoại</div>}
+                name="phoneNumber"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập số điện thoại của bạn!",
+                  },
+                  {
+                    pattern: /^0\d{9}$/,
+                    message:
+                      "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!",
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập số điện thoại..." />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Ngày sinh"
-            name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
-          >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
-            />
-          </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-            // onChange={(e) => {
-            //   // Optional: Handle text area change if needed
-            // }}
-            />
-          </Form.Item>
-          <Form.Item label="Image" name="imagesUuid" rules={[]}>
-            <Upload
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              beforeUpload={(file) => {
-                setFileList([file]);
-                return false;
-              }}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
-          </Form.Item>
-
+            <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Ngày sinh</div>}
+                name="birthday"
+                rules={[
+                  {
+                    required: true,
+                    message: "Hãy nhập ngày sinh của bạn!",
+                  },
+                ]}
+              >
+                <DatePicker
+                  placeholder="Ngày sinh"
+                  variant="filled"
+                  className="w-full"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
+            {/* <Col span={12}>
+              <Form.Item
+                label={<div className="font-semibold">Mật khẩu</div>}
+                name="password"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập password của bạn!",
+                  },
+                ]}
+              >
+                <Input.Password placeholder="Nhập mật khẩu..." />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label={
+                  <div className="font-semibold">Xác nhận mật khẩu </div>
+                }
+                name="password2"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập lại password của bạn!",
+                  },
+                ]}
+              >
+                <Input.Password placeholder="Xác nhận mật khẩu..." />
+              </Form.Item>
+            </Col> */}
+            <Col span={13}>
+              <Form.Item
+                label={<div className="font-semibold">Giới tính</div>}
+                name="gender"
+                rules={[
+                  { required: true, message: "Hãy chọn giới tính của bạn" },
+                ]}
+              >
+                <Radio.Group onChange={onChange} value={value}>
+                  <Radio value={0}>Nam</Radio>
+                  <Radio value={1}>Nữ</Radio>
+                  <Radio value={2}>Khác</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
+          <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" form="basic" >
               Cập nhật
             </Button>
           </Form.Item>
+        </div>
         </Form>
       </Modal>
       <Table

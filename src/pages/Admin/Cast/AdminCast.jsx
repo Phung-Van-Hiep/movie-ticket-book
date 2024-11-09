@@ -73,6 +73,7 @@ const AdminCast = () => {
       if (res && res.status === 200) {
         const castDetail = res.data.data;
         setCastDetail(castDetail);
+        console.log(castDetail);
         const birthdayFormat = 'YYYY-MM-DD';
         const imageUrl = `${
           import.meta.env.VITE_BACKEND_URL
