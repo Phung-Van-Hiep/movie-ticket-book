@@ -131,7 +131,7 @@ const AdminCast = () => {
         phoneNumber: restValues.phoneNumber,
         gender: restValues.gender,
         // imagesUuid: tempImagesUuid
-        status: userDetail.status,
+        status: restValues.status,
         role: userDetail.role,
       });
       if (res && res.status === 200) {
