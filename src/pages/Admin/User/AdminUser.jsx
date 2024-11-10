@@ -76,7 +76,7 @@ const AdminCast = () => {
           }/resources/images/${userDetail.imageUrl}`;
         formUpdate.setFieldsValue({
           fullname: userDetail.fullname,
-          email: userDetail.email,
+          // email: userDetail.email,
           gender: userDetail.gender,
           phoneNumber: userDetail.phoneNumber,
           birthday: userDetail.birthday
@@ -629,11 +629,11 @@ const AdminCast = () => {
             </Col>
           </Row>
           <div className="flex justify-center mt-10">
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Thêm mới
-            </Button>
-          </Form.Item>
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="primary" htmlType="submit">
+                Thêm mới
+              </Button>
+            </Form.Item>
           </div>
         </Form>
       </Modal>
@@ -690,14 +690,20 @@ const AdminCast = () => {
           <Row gutter={[16, 16]}>
             <Col span={11}>
               <Form.Item
-                label={<div className="font-semibold">Email</div>}
-                name="email"
+                label="Ngày sinh"
+                name="birthday"
                 rules={[
-                  { required: true, message: "Xin hãy nhập Email của bạn!" },
-                  { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Vui lòng nhập địa chỉ Email hợp lệ!" },
+                  {
+                    required: true,
+                    message: 'Hãy nhập ngày sinh của bạn!'
+                  }
                 ]}
               >
-                <Input placeholder="Nhập Email...." />
+                <DatePicker
+                  placeholder="Ngày sinh"
+                  variant="filled"
+                  className="w-full"
+                />
               </Form.Item>
             </Col>
             <Col span={13}>
@@ -716,24 +722,6 @@ const AdminCast = () => {
 
           <Row gutter={[16, 16]}>
             <Col span={11}>
-            <Form.Item
-            label="Ngày sinh"
-            name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
-          >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
-            />
-          </Form.Item>
-            </Col>
-            <Col span={13}>
               <Form.Item
                 label="Trạng thái"
                 name="status"
