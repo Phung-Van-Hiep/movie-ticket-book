@@ -186,7 +186,7 @@ const AdminTicketPrice = () => {
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách giá vé.');
     }
   };
   const onFinish = async (values) => {
@@ -296,10 +296,10 @@ const AdminTicketPrice = () => {
 
   //       setListCinemas(cinemasOptions); // Cập nhật state
   //     } else {
-  //       message.error('Không có dữ liệu đạo diễn hợp lệ.');
+  //       message.error('Không có dữ liệu giá vé hợp lệ.');
   //     }
   //   } catch (error) {
-  //     message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+  //     message.error('Đã xảy ra lỗi khi lấy danh sách giá vé.');
   //   }
   // };
 
@@ -314,7 +314,7 @@ const AdminTicketPrice = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
+          placeholder={`Tìm kiếm giá vé`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -442,8 +442,8 @@ const AdminTicketPrice = () => {
       render: (record) => (
         <div className="flex gap-4">
           <Popconfirm
-            title="Xoá đạo diễn"
-            description="Bạn muốn xoá đạo diễn này?"
+            title="Xoá giá vé"
+            description="Bạn muốn xoá giá vé này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
@@ -601,7 +601,7 @@ const AdminTicketPrice = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật đạo diễn"
+        title="Cập nhật giá vé"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -620,9 +620,9 @@ const AdminTicketPrice = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên đạo diễn"
+            label="Tên giá vé"
             name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên đạo diễn!' }]}
+            rules={[{ required: true, message: 'Hãy nhập tên giá vé!' }]}
           >
             <Input />
           </Form.Item>

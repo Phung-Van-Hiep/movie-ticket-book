@@ -186,7 +186,7 @@ const AdminSchedule = () => {
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách lịch chiếu.');
     }
   };
   const onFinish = async (values) => {
@@ -296,10 +296,10 @@ const AdminSchedule = () => {
 
         setListMovies(moviesOptions); // Cập nhật state
       } else {
-        message.error('Không có dữ liệu đạo diễn hợp lệ.');
+        message.error('Không có dữ liệu lịch chiếu hợp lệ.');
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách lịch chiếu.');
     }
   };
 
@@ -314,7 +314,7 @@ const AdminSchedule = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
+          placeholder={`Tìm kiếm lịch chiếu`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -424,8 +424,8 @@ const AdminSchedule = () => {
       render: (record) => (
         <div className="flex gap-4">
           <Popconfirm
-            title="Xoá đạo diễn"
-            description="Bạn muốn xoá đạo diễn này?"
+            title="Xoá lịch chiếu"
+            description="Bạn muốn xoá lịch chiếu này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
@@ -518,7 +518,7 @@ const AdminSchedule = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật đạo diễn"
+        title="Cập nhật lịch chiếu"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -537,9 +537,9 @@ const AdminSchedule = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên đạo diễn"
+            label="Tên lịch chiếu"
             name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên đạo diễn!' }]}
+            rules={[{ required: true, message: 'Hãy nhập tên lịch chiếu!' }]}
           >
             <Input />
           </Form.Item>

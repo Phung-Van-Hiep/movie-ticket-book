@@ -185,7 +185,7 @@ const AdminCoupon = () => {
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách combo.');
     }
   };
   const onFinish = async (values) => {
@@ -295,10 +295,10 @@ const AdminCoupon = () => {
 
         setListCinemas(cinemasOptions); // Cập nhật state
       } else {
-        message.error('Không có dữ liệu đạo diễn hợp lệ.');
+        message.error('Không có dữ liệu combo hợp lệ.');
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách combo.');
     }
   };
 
@@ -313,7 +313,7 @@ const AdminCoupon = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
+          placeholder={`Tìm kiếm combo`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -441,8 +441,8 @@ const AdminCoupon = () => {
             <TableOutlined />
           </Button>
           <Popconfirm
-            title="Xoá đạo diễn"
-            description="Bạn muốn xoá đạo diễn này?"
+            title="Xoá combo"
+            description="Bạn muốn xoá combo này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
@@ -538,7 +538,7 @@ const AdminCoupon = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật đạo diễn"
+        title="Cập nhật combo"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -557,9 +557,9 @@ const AdminCoupon = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên đạo diễn"
+            label="Tên combo"
             name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên đạo diễn!' }]}
+            rules={[{ required: true, message: 'Hãy nhập tên combo!' }]}
           >
             <Input />
           </Form.Item>

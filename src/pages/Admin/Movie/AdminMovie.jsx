@@ -176,7 +176,7 @@ const AdminMovies = () => {
   
     // Đổi tên region thành regionUuid trước khi gửi lên API
     const dataMovie = {
-      uuid: moviesDetail.uuid,
+      uuid: moviesDetail?.uuid,
       ...restValues,
       realeaseDate: realeaseFormat,
       regionUuid: region,

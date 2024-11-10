@@ -74,7 +74,7 @@ const AdminCinemas = () => {
     }
   };
 
-  const onFinishUpdateCinemasInfor = async (values) => {
+  const onFinishUpdateCinemaInfor = async (values) => {
     try {
       const res = await APICreateCinemas({
         uuid: values.uuid,
@@ -83,7 +83,7 @@ const AdminCinemas = () => {
         location: values.location,
       });
 
-      // console.log('Response:', res);
+      // console.log('Là sao nữa:', res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -460,7 +460,7 @@ const AdminCinemas = () => {
               wrapperCol={{ span: 16 }}
               style={{ maxWidth: 600 }}
               initialValues={{ remember: true }}
-              onFinish={onFinishUpdateCinemasInfor}
+              onFinish={onFinishUpdateCinemaInfor}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
             >
@@ -513,7 +513,7 @@ const AdminCinemas = () => {
         </div>
         <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" form="basic" >
+            <Button type="primary" htmlType="submit" >
               Cập nhật
             </Button>
           </Form.Item>

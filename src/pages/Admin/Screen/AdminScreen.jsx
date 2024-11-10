@@ -203,10 +203,10 @@ const AdminDirector = () => {
 
         setListCinemas(cinemasOptions); // Cập nhật state
       } else {
-        message.error('Không có dữ liệu đạo diễn hợp lệ.');
+        message.error('Không có dữ liệu phòng chiếu hợp lệ.');
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách phòng chiếu.');
     }
   };
 
@@ -221,7 +221,7 @@ const AdminDirector = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
+          placeholder={`Tìm kiếm phòng chiếu`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -361,8 +361,8 @@ const AdminDirector = () => {
             <TableOutlined />
           </Button>
           <Popconfirm
-            title="Xoá đạo diễn"
-            description="Bạn muốn xoá đạo diễn này?"
+            title="Xoá phòng chiếu"
+            description="Bạn muốn xoá phòng chiếu này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"

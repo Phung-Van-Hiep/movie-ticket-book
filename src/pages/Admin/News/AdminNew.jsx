@@ -188,7 +188,7 @@ const AdminNew = () => {
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách tin tức.');
     }
   };
   const onFinish = async (values) => {
@@ -298,10 +298,10 @@ const AdminNew = () => {
 
         setListCinemas(cinemasOptions); // Cập nhật state
       } else {
-        message.error('Không có dữ liệu đạo diễn hợp lệ.');
+        message.error('Không có dữ liệu tin tức hợp lệ.');
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đạo diễn.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách tin tức.');
     }
   };
 
@@ -316,7 +316,7 @@ const AdminNew = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
+          placeholder={`Tìm kiếm tin tức`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -444,8 +444,8 @@ const AdminNew = () => {
             <TableOutlined />
           </Button>
           <Popconfirm
-            title="Xoá đạo diễn"
-            description="Bạn muốn xoá đạo diễn này?"
+            title="Xoá tin tức"
+            description="Bạn muốn xoá tin tức này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
@@ -568,7 +568,7 @@ const AdminNew = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật đạo diễn"
+        title="Cập nhật tin tức"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -587,9 +587,9 @@ const AdminNew = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên đạo diễn"
+            label="Tên tin tức"
             name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên đạo diễn!' }]}
+            rules={[{ required: true, message: 'Hãy nhập tên tin tức!' }]}
           >
             <Input />
           </Form.Item>

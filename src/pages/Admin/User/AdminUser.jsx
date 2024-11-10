@@ -453,7 +453,7 @@ const AdminCast = () => {
         <div className="flex gap-4">
           <Popconfirm
             title="Xoá diễn viên"
-            description="Bạn muốn xoá diễn viên này?"
+            description="Bạn muốn xoá người dùng này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
