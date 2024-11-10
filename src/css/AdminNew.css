@@ -1,0 +1,7 @@
+.custom-quill-editor .ql-container {
+    @apply h-auto; /* Hoặc dùng h-auto để tự động mở rộng */
+  }
+  .custom-quill-editor .ql-editor {
+    @apply min-h-[300px] p-4; /* Đặt chiều cao tối thiểu và padding để tạo khoảng trống */
+  }
+  

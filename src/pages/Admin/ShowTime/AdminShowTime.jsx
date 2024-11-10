@@ -17,7 +17,8 @@ import {
   Popconfirm,
   Select,
   Space,
-  Table
+  Table,
+  TimePicker
 } from 'antd';
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
@@ -57,14 +58,14 @@ const AdminShowTime = () => {
   const [imagesUuid, setImagesUuid] = useState('');
   const [listCinemas, setListCinemas] = useState([]);
 
-  const handleChangeStatus = (value) =>{
+  const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
 
   const handleChangeCinemas = (value) => {
     console.log(`selected ${value}`);
   };
-  
+
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -102,9 +103,8 @@ const AdminShowTime = () => {
         const directorDetail = res.data.data;
         setDirectorDetail(directorDetail);
         //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${
-          import.meta.env.VITE_BACKEND_URL
-        }/resources/images/${directorDetail.imageUrl}`;
+        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
+          }/resources/images/${directorDetail.imageUrl}`;
         formUpdate.setFieldsValue({
           directorName: directorDetail.directorName,
           birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
@@ -190,6 +190,7 @@ const AdminShowTime = () => {
   };
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
+    console.log("Check ngày", restValues)
     const birthdayFormat = formatToDateString(new Date(birthday));
     const dataDirector = {
       ...restValues,
@@ -438,7 +439,7 @@ const AdminShowTime = () => {
             className="bg-orange-400 text-white"
             onClick={() => showModalTableUpdate(record.uuid)}
           >
-            <TableOutlined /> 
+            <TableOutlined />
           </Button>
           <Popconfirm
             title="Xoá đạo diễn"
@@ -469,10 +470,10 @@ const AdminShowTime = () => {
   return (
     <>
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới phòng chiếu
+        Thêm mới suất chiếu
       </Button>
       <Modal
-        title="Thêm mới phòng chiếu"
+        title="Thêm mới suất chiếu"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -495,54 +496,85 @@ const AdminShowTime = () => {
             rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
           >
             <Select
-                  showSearch
-                  defaultValue=""
-                  onChange={handleChangeCinemas}
-                  options={listCinemas}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  allowClear
-                />
+              showSearch
+              defaultValue=""
+              onChange={handleChangeCinemas}
+              options={listCinemas}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
+            />
           </Form.Item>
           <Form.Item
-            label="Tên phòng chiếu"
-            name="screenName"
-            rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
+            label="Tên phim"
+            name="moviesUuid"
+            rules={[{ required: true, message: 'Hãy chọn phim chiếu!' }]}
           >
-            <Input />
+            <Select
+              showSearch
+              defaultValue=""
+              onChange={handleChangeCinemas}
+              options={listCinemas}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
+            />
           </Form.Item>
-
           <Form.Item
-            label="Loại phòng chiếu"
-            name="screenType"
+            label="Ngày chiếu phim"
+            name="movieDate"
             rules={[
               {
                 required: true,
-                message: 'Hãy chọn loại phòng chiếu!'
+                message: 'Hãy nhập ngày chiếu phim!'
+              }
+            ]}
+          >
+            <DatePicker
+              // placeholder="Ngày sinh"
+              variant="filled"
+              className="w-full"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Hình thức phim"
+            name="moviesType"
+            rules={[
+              {
+                required: true,
+                message: 'Hãy chọn hình thức phim!'
               }
             ]}
           >
             <Select
-                  defaultValue=""
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 1, label: '2D' },
-                    { value: 2, label: '3D' },
-                    { value: 3, label: 'IMax' }
-                  ]}
-                />
+              defaultValue=""
+              onChange={handleChangeStatus}
+              options={[
+                { value: 1, label: '2D' },
+                { value: 2, label: '3D' },
+                { value: 3, label: 'IMAX' }
+              ]}
+            />
           </Form.Item>
 
-          <Form.Item label="Số hàng" name="rowScreen" rules={[{required: true, message: 'Nhập số hàng'}]}>
-            <Input
-              placeholder="Nhập số hàng"
+          <Form.Item label="Hình thức dịch"
+            name="transForm"
+            rules={[{ required: true, message: 'Hãy chọn hình thức dịch' }]}>
+            <Select
+              defaultValue=""
+              onChange={handleChangeStatus}
+              options={[
+                { value: 1, label: 'Phụ đề' },
+                { value: 2, label: 'Lồng tiếng' },
+              ]}
             />
           </Form.Item>
-          <Form.Item label="Số cột" name="colScreen" rules={[{required: true, message: 'Nhập số cột'}]}>
-            <Input
-              placeholder="Nhập số cột"
-            />
+          <Form.Item label="Thời gian chiếu"
+            name="showTime"
+            rules={[{ required: true, message: 'Hãy nhập thời gian chiếu' }]}>
+            <TimePicker.RangePicker />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">

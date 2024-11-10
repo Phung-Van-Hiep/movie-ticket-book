@@ -86,15 +86,15 @@ const AdminDirector = () => {
         const directorDetail = res.data.data;
         setDirectorDetail(directorDetail);
         //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${directorDetail.imageUrl}`;
+        const imageUrl = directorDetail.imageUrl ? `${import.meta.env.VITE_BACKEND_URL
+          }/resources/images/${directorDetail.imageUrl}`:null;
         formUpdate.setFieldsValue({
           directorName: directorDetail.directorName,
           birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
           description: directorDetail.description,
           imageUrl: directorDetail.imageUrl
         });
-        setFileList([{ url: imageUrl }]);
+        setFileList(imageUrl ? [{ url: imageUrl }] : []);
         setIsModalUpdateOpen(true);
         // setFileList([]);
         setPreviewImage('');
@@ -120,21 +120,21 @@ const AdminDirector = () => {
     return `${year}-${month}-${day}`;
   };
   const onFinishUpdateDirectorInfor = async (values) => {
-    const { birthday, ...restValues } = values;
+    const { birthday,imageUrl, ...restValues } = values;
     const birthdayObj = new Date(birthday);
     const birthdayFormat = formatToDateString(birthdayObj);
 
-    let tempImagesUuid = imagesUuid;
-    
-    console.log("Đây là uuid trước khi cập nhật", tempImagesUuid)
-    if (fileList.length > 0 && fileList[0].originFileObj) {
+    let tempImagesUuid = imageUrl;
+    // Kiểm tra nếu không có file trong fileList
+    if (fileList.length === 0) {
+      tempImagesUuid = null;
+    } else if (fileList[0].originFileObj) {
+      // Có file mới được tải lên
       try {
         const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
         if (uploadResponse?.status === 200) {
           tempImagesUuid = uploadResponse.data.data;
-    // console.log("Đây là uuid sau khi cập nhật", tempImagesUuid)
-
-          setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
+          setImagesUuid(tempImagesUuid); // Lưu lại imagesUuid mới
         } else {
           message.error('Upload ảnh không thành công. Vui lòng thử lại.');
           return;
@@ -144,7 +144,6 @@ const AdminDirector = () => {
         return;
       }
     }
-    console.log("Update done", restValues)
     try {
       const res = await APICreateDirector({
         uuid: directorDetail.uuid,

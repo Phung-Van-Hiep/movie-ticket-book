@@ -465,80 +465,81 @@ const AdminCombo = () => {
   return (
     <>
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới phòng chiếu
+        Thêm mới combo
       </Button>
       <Modal
-        title="Thêm mới phòng chiếu"
+        title="Thêm mới combo"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         footer={<></>}
+        width={700}
       >
         <Form
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          wrapperCol={{ span: 16 }} s
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item
-            label="Rạp phim"
-            name="cinemaUuid"
-            rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-          >
-            <Select
-              showSearch
-              defaultValue=""
-              onChange={handleChangeCinemas}
-              options={listCinemas}
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              allowClear
-            />
-          </Form.Item>
-          <Form.Item
-            label="Tên phòng chiếu"
-            name="screenName"
-            rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
+            label="Tên combo - nước uống"
+            name="comboName"
+            rules={[{ required: true, message: 'Hãy nhập tên combo!' }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            label="Loại phòng chiếu"
-            name="screenType"
+            label="Giá tiền"
+            name="price"
             rules={[
               {
                 required: true,
-                message: 'Hãy chọn loại phòng chiếu!'
+                message: 'Hãy nhập giá tiền của combo!'
               }
             ]}
           >
-            <Select
-              defaultValue=""
-              onChange={handleChangeStatus}
-              options={[
-                { value: 1, label: '2D' },
-                { value: 2, label: '3D' },
-                { value: 3, label: 'IMax' }
-              ]}
-            />
+            <Input />
           </Form.Item>
 
-          <Form.Item label="Số hàng" name="rowScreen" rules={[{ required: true, message: 'Nhập số hàng' }]}>
-            <Input
-              placeholder="Nhập số hàng"
+          <Form.Item label="Mô tả" name="description"
+            rules={[{
+              required: true,
+              message: 'Hãy điền mô tả về combo!'
+            }]}>
+            <Input.TextArea
+              placeholder="Nhập mô tả...."
+              autoSize={{ minRows: 2, maxRows: 6 }}
             />
           </Form.Item>
-          <Form.Item label="Số cột" name="colScreen" rules={[{ required: true, message: 'Nhập số cột' }]}>
-            <Input
-              placeholder="Nhập số cột"
-            />
+          <Form.Item label="Ảnh combo" name="imagesUuid" rules={[]}>
+            <Upload
+              listType="picture-circle"
+              fileList={fileList}
+              onPreview={handlePreviewCreateImage}
+              onChange={handleChangeCreateImage}
+              beforeUpload={(file) => {
+                setFileList([file]);
+                return false; // Prevents automatic upload
+              }}
+            >
+              {fileList.length >= 1 ? null : uploadButton}
+            </Upload>
+            {previewImage && (
+              <Image
+                wrapperStyle={{ display: 'none' }}
+                preview={{
+                  visible: previewOpen,
+                  onVisibleChange: (visible) => setPreviewOpen(visible),
+                  afterOpenChange: (visible) => !visible && setPreviewImage('')
+                }}
+                src={previewImage}
+              />
+            )}
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">

@@ -114,7 +114,7 @@ const AdminCast = () => {
     const { birthday, ...restValues } = values;
     const birthdayObj = new Date(birthday);
     const birthdayFormat = formatToDateString(birthdayObj);
-    console.log("Checking", restValues)
+    // console.log("Checking", restValues)
     // console.log(birthdayFormat);
     // let tempImagesUuid = imagesUuid;
     // if (fileList.length > 0) {
@@ -178,6 +178,8 @@ const AdminCast = () => {
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
+    console.log("Đây là dataUser ", restValues)
+
     // let tempImagesUuid = imagesUuid;
     // if (fileList.length > 0) {
     //   const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
@@ -480,13 +482,12 @@ const AdminCast = () => {
         Thêm mới người dùng
       </Button>
       <Modal
-        title="Thêm mới người dùng"
+        title="Thêm mới diễn viên"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         footer={<></>}
         width={900}
-        height={700}
       >
         <Form
           form={form}
@@ -627,14 +628,14 @@ const AdminCast = () => {
               </Form.Item>
             </Col>
           </Row>
-
-          <div className="flex justify-center mt-10">
-            <Button type="primary" htmlType="submit" form="basic">
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Button type="primary" htmlType="submit">
               Thêm mới
             </Button>
-          </div>
+          </Form.Item>
         </Form>
       </Modal>
+
       <Modal
         title="Cập nhật người dùng"
         open={isModalUpdateOpen}

@@ -75,9 +75,9 @@ const AdminCast = () => {
         setCastDetail(castDetail);
         console.log(castDetail);
         const birthdayFormat = 'YYYY-MM-DD';
-        const imageUrl = `${
-          import.meta.env.VITE_BACKEND_URL
-        }/resources/images/${castDetail.imageUrl}`;
+        const imageUrl = castDetail.imageUrl
+          ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${castDetail.imageUrl}`
+          : null;
         formUpdate.setFieldsValue({
           castName: castDetail.castName,
           birthday: castDetail.birthday
@@ -86,7 +86,7 @@ const AdminCast = () => {
           description: castDetail.description,
           imageUrl: castDetail.imageUrl
         });
-        setFileList([{ url: imageUrl }]);
+        setFileList(imageUrl ? [{ url: imageUrl }] : []);
         setIsModalUpdateOpen(true);
         setPreviewImage('');
       } else {
@@ -112,24 +112,25 @@ const AdminCast = () => {
   };
 
   const onFinishUpdateCastInfor = async (values) => {
-    const { birthday, ...restValues } = values;
+    const { birthday,imageUrl, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-    
-    let tempImagesUuid = imagesUuid; 
-    if (fileList.length > 0 && fileList[0].originFileObj) {
+    let tempImagesUuid = imageUrl;
+    // Kiểm tra nếu không có file trong fileList
+    if (fileList.length === 0) {
+      tempImagesUuid = null;
+    } else if (fileList[0].originFileObj) {
+      // Có file mới được tải lên
       try {
-        const uploadResponse = await APIUploadImage(fileList[0].originFileObj,'3');
+        const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
         if (uploadResponse?.status === 200) {
           tempImagesUuid = uploadResponse.data.data;
-          setImagesUuid(tempImagesUuid); // Cập nhật imagesUuid với giá trị mới
+          setImagesUuid(tempImagesUuid); // Lưu lại imagesUuid mới
         } else {
           message.error('Upload ảnh không thành công. Vui lòng thử lại.');
           return;
         }
       } catch {
-        message.error(
-          'Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
+        message.error('Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.');
         return;
       }
     }
@@ -380,6 +381,7 @@ const AdminCast = () => {
               record?.imageUrl
             }`
           : null;
+          console.log("Đây có phải là ảnh không" , fullURL)
         return fullURL ? (
           <Image
             width={70}
@@ -490,7 +492,7 @@ const AdminCast = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên diên viên"
+            label="Tên diễn viên"
             name="castName"
             rules={[{ required: true, message: 'Hãy nhập tên diễn viên!' }]}
           >
@@ -606,7 +608,7 @@ const AdminCast = () => {
               // }}
             />
           </Form.Item>
-          <Form.Item label="Image" name="imagesUuid" rules={[]}>
+          <Form.Item label="Image" name="imageUrl" rules={[]}>
             <Upload
               listType="picture-circle"
               fileList={fileList}

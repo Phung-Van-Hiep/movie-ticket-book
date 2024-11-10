@@ -5,9 +5,11 @@ import {
   SearchOutlined,
   TableOutlined
 } from '@ant-design/icons';
-
+import 'react-quill/dist/quill.snow.css'; // Import Quill CSS
+import ReactQuill from 'react-quill';
 import {
   Button,
+  Col,
   DatePicker,
   Form,
   Input,
@@ -15,12 +17,13 @@ import {
   message,
   Modal,
   Popconfirm,
+  Row,
   Select,
   Space,
   Table
 } from 'antd';
 import Highlighter from 'react-highlight-words';
-import '../../../css/AdminGenre.css';
+import '../../../css/AdminNew.css';
 import {
   APICreateDirector,
   APIGetAllDirector,
@@ -57,14 +60,14 @@ const AdminNew = () => {
   const [imagesUuid, setImagesUuid] = useState('');
   const [listCinemas, setListCinemas] = useState([]);
 
-  const handleChangeStatus = (value) =>{
+  const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
 
   const handleChangeCinemas = (value) => {
     console.log(`selected ${value}`);
   };
-  
+
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -102,9 +105,8 @@ const AdminNew = () => {
         const directorDetail = res.data.data;
         setDirectorDetail(directorDetail);
         //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${
-          import.meta.env.VITE_BACKEND_URL
-        }/resources/images/${directorDetail.imageUrl}`;
+        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
+          }/resources/images/${directorDetail.imageUrl}`;
         formUpdate.setFieldsValue({
           directorName: directorDetail.directorName,
           birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
@@ -439,7 +441,7 @@ const AdminNew = () => {
             className="bg-orange-400 text-white"
             onClick={() => showModalTableUpdate(record.uuid)}
           >
-            <TableOutlined /> 
+            <TableOutlined />
           </Button>
           <Popconfirm
             title="Xoá đạo diễn"
@@ -470,81 +472,94 @@ const AdminNew = () => {
   return (
     <>
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới phòng chiếu
+        Thêm mới tin tức
       </Button>
       <Modal
-        title="Thêm mới phòng chiếu"
+        title="Thêm mới tin tức"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         footer={<></>}
+        width={1200}
       >
         <Form
           form={form}
           name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          // labelCol={{ span: 8 }}
+          // wrapperCol={{ span: 16 }}
+          // style={{ maxWidth: 600 }}
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item
-            label="Rạp phim"
-            name="cinemaUuid"
-            rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-          >
-            <Select
-                  showSearch
-                  defaultValue=""
-                  onChange={handleChangeCinemas}
-                  options={listCinemas}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  allowClear
-                />
-          </Form.Item>
-          <Form.Item
-            label="Tên phòng chiếu"
-            name="screenName"
-            rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Loại phòng chiếu"
-            name="screenType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn loại phòng chiếu!'
-              }
-            ]}
-          >
-            <Select
-                  defaultValue=""
-                  onChange={handleChangeStatus}
+          <Row gutter={16}>
+            <Col className="gutter-row" span={16}>
+              <Form.Item
+                label="Tiêu đề"
+                name="title"
+                rules={[{ required: true, message: 'Hãy nhập tiêu đề cho tin tức!' }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={6}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[{ required: true, message: 'Hãy chọn trạng thái!' }]}
+              >
+                <Select
+                  placeholder="Chọn trạng thái"
                   options={[
-                    { value: 1, label: '2D' },
-                    { value: 2, label: '3D' },
-                    { value: 3, label: 'IMax' }
+                    { value: 'draft', label: 'Nháp' },
+                    { value: 'published', label: 'Xuất bản' },
                   ]}
                 />
-          </Form.Item>
-
-          <Form.Item label="Số hàng" name="rowScreen" rules={[{required: true, message: 'Nhập số hàng'}]}>
-            <Input
-              placeholder="Nhập số hàng"
-            />
-          </Form.Item>
-          <Form.Item label="Số cột" name="colScreen" rules={[{required: true, message: 'Nhập số cột'}]}>
-            <Input
-              placeholder="Nhập số cột"
-            />
-          </Form.Item>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={16}>
+              <Form.Item
+                label="Nội dung"
+                name="content"
+                rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
+              >
+                <ReactQuill theme="snow"
+                className="custom-quill-editor" />
+              </Form.Item>
+            </Col>
+            {/* Trạng thái */}
+            <Col className="gutter-row" span={6}>
+              <Form.Item
+                label="Danh mục"
+                name="category"
+                rules={[{ required: true, message: 'Hãy chọn danh mục!' }]}
+              >
+                <Select
+                  placeholder="Chọn danh mục"
+                  options={[
+                    { value: 'news', label: 'Tin tức' },
+                    { value: 'events', label: 'Sự kiện' },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col className="gutter-row" span={16}>
+              {/* Danh mục */}
+              <Form.Item
+                label="Mô tả"
+                name="description"
+                rules={[{ required: true, message: 'Hãy nhập mô tả cho tin tức!' }]}
+              >
+                <Input.TextArea
+                  placeholder="Nhập mô tả...."
+                  autoSize={{ minRows: 4, maxRows: 8 }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Thêm mới
