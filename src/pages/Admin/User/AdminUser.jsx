@@ -112,8 +112,8 @@ const AdminCast = () => {
 
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
+    const birthdayFormat = formatToDateString(new Date(birthday));
+
     // console.log("Checking", restValues)
     // console.log(birthdayFormat);
     // let tempImagesUuid = imagesUuid;
@@ -628,11 +628,13 @@ const AdminCast = () => {
               </Form.Item>
             </Col>
           </Row>
+          <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Thêm mới
             </Button>
           </Form.Item>
+          </div>
         </Form>
       </Modal>
 
@@ -714,13 +716,22 @@ const AdminCast = () => {
 
           <Row gutter={[16, 16]}>
             <Col span={11}>
-              <Form.Item
-                label={<div className="font-semibold">Ngày sinh</div>}
-                name="birthday"
-                rules={[{ required: true, message: "Hãy nhập ngày sinh của bạn!" }]}
-              >
-                <DatePicker placeholder="Ngày sinh" className="w-full" />
-              </Form.Item>
+            <Form.Item
+            label="Ngày sinh"
+            name="birthday"
+            rules={[
+              {
+                required: true,
+                message: 'Hãy nhập ngày sinh của bạn!'
+              }
+            ]}
+          >
+            <DatePicker
+              placeholder="Ngày sinh"
+              variant="filled"
+              className="w-full"
+            />
+          </Form.Item>
             </Col>
             <Col span={13}>
               <Form.Item
@@ -740,7 +751,7 @@ const AdminCast = () => {
           </Row>
           <div className="flex justify-center mt-10">
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Button type="primary" htmlType="submit" form="basic" >
+              <Button type="primary" htmlType="submit" >
                 Cập nhật
               </Button>
             </Form.Item>

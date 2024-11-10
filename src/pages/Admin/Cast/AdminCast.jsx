@@ -588,7 +588,7 @@ const AdminCast = () => {
             rules={[
               {
                 required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
+                message: 'Hãy nhập ngày sinh của diễn viên!'
               }
             ]}
           >
