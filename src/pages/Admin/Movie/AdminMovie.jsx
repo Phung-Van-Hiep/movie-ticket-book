@@ -854,7 +854,7 @@ const AdminMovies = () => {
       >
         <Form
           form={formUpdate}
-          name="basic"
+          name="basic1"
           // labelCol={{ span: 8 }}
           // wrapperCol={{ span: 16 }}
           initialValues={{ remember: true }}
@@ -1120,7 +1120,7 @@ const AdminMovies = () => {
           </Row>
           <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" form="basic" >
+            <Button type="primary" htmlType="submit" form="basic1" >
               Cập nhật
             </Button>
           </Form.Item>

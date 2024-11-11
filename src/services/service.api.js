@@ -117,6 +117,9 @@ export const APIDeleteCinemas = (data) => {
 export const APICreateScreen = (data) => {
   return instance.post('/api/v1/Screen/create_screen', data);
 };
+export const APIUpdateScreen = (data) => {
+  return instance.post('/api/v1/Screen/update_screen', data);
+};
 export const APIGetAllScreen = (data) => {
   return instance.post('/api/v1/Screen/page_list_screen', data);
 };
@@ -126,6 +129,9 @@ export const APIGetScreenDetail = (data) => {
 
 export const APIDeleteScreen = (data) => {
   return instance.post('/api/v1/Screen/update_screen_status', data);
+};
+export const APIGetALLSeat = (data) => {
+  return instance.post('/api/v1/Screen/get_list_seat', data);
 };
 
 //Upload Image

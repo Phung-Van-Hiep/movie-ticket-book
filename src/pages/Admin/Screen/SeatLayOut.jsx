@@ -38,8 +38,6 @@ const SeatLayout = ({ rows, cols, onSeatsChange }) => {
       newSeats.push(seatRow);
     }
     setSeats(newSeats);
-
-    // Truyền mảng ghế về AdminScreen khi ghế được tạo xong
     const flatSeats = newSeats.flat().map(seat => ({
       seatName: seat.label,
       seatType: seat.type,
@@ -125,13 +123,13 @@ const SeatLayout = ({ rows, cols, onSeatsChange }) => {
                   </Col>
                 );
               })}
-              <Col>
+              {/* <Col>
                 <Button
                   type="text"
                   icon={<EditOutlined />}
                   onClick={() => openEditModal(rowIndex)}
                 />
-              </Col>
+              </Col> */}
             </Row>
           ))}
         </div>

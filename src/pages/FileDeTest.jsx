@@ -30,14 +30,12 @@ import {
   APIDeleteScreen,
   APIUploadImage,
   APIGetAllCinemas,
-  APIUpdateScreen,
-  APIGetALLSeat
+  APIUpdateScreen
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
 import moment from 'moment';
 import SeatLayout from './SeatLayOut';
-import SeatUpdate from './SeatUpdate';
 
 const AdminScreen = () => {
   const [searchText, setSearchText] = useState('');
@@ -48,12 +46,8 @@ const AdminScreen = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [formSeatUpdate] = Form.useForm();
   const [screenDetail, setScreenDetail] = useState(null);
-  const [seatDetail, setSeatDetail] = useState(null);
-  const [screenSeatsData, setScreenSeatsData] = useState([]);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  const [modalUpdateOpen, setModalUpdateOpen] = useState(false);
   const [listCinemas, setListCinemas] = useState([]);
   const [rows, setRows] = useState(0); // Default rows
   const [cols, setCols] = useState(0); // Default columns
@@ -75,82 +69,6 @@ const AdminScreen = () => {
   }
   const handleSeatsUpdate = (seats) => {
     setSeatsData(seats);
-    console.log("Check trang thai", seats)
-  };
-  const showModalTableUpdate = async (uuid) => {
-    const res = await APIGetScreenDetail({ uuid });
-    if (res && res.status === 200) {
-      const screenDetail = res.data.data;
-      setScreenDetail(screenDetail);
-      setRows(screenDetail.row);
-      setCols(screenDetail.collumn);
-    } else {
-      message.error('Không tìm thấy thông tin chi tiết.');
-    }
-    try {
-      const res = await APIGetALLSeat({ uuid });
-      if (res && res.status === 200) {
-        const seatDetail = res.data.data;
-        setSeatDetail(seatDetail);
-        formSeatUpdate.setFieldsValue({
-          seatUuid: seatDetail.seatUuid,
-          seatName: seatDetail.seatName,
-          seatCode: seatDetail.seatCode,
-        });
-
-        setModalUpdateOpen(true);
-      } else {
-        message.error('Không tìm thấy thông tin chi tiết.');
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-        message.error(errorMessage);
-      } else {
-        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-      }
-    }
-  };
-  const onFinishUpdateSeatInfor = async (values) => {
-    // const { ...restValues } = values;
-    try {
-      const res = await APIUpdateScreen({
-        uuid: screenDetail?.uuid,
-        screenName: screenDetail.screenName,
-        capacity: screenDetail.collumn * screenDetail.row,
-        cinemaUuid: screenDetail.cinemaUuid,
-        screenType: screenDetail.screenType,
-        columns: screenDetail.collumn,
-        rows: screenDetail.row,
-        status: screenDetail.status,
-        seats: seatsData.map(seat => ({
-          seatUuid: seat.seatUuid,
-          seatCode: seat.seatName,
-          seatType: seat.seatType,
-        })),
-      });
-      if (res && res.status === 200) {
-        message.success('Cập nhật thành công!');
-        formUpdate.resetFields(); // Đặt lại form cập nhật
-        getAllScreen(); // Cập nhật danh sách phòng chiếu
-        handleCancelUpdate();
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi update.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
   };
   const showModalUpdate = async (uuid) => {
     try {
@@ -169,10 +87,6 @@ const AdminScreen = () => {
         });
         setRows(screenDetail.row);
         setCols(screenDetail.collumn);
-        const seatResponse = await APIGetALLSeat({ uuid });
-        if (seatResponse && seatResponse.status === 200) {
-          setScreenSeatsData(seatResponse.data.data);
-        }
         setIsModalUpdateOpen(true);
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
@@ -189,47 +103,46 @@ const AdminScreen = () => {
     }
   };
 
-  const onFinishUpdateScreenInfor = async (values) => {
-    const { ...restValues } = values;
-    try {
-      const res = await APIUpdateScreen({
-        uuid: screenDetail?.uuid,
-        screenName: restValues.screenName,
-        capacity: restValues.collumn * restValues.row,
-        cinemaUuid: restValues.cinemaUuid,
-        screenType: restValues.screenType,
-        columns: restValues.collumn,
-        rows: restValues.row,
-        status: restValues.status,
-        seats: seatsData?.map(seat => ({
-          seatUuid: seat.seatUuid,
-          seatCode: seat.seatName,
-          seatType: seat.seatType,
-        })),
-      });
-
-      if (res && res.status === 200) {
-        message.success('Cập nhật thành công!');
-        formUpdate.resetFields(); // Đặt lại form cập nhật
-        getAllScreen(); // Cập nhật danh sách phòng chiếu
-        handleCancelUpdate();
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi update.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
+  const onFinishUpdateDirectorInfor = async (values) => {
+    // const { ...restValues } = values;
+    // // console.log("Check res",restValues)
+    // try {
+    //   const res = await APIUpdateScreen({
+    //     uuid: screenDetail?.uuid,
+    //     screenName: restValues.screenName,
+    //     capacity: restValues.collumn*restValues.row,
+    //     cinemaUuid: restValues.cinemaUuid,
+    //     screenType: restValues.screenType,
+    //     columns: restValues.collumn,
+    //     rows: restValues.row,
+    //     status: restValues.status,
+    //     seats: seatsData.map(seat => ({
+    //       seatUuid: seat.seatUuid,
+    //       seatCode: seat.seatName,
+    //       seatType: seat.seatType,
+    //     })),
+    //   });
+    //   if (res && res.status === 200) {
+    //     message.success(res.data.error.errorMessage);
+    //     form.resetFields();
+    //     getAllSceen();
+    //     handleCancelUpdate();
+    //   }
+    // } catch (error) {
+    //   if (error.response) {
+    //     const errorMessage =
+    //       error.response.data?.error?.errorMessage ||
+    //       'Đã xảy ra lỗi khi update.';
+    //     message.error(errorMessage);
+    //   } else if (error.request) {
+    //     message.error(
+    //       'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
+    //     );
+    //   } else {
+    //     message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+    //   }
+    // }
   };
-
 
   const getAllScreen = async () => {
     try {
@@ -265,7 +178,7 @@ const AdminScreen = () => {
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setIsModalOpen(false)
+        setFileList([]);
         getAllScreen();
       }
       // console.log("Success:", values);
@@ -305,7 +218,7 @@ const AdminScreen = () => {
 
   const handleCancelUpdate = () => {
     setIsModalUpdateOpen(false);
-    setModalUpdateOpen(false)
+    setFileList([]);
   };
 
   const onClose = () => {
@@ -352,7 +265,7 @@ const AdminScreen = () => {
       if (res && res.data && Array.isArray(res.data.data.items)) {
         const cinemas = res.data.data.items;
         const cinemasOptions = cinemas
-          .filter((cinema) => cinema.status === 1)
+          .filter((cinema) => cinema.status === 1) 
           .map((cinema) => ({
             value: cinema.uuid,
             label: cinema.cinemaName
@@ -378,7 +291,7 @@ const AdminScreen = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm phòng chiếu`}
+          placeholder={`Tìm kiếm đạo diễn`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -664,7 +577,7 @@ const AdminScreen = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật phòng chiếu"
+        title="Cập nhật đạo diễn"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -679,7 +592,7 @@ const AdminScreen = () => {
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           initialValues={{ remember: true }}
-          onFinish={onFinishUpdateScreenInfor}
+          onFinish={onFinishUpdateDirectorInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
@@ -763,58 +676,17 @@ const AdminScreen = () => {
           {/* Thêm phần SeatLayout ở đây */}
           <div className="seat-layout-preview">
             {rows && cols ? (
-              <SeatUpdate
+              <SeatLayout
                 rows={rows}
                 cols={cols}
-                seatData={screenSeatsData}
                 onSeatsChange={handleSeatsUpdate}
-                isEditable={false} // Không cho phép chỉnh sửa
+              // Có thể thêm các props khác nếu cần
               />
             ) : null}
           </div>
           <div className="flex justify-center mt-10">
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button type="primary" htmlType="submit" form="basic1">
-                Cập nhật
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
-      </Modal>
-      <Modal
-        title="Cập nhật ghế ngồi"
-        open={modalUpdateOpen}
-        onCancel={() => setModalUpdateOpen(false)}
-        footer={
-          <Button onClick={() => setModalUpdateOpen(false)}>Đóng</Button>
-        }
-        width={1200}
-        height={1200}
-      >
-        <Form
-          form={formSeatUpdate}
-          name="basic2"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinishUpdateSeatInfor}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <div className="seat-layout-preview">
-            {rows && cols ? (
-              <SeatUpdate
-                rows={rows}
-                cols={cols}
-                seatData={seatDetail}
-                onSeatsChange={handleSeatsUpdate}
-                isEditable={true} // Cho phép chỉnh sửa
-              />
-            ) : null}
-          </div>
-          <div className="flex justify-center mt-10 mr-14">
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Button type="primary" htmlType="submit" form="basic2">
                 Cập nhật
               </Button>
             </Form.Item>

@@ -77,7 +77,7 @@ const AdminCinemas = () => {
   const onFinishUpdateCinemaInfor = async (values) => {
     try {
       const res = await APICreateCinemas({
-        uuid: values.uuid,
+        uuid: cinemaDetail?.uuid,
         cinemaName: values.cinemaName,
         address: values.address,
         location: values.location,
@@ -455,7 +455,7 @@ const AdminCinemas = () => {
           <div className="w-1/2">
             <Form
               form={formUpdate}
-              name="basic"
+              name="basic1"
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 16 }}
               style={{ maxWidth: 600 }}
@@ -513,7 +513,7 @@ const AdminCinemas = () => {
         </div>
         <div className="flex justify-center mt-10">
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" >
+            <Button type="primary" htmlType="submit" form="basic1" >
               Cập nhật
             </Button>
           </Form.Item>
