@@ -75,7 +75,7 @@ const AdminScreen = () => {
   }
   const handleSeatsUpdate = (seats) => {
     setSeatsData(seats);
-    // console.log("Check trang thai", seats)
+    console.log("Check trang thai", seats)
   };
   const showModalTableUpdate = async (uuid) => {
     const res = await APIGetScreenDetail({ uuid });

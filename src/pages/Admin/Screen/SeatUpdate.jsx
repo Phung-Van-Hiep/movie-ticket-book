@@ -102,7 +102,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
         // Thay đổi loại cho một ghế riêng lẻ
         newSeats[rowIndex][colIndex].type = updatedSeatType;
   
-        // Nếu là ghế couple, ghép cặp ghế tiếp theo nếu có, hoặc tạo ghế mới để ghép nếu chưa có
+        // Nếu là ghế couple (type = 3), ghép cặp ghế tiếp theo nếu có, hoặc tạo ghế mới để ghép nếu chưa có
         if (updatedSeatType === 3) {
           if (colIndex % 2 === 0 && colIndex + 1 < cols) {
             // Ghép cặp với ghế tiếp theo
@@ -112,9 +112,12 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
             newSeats[rowIndex][colIndex - 1].type = updatedSeatType;
           }
         } else {
-          // Nếu không phải ghế couple, đảm bảo ghế tiếp theo trở về loại thường
-          if (colIndex < cols - 1 && newSeats[rowIndex][colIndex + 1].type === 3) {
-            newSeats[rowIndex][colIndex + 1].type = 1;
+          // Nếu không phải ghế couple, đảm bảo ghế tiếp theo trở về loại thường hoặc VIP
+          if (colIndex < cols - 1) {
+            // Nếu ghế tiếp theo là ghế couple (type = 3), phải gán lại loại ghế là ghế thường (1) hoặc ghế VIP (2)
+            if (newSeats[rowIndex][colIndex + 1].type === 3) {
+              newSeats[rowIndex][colIndex + 1].type = updatedSeatType;
+            }
           }
         }
       } else {
@@ -134,6 +137,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
       onSeatsChange(flatSeats);
     }
   };
+  
   
 
   const getSeatColor = (type) => {
