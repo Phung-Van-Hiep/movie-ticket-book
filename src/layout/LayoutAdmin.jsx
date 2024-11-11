@@ -21,6 +21,7 @@ import {
 } from '@ant-design/icons';
 import { Breadcrumb, Button, Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import Item from 'antd/es/list/Item';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -174,7 +175,7 @@ const LayoutAdmin = () => {
             setSelectedKeys(selectedKeys.key);
           }}
           items={items}
-          // onClick={handleMenuClick}
+        // onClick={handleMenuClick}
         />
       </Sider>
       <Layout>
@@ -191,19 +192,24 @@ const LayoutAdmin = () => {
           />
         </Header>
         <Content style={{ margin: '16px' }}>
-          <Breadcrumb style={{ margin: '8px' }}>
-            <Breadcrumb.Item>
-              <Link
-                to="/admin/user"
-                onClick={() => {
-                  setSelectedKeys('1');
-                }}
-              >
-                <HomeOutlined /> Admin
-              </Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>{selectedMenuItem}</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            style={{ margin: '8px' }}
+            items={[
+              {
+                title: (
+                  <Link
+                    to="/admin/user"
+                    onClick={() => setSelectedKeys('1')}
+                  >
+                    <HomeOutlined /> Admin
+                  </Link>
+                ),
+              },
+              {
+                title: selectedMenuItem,
+              },
+            ]}
+          />
           <div
             style={{
               padding: 24,

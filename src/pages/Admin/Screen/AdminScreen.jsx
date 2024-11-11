@@ -113,45 +113,45 @@ const AdminScreen = () => {
       }
     }
   };
-  const onFinishUpdateSeatInfor = async (values) => {
-    // const { ...restValues } = values;
-    try {
-      const res = await APIUpdateScreen({
-        uuid: screenDetail?.uuid,
-        screenName: screenDetail.screenName,
-        capacity: screenDetail.collumn * screenDetail.row,
-        cinemaUuid: screenDetail.cinemaUuid,
-        screenType: screenDetail.screenType,
-        columns: screenDetail.collumn,
-        rows: screenDetail.row,
-        status: screenDetail.status,
-        seats: seatsData.map(seat => ({
-          seatUuid: seat.seatUuid,
-          seatCode: seat.seatName,
-          seatType: seat.seatType,
-        })),
-      });
-      if (res && res.status === 200) {
-        message.success('Cập nhật thành công!');
-        formUpdate.resetFields(); // Đặt lại form cập nhật
-        getAllScreen(); // Cập nhật danh sách phòng chiếu
-        handleCancelUpdate();
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi update.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
-  };
+  // const onFinishUpdateSeatInfor = async (values) => {
+  //   // const { ...restValues } = values;
+  //   try {
+  //     const res = await APIUpdateScreen({
+  //       uuid: screenDetail?.uuid,
+  //       screenName: screenDetail.screenName,
+  //       capacity: screenDetail.collumn * screenDetail.row,
+  //       cinemaUuid: screenDetail.cinemaUuid,
+  //       screenType: screenDetail.screenType,
+  //       columns: screenDetail.collumn,
+  //       rows: screenDetail.row,
+  //       status: screenDetail.status,
+  //       seats: seatsData.map(seat => ({
+  //         seatUuid: seat.seatUuid,
+  //         seatCode: seat.seatName,
+  //         seatType: seat.seatType,
+  //       })),
+  //     });
+  //     if (res && res.status === 200) {
+  //       message.success('Cập nhật thành công!');
+  //       formUpdate.resetFields(); // Đặt lại form cập nhật
+  //       getAllScreen(); // Cập nhật danh sách phòng chiếu
+  //       handleCancelUpdate();
+  //     }
+  //   } catch (error) {
+  //     if (error.response) {
+  //       const errorMessage =
+  //         error.response.data?.error?.errorMessage ||
+  //         'Đã xảy ra lỗi khi update.';
+  //       message.error(errorMessage);
+  //     } else if (error.request) {
+  //       message.error(
+  //         'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
+  //       );
+  //     } else {
+  //       message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+  //     }
+  //   }
+  // };
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetScreenDetail({ uuid });
@@ -240,7 +240,6 @@ const AdminScreen = () => {
           (screen) => screen.status !== 0
         );
         setListScreen(filteredScreen); // Cập nhật danh sách director đã lọc
-        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -300,7 +299,6 @@ const AdminScreen = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -327,7 +325,7 @@ const AdminScreen = () => {
       const res = await APIDeleteScreen({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllSceen(); // Cập nhật lại danh sách screen sau khi xoá
+        getAllScreen(); // Cập nhật lại danh sách screen sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -562,7 +560,11 @@ const AdminScreen = () => {
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          initialValues={{ remember: true }}
+          initialValues={{ 
+            remember: true, 
+            screenType: "",   // Thêm giá trị mặc định cho `screenType`
+            cinemaUuid: ""    // Thêm giá trị mặc định cho `cinemaUuid`
+          }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
@@ -585,7 +587,6 @@ const AdminScreen = () => {
               >
                 <Select
                   showSearch
-                  defaultValue=""
                   onChange={handleChangeCinemas}
                   options={listCinemas}
                   filterOption={(input, option) =>
@@ -603,7 +604,6 @@ const AdminScreen = () => {
                 rules={[{ required: true, message: 'Hãy chọn loại phòng chiếu!' }]}
               >
                 <Select
-                  defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
                     { value: 1, label: '2D' },
@@ -678,7 +678,11 @@ const AdminScreen = () => {
           name="basic1"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          initialValues={{ remember: true }}
+          initialValues={{ 
+            remember: true, 
+            screenType: "",   // Thêm giá trị mặc định cho `screenType`
+            cinemaUuid: ""    // Thêm giá trị mặc định cho `cinemaUuid`
+          }}
           onFinish={onFinishUpdateScreenInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
@@ -718,7 +722,6 @@ const AdminScreen = () => {
                 rules={[{ required: true, message: 'Hãy chọn loại phòng chiếu!' }]}
               >
                 <Select
-                  defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
                     { value: 1, label: '2D' },
@@ -768,7 +771,7 @@ const AdminScreen = () => {
                 cols={cols}
                 seatData={screenSeatsData}
                 onSeatsChange={handleSeatsUpdate}
-                isEditable={false} // Không cho phép chỉnh sửa
+                isEditable={true} // Cho phép chỉnh sửa
               />
             ) : null}
           </div>
@@ -782,11 +785,14 @@ const AdminScreen = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật ghế ngồi"
+        title="Ghế ngồi trong rạp phim"
         open={modalUpdateOpen}
         onCancel={() => setModalUpdateOpen(false)}
+        
         footer={
+          <div className="flex justify-center mt-10 mr-2" >
           <Button onClick={() => setModalUpdateOpen(false)}>Đóng</Button>
+          </div>
         }
         width={1200}
         height={1200}
@@ -797,7 +803,7 @@ const AdminScreen = () => {
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           initialValues={{ remember: true }}
-          onFinish={onFinishUpdateSeatInfor}
+          // onFinish={onFinishUpdateSeatInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
@@ -808,17 +814,17 @@ const AdminScreen = () => {
                 cols={cols}
                 seatData={seatDetail}
                 onSeatsChange={handleSeatsUpdate}
-                isEditable={true} // Cho phép chỉnh sửa
+                isEditable={false} // Không cho phép chỉnh sửa
               />
             ) : null}
           </div>
-          <div className="flex justify-center mt-10 mr-14">
+          {/* <div className="flex justify-center mt-10 mr-14">
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button type="primary" htmlType="submit" form="basic2">
-                Cập nhật
+                Đóng
               </Button>
             </Form.Item>
-          </div>
+          </div> */}
         </Form>
       </Modal>
       <Table

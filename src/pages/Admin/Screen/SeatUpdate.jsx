@@ -4,75 +4,56 @@ import { EditOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable  }) => {
+const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
   const [seats, setSeats] = useState([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [selectedSeat, setSelectedSeat] = useState(null);
-  const [seatType, setSeatType] = useState(1); // Mặc định ghế thường
-  // Cập nhật state seats khi seatData thay đổi
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [seatType, setSeatType] = useState(1);
+
   useEffect(() => {
-    generateSeats()
+    generateSeats();
   }, [seatData, rows, cols]);
+
   const generateSeats = () => {
     const newSeats = [];
     for (let row = 0; row < rows; row++) {
       const seatRow = [];
       const rowChar = String.fromCharCode(65 + row);
-  
+
       for (let col = 0; col < cols; col++) {
         const seatCode = `${rowChar}${col + 1}`;
-        // Check if there's an existing seat with this seatCode in seatData
         const existingSeat = seatData.find(seat => seat.seatCode === seatCode);
-  
-        // Determine seatType based on seatData or row letter
-        let seatType;
-        if (existingSeat) {
-          seatType = existingSeat.seatType; // Use seatType from seatData
-        } else if (["A", "B", "C", "D"].includes(rowChar)) {
-          seatType = 1; // Type 1 for rows A-D
-        } else if (["E", "F", "G", "H", "I", "J", "K", "L", "M"].includes(rowChar)) {
-          seatType = 2; // Type 2 for rows E-M
-        } else {
-          seatType = 3; // Default seat type
-        }
-  
-        seatRow.push({
-          label: seatCode,
-          type: seatType,
-        });
+        let seatType = existingSeat ? existingSeat.seatType : 1;
+        seatRow.push({ label: seatCode, type: seatType });
       }
-  
+
       newSeats.push(seatRow);
     }
-  
     setSeats(newSeats);
-  
     const flatSeats = newSeats.flat().map(seat => ({
       seatName: seat.label,
       seatType: seat.type,
     }));
-    
     onSeatsChange(flatSeats);
   };
-  
-  
-  // Mở modal để chỉnh sửa loại ghế cho từng ghế
-  const openEditModal = (rowIndex, colIndex) => {
-    if (!isEditable) return; // Nếu isEditable là false, không cho phép mở modal chỉnh sửa
-    setSelectedSeat({ rowIndex, colIndex });
-    setSeatType(seats[rowIndex][colIndex].type);
+
+  const openEditModalForRow = (rowIndex) => {
+    if (!isEditable) return;
+    setSelectedRow(rowIndex);
     setEditModalVisible(true);
   };
 
-  // Áp dụng thay đổi loại ghế cho ghế được chọn
-  const applySeatType = () => {
+  const applySeatTypeForRow = () => {
     const newSeats = [...seats];
-    const { rowIndex, colIndex } = selectedSeat;
-    newSeats[rowIndex][colIndex].type = seatType;
+    const rowSeats = newSeats[selectedRow];
+
+    rowSeats.forEach((seat) => {
+      seat.type = seatType;
+    });
+
     setSeats(newSeats);
     setEditModalVisible(false);
 
-    // Cập nhật lại danh sách ghế trong component cha
     const flatSeats = newSeats.flat().map(seat => ({
       seatName: seat.label,
       seatType: seat.type,
@@ -81,10 +62,10 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable  }) => {
   };
 
   const getSeatColor = (type) => {
-    if (type === 1) return "#5A4FCF"; // Ghế thường
-    if (type === 2) return "#FF4D4F"; // Ghế VIP
-    if (type === 3) return "#FF69B4"; // Ghế couple
-    if (type === 4) return "#808080"; // Không khả dụng
+    if (type === 1) return "#5A4FCF";
+    if (type === 2) return "#FF4D4F";
+    if (type === 3) return "#FF69B4";
+    if (type === 4) return "#808080";
   };
 
   return (
@@ -101,38 +82,74 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable  }) => {
         <div>
           {seats.map((row, rowIndex) => (
             <Row key={rowIndex} justify="center" gutter={[8, 8]}>
-              {row.map((seat, colIndex) => (
-                <Col key={colIndex} span={1}>
+              {row.map((seat, colIndex) => {
+                if (seat.type === 3 && colIndex % 2 === 0) {
+                  if (cols % 2 !== 0 && colIndex === cols - 1) {
+                    return null;
+                  }
+                  return (
+                    <Col key={colIndex} span={2}>
+                      <Button
+                        style={{
+                          backgroundColor: getSeatColor(seat.type),
+                          color: "white",
+                          width: 88,
+                          height: 40,
+                          borderRadius: 4,
+                          marginRight: -8,
+                        }}
+                        onClick={() => openEditModalForRow(rowIndex)}
+                      >
+                        {`${seat.label} & ${row[colIndex + 1]?.label}`}
+                      </Button>
+                    </Col>
+                  );
+                }
+                if (seat.type === 3 && colIndex % 2 !== 0) {
+                  return null;
+                }
+                return (
+                  <Col key={colIndex} span={1}>
+                    <Button
+                      style={{
+                        backgroundColor: getSeatColor(seat.type),
+                        color: "white",
+                        width: 40,
+                        height: 40,
+                        borderRadius: 4,
+                      }}
+                      onClick={() => openEditModalForRow(rowIndex)}
+                    >
+                      {seat.label}
+                    </Button>
+                  </Col>
+                );
+              })}
+              {isEditable && (
+                <Col>
                   <Button
-                    style={{
-                      backgroundColor: getSeatColor(seat.type),
-                      color: "white",
-                      width: 40,
-                      height: 40,
-                      borderRadius: 4,
-                    }}
-                    onClick={() => openEditModal(rowIndex, colIndex)}
-                  >
-                    {seat.label}
-                  </Button>
+                    type="text"
+                    icon={<EditOutlined />}
+                    onClick={() => openEditModalForRow(rowIndex)}
+                  />
                 </Col>
-              ))}
+              )}
             </Row>
           ))}
         </div>
       </div>
 
-      {/* Modal để chỉnh sửa loại ghế */}
       <Modal
-        title="Chọn loại ghế"
+        title="Chọn loại ghế cho cả hàng"
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
-        onOk={applySeatType}
+        onOk={applySeatTypeForRow}
       >
         <Select
           style={{ width: "100%" }}
           value={seatType}
           onChange={(value) => setSeatType(value)}
+          defaultValue={1}
         >
           <Option value={1}>Ghế thường</Option>
           <Option value={2}>Ghế VIP</Option>

@@ -76,7 +76,7 @@ const AdminCast = () => {
           }/resources/images/${userDetail.imageUrl}`;
         formUpdate.setFieldsValue({
           fullname: userDetail.fullname,
-          // email: userDetail.email,
+          email: userDetail.email,
           gender: userDetail.gender,
           phoneNumber: userDetail.phoneNumber,
           birthday: userDetail.birthday
@@ -690,6 +690,38 @@ const AdminCast = () => {
           <Row gutter={[16, 16]}>
             <Col span={11}>
               <Form.Item
+                label={<div className="font-semibold">Email</div>}
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    message: "Xin hãy nhập Email của bạn!",
+                  },
+                  {
+                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Vui lòng nhập địa chỉ Email hợp lệ!",
+                  },
+                ]}
+              >
+                <Input readOnly/>
+              </Form.Item>
+            </Col>
+            <Col span={13}>
+              <Form.Item
+                label={<div className="font-semibold">Số điện thoại</div>}
+                name="phoneNumber"
+                rules={[
+                  { required: true, message: "Xin hãy nhập số điện thoại của bạn!" },
+                  { pattern: /^0\d{9}$/, message: "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!" },
+                ]}
+              >
+                <Input placeholder="Nhập số điện thoại..." />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={11}>
+              <Form.Item
                 label="Ngày sinh"
                 name="birthday"
                 rules={[
@@ -707,21 +739,6 @@ const AdminCast = () => {
               </Form.Item>
             </Col>
             <Col span={13}>
-              <Form.Item
-                label={<div className="font-semibold">Số điện thoại</div>}
-                name="phoneNumber"
-                rules={[
-                  { required: true, message: "Xin hãy nhập số điện thoại của bạn!" },
-                  { pattern: /^0\d{9}$/, message: "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!" },
-                ]}
-              >
-                <Input placeholder="Nhập số điện thoại..." />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={[16, 16]}>
-            <Col span={11}>
               <Form.Item
                 label="Trạng thái"
                 name="status"

@@ -38,11 +38,7 @@ const SeatLayout = ({ rows, cols, onSeatsChange }) => {
       newSeats.push(seatRow);
     }
     setSeats(newSeats);
-    const flatSeats = newSeats.flat().map(seat => ({
-      seatName: seat.label,
-      seatType: seat.type,
-    }));
-    onSeatsChange(flatSeats);
+    
   };
 
   const openEditModal = (rowIndex) => {
@@ -59,6 +55,11 @@ const SeatLayout = ({ rows, cols, onSeatsChange }) => {
 
     setSeats(newSeats);
     setEditModalVisible(false);
+    const flatSeats = newSeats.flat().map(seat => ({
+      seatName: seat.label,
+      seatType: seat.type,
+    }));
+    onSeatsChange(flatSeats);
   };
 
   const getSeatColor = (type) => {
@@ -123,13 +124,13 @@ const SeatLayout = ({ rows, cols, onSeatsChange }) => {
                   </Col>
                 );
               })}
-              {/* <Col>
+              <Col>
                 <Button
                   type="text"
                   icon={<EditOutlined />}
                   onClick={() => openEditModal(rowIndex)}
                 />
-              </Col> */}
+              </Col>
             </Row>
           ))}
         </div>
