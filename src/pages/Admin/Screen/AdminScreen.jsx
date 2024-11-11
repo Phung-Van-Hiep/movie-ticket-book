@@ -75,7 +75,7 @@ const AdminScreen = () => {
   }
   const handleSeatsUpdate = (seats) => {
     setSeatsData(seats);
-    console.log("Check trang thai", seats)
+    // console.log("Check trang thai", seats)
   };
   const showModalTableUpdate = async (uuid) => {
     const res = await APIGetScreenDetail({ uuid });
@@ -619,7 +619,7 @@ const AdminScreen = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item label="Số hàng" name="rows" rules={[
                 { required: true, message: 'Nhập số hàng' },
-                { type: 'number', min: 1, max: 14, message: 'Số hàng phải từ 1 đến 15!' }
+                { type: 'number', min: 1, max: 15, message: 'Số hàng phải từ 1 đến 15!' }
               ]}>
                 <InputNumber
                   onChange={handleRows}
@@ -633,7 +633,7 @@ const AdminScreen = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item label="Số cột" name="columns" rules={[
                 { required: true, message: 'Nhập số cột' },
-                { type: 'number', min: 1, max: 14, message: 'Số cột phải từ 1 đến 15!' }
+                { type: 'number', min: 1, max: 15, message: 'Số cột phải từ 1 đến 15!' }
               ]}>
                 <InputNumber
                   onChange={handleCol}
@@ -737,7 +737,7 @@ const AdminScreen = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item label="Số hàng" name="row" rules={[
                 { required: true, message: 'Nhập số hàng' },
-                { type: 'number', min: 1, max: 14, message: 'Số hàng phải từ 1 đến 15!' }
+                { type: 'number', min: 1, max: 15, message: 'Số hàng phải từ 1 đến 15!' }
               ]}>
                 <InputNumber
                   onChange={handleRows}
@@ -751,7 +751,7 @@ const AdminScreen = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item label="Số cột" name="collumn" rules={[
                 { required: true, message: 'Nhập số cột' },
-                { type: 'number', min: 1, max: 14, message: 'Số cột phải từ 1 đến 15!' }
+                { type: 'number', min: 1, max: 15, message: 'Số cột phải từ 1 đến 15!' }
               ]}>
                 <InputNumber
                   onChange={handleCol}

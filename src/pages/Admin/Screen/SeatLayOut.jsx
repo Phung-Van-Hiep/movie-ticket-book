@@ -38,7 +38,11 @@ const SeatLayout = ({ rows, cols, onSeatsChange }) => {
       newSeats.push(seatRow);
     }
     setSeats(newSeats);
-    
+    const flatSeats = newSeats.flat().map(seat => ({
+      seatName: seat.label,
+      seatType: seat.type,
+    }));
+    onSeatsChange(flatSeats);
   };
 
   const openEditModal = (rowIndex) => {
