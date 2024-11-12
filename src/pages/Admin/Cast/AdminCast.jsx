@@ -381,7 +381,7 @@ const AdminCast = () => {
               record?.imageUrl
             }`
           : null;
-          console.log("Đây có phải là ảnh không" , fullURL)
+          // console.log("Đây có phải là ảnh không" , fullURL)
         return fullURL ? (
           <Image
             width={70}

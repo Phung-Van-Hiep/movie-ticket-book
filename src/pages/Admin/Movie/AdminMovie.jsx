@@ -471,14 +471,6 @@ const AdminMovies = () => {
         return <div>{movies}</div>;
       }
     },
-    // {
-    //   title: 'Lịch chiếu',
-    //   dataIndex: 'calendar',
-    //   key: 'calendar',
-    //   render: (duration) => (
-    //     <div className="truncate-description">{duration}</div>
-    //   )
-    // },
     {
       title: 'Ngày phát hành',
       dataIndex: 'realeaseDate',
