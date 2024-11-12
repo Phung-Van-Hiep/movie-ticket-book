@@ -13,17 +13,17 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
   useEffect(() => {
     generateSeats();
   }, [seatData, rows, cols]);
-  
+
   const generateSeats = () => {
     const newSeats = [];
-  
     for (let row = 0; row < rows; row++) {
       const seatRow = [];
       const rowChar = String.fromCharCode(65 + row); // Tên hàng ghế (A, B, C, ...)
-  
+      let isFirstNewColumn = true;
+
       for (let col = 0; col < cols; col++) {
         let seatType = 1; // Loại ghế mặc định là "couple"
-        
+
         // Kiểm tra loại ghế theo hàng
         if (["A", "B", "C", "D"].includes(rowChar)) {
           seatType = 1; // "Ghế thường" cho A, B, C, D
@@ -32,9 +32,9 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
         } else {
           seatType = 3; // "Ghế couple" cho các hàng còn lại
         }
-  
+
         const seatCode = `${rowChar}${col + 1}`;
-  
+
         // Kiểm tra trong seatData để xác định loại ghế, tránh bị ghi đè
         const existingSeat = seatData.find(seat => seat.seatCode === seatCode);
         if (existingSeat) {
@@ -51,17 +51,20 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
           }
         }
         // Nếu đang ở cột cuối (thêm cột mới), gán kiểu ghế của cột trước cho cột mới
-        if (col === cols - 1 && col % 2 === 1) {
-          // Nếu cột mới thêm vào, giữ kiểu ghế giống như cột trước
-          seatType = seatRow[col - 1]?.type || seatType;
+        // if (isFirstNewColumn && cols > seatRow.length - 1 && seatRow[col - 1]?.type === 3) {
+        //   console.log("Check col", seatRow.length)
+        //   seatType = seatRow[col - 1].type; // Gán kiểu ghế từ cột trước
+        //   isFirstNewColumn = false; // Sau khi gán cho cột mới đầu tiên, ngừng gán cho các cột sau
+        // }        
+        if (col > 0 && col % 2 === 1) {
+          seatType = seatRow[col - 1].type; // Gán kiểu ghế từ cột trước
         }
-  
         seatRow.push({
           label: seatCode,
           type: seatType, // Loại ghế đã được xác định từ seatData hoặc mặc định
         });
       }
-  
+
       newSeats.push(seatRow);
     }
     setSeats(newSeats);
@@ -72,7 +75,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
     }));
     onSeatsChange(flatSeats);
   };
-  
+
   const openEditModalForRow = (rowIndex) => {
     if (!isEditable) return;
     setSelectedSeat({ rowIndex }); // Lưu cả hàng ghế được chọn
@@ -92,32 +95,35 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
       const { rowIndex, colIndex } = selectedSeat;
       const newSeats = [...seats];
       const updatedSeatType = seatType;
-  
+
       if (updatedSeatType === 3 && cols === 1) {
         message.error("Không thể thay thế ghế thành couple vì chỉ có một cột duy nhất");
         return;
       }
-  
+
       if (colIndex !== undefined) {
         // Thay đổi loại cho một ghế riêng lẻ
         newSeats[rowIndex][colIndex].type = updatedSeatType;
-  
-        // Nếu là ghế couple (type = 3), ghép cặp ghế tiếp theo nếu có, hoặc tạo ghế mới để ghép nếu chưa có
+
+        // Nếu là ghế couple, ghép cặp ghế tiếp theo hoặc trước đó
         if (updatedSeatType === 3) {
           if (colIndex % 2 === 0 && colIndex + 1 < cols) {
-            // Ghép cặp với ghế tiếp theo
+            // Ghép cặp với ghế tiếp theo nếu là cột chẵn
             newSeats[rowIndex][colIndex + 1].type = updatedSeatType;
           } else if (colIndex % 2 === 1) {
-            // Nếu ghế là vị trí lẻ, ghép với ghế trước đó
+            // Ghép với ghế trước đó nếu là cột lẻ
             newSeats[rowIndex][colIndex - 1].type = updatedSeatType;
           }
         } else {
-          // Nếu không phải ghế couple, đảm bảo ghế tiếp theo trở về loại thường hoặc VIP
-          if (colIndex < cols - 1) {
-            // Nếu ghế tiếp theo là ghế couple (type = 3), phải gán lại loại ghế là ghế thường (1) hoặc ghế VIP (2)
-            if (newSeats[rowIndex][colIndex + 1].type === 3) {
-              newSeats[rowIndex][colIndex + 1].type = updatedSeatType;
-            }
+          // Kiểm tra nếu ghế hiện tại thuộc cặp couple, đổi cả cặp về loại ghế mới
+          if (colIndex % 2 === 0 && colIndex + 1 < cols && newSeats[rowIndex][colIndex + 1].type === 3) {
+            // Cặp couple: cột chẵn và cột lẻ liền kề
+            newSeats[rowIndex][colIndex].type = updatedSeatType;
+            newSeats[rowIndex][colIndex + 1].type = updatedSeatType;
+          } else if (colIndex % 2 === 1 && newSeats[rowIndex][colIndex - 1].type === 3) {
+            // Cặp couple: cột lẻ và cột chẵn liền kề
+            newSeats[rowIndex][colIndex].type = updatedSeatType;
+            newSeats[rowIndex][colIndex - 1].type = updatedSeatType;
           }
         }
       } else {
@@ -126,10 +132,10 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
           newSeats[rowIndex][col].type = updatedSeatType;
         }
       }
-  
+
       setSeats(newSeats);
       setEditModalVisible(false);
-  
+
       const flatSeats = newSeats.flat().map((seat) => ({
         seatName: seat.label,
         seatType: seat.type,
@@ -137,8 +143,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
       onSeatsChange(flatSeats);
     }
   };
-  
-  
+
 
   const getSeatColor = (type) => {
     if (type === 1) return "#5A4FCF";
@@ -231,6 +236,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
           <Option value={1}>Ghế thường</Option>
           <Option value={2}>Ghế VIP</Option>
           <Option value={3}>Ghế couple</Option>
+          <Option value={4}>Không khả dụng</Option>
         </Select>
       </Modal>
     </div>

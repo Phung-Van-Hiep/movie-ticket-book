@@ -179,18 +179,32 @@ const LayoutAdmin = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64
-            }}
-          />
-        </Header>
+      <Header style={{ padding: '0 16px', background: colorBgContainer, display: 'flex', alignItems: 'center' }}>
+      <Button
+        type="text"
+        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        onClick={() => setCollapsed(!collapsed)}
+        style={{
+          fontSize: '16px',
+          width: 30,
+          height: 64,
+        }}
+      />
+      <Breadcrumb
+        items={[
+          {
+            title: selectedMenuItem,
+          },
+        ]}
+        onClick={() => setCollapsed(!collapsed)}
+        style={{
+          fontSize: '20px',
+          paddingBottom: '5px',
+          cursor:'pointer',
+          
+        }}
+      />
+    </Header>
         <Content style={{ margin: '16px' }}>
           <Breadcrumb
             style={{ margin: '8px' }}
