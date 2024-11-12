@@ -22,12 +22,11 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
+  APICreateCombo,
+  APIGetAllCombo,
+  APIGetComboDetail,
+  APIDeleteCombo,
   APIUploadImage,
-  APIGetAllCinemas
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
@@ -44,27 +43,17 @@ const AdminCombo = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listCombo, setListCombo] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [comboDetail, setComboDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState([]);
   const [imagesUuid, setImagesUuid] = useState('');
-  const [listCinemas, setListCinemas] = useState([]);
-
-  const handleChangeStatus = (value) => {
-    console.log(`selected ${value}`);
-  }
-
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
-  };
-
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -72,17 +61,6 @@ const AdminCombo = () => {
 
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
-  };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-
-    const res = await APIUploadImage(file, '3');
-
-    if (res && res.status === 200) {
-
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
   };
   const handleChangeCreateImage = ({ fileList: newFileList }) =>
     setFileList(newFileList);
@@ -96,22 +74,21 @@ const AdminCombo = () => {
 
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetDirectorDetail({ uuid });
+      const res = await APIGetComboDetail({ uuid });
       if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${directorDetail.imageUrl}`;
+        const comboDetail = res.data.data;
+        setComboDetail(comboDetail);
+        const imageUrl = comboDetail.imageUrl
+          ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${comboDetail.imageUrl}`
+          : null;
         formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
+          comboName: comboDetail.comboName,
+          comboItems: comboDetail.comboItems,
+          price:comboDetail.price,
+          imageUrl: comboDetail.imageUrl
         });
-        setFileList([{ url: imageUrl }]);
+        setFileList(imageUrl ? [{ url: imageUrl }] : []);
         setIsModalUpdateOpen(true);
-        // setFileList([]);
         setPreviewImage('');
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
@@ -127,31 +104,43 @@ const AdminCombo = () => {
       }
     }
   };
-
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  const onFinishUpdateDirectorInfor = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
+  const onFinishUpdateComboInfor = async (values) => {
+    const { imageUrl, ...restValues } = values;
+    let tempImagesUuid = imageUrl;
+    // Kiểm tra nếu không có file trong fileList
+    if (fileList.length === 0) {
+      tempImagesUuid = null;
+    } else if (fileList[0].originFileObj) {
+      // Có file mới được tải lên
+      try {
+        const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+        if (uploadResponse?.status === 200) {
+          tempImagesUuid = uploadResponse.data.data;
+          setImagesUuid(tempImagesUuid); // Lưu lại imagesUuid mới
+        } else {
+          message.error('Upload ảnh không thành công. Vui lòng thử lại.');
+          return;
+        }
+      } catch {
+        message.error('Lỗi khi upload ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        return;
+      }
+    }
     try {
-      const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
-        birthday: birthdayFormat,
-        description: restValues.description,
-        imagesUuid // Gửi URL của ảnh nếu có
+      const res = await APICreateCombo({
+        uuid: comboDetail?.uuid,
+        comboName: restValues.comboName,
+        comboItems: restValues.comboItems,
+        price:restValues.price,
+        imagesUuid:tempImagesUuid, // Gửi URL của ảnh nếu có
+        status: 1
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         setFileList([]);
         setImagesUuid('');
-        getAllDirector();
+        getAllCombo();
         handleCancelUpdate();
       }
     } catch (error) {
@@ -170,15 +159,15 @@ const AdminCombo = () => {
     }
   };
 
-  const getAllDirector = async () => {
+  const getAllCombo = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllCombo({ pageSize: 1000, page: 1 });
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
-        const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+        const filteredCombo = res.data?.data?.items.filter(
+          (combo) => combo.status !== 0
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListCombo(filteredCombo); // Cập nhật danh sách combo đã lọc
         form.resetFields();
         handleCancel();
       }
@@ -187,20 +176,25 @@ const AdminCombo = () => {
     }
   };
   const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
+    const {...restValues } = values;
+    let tempImagesUuid = imagesUuid;
+    if (fileList.length > 0) {
+      const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
+      if (uploadResponse && uploadResponse.status === 200) {
+        tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
+      }
+    }
+    const dataCombo = {
       ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
+      imagesUuid:tempImagesUuid
     };
     try {
-      const res = await APICreateDirector(dataDirector);
+      const res = await APICreateCombo(dataCombo);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         setFileList([]);
-        getAllDirector();
+        getAllCombo();
       }
       // console.log("Success:", values);
     } catch (error) {
@@ -257,10 +251,10 @@ const AdminCombo = () => {
   };
   const confirm = async (uuid) => {
     try {
-      const res = await APIDeleteDirector({ uuid, status: 0 });
+      const res = await APIDeleteCombo({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
+        getAllCombo(); // Cập nhật lại danh sách combo sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -279,25 +273,6 @@ const AdminCombo = () => {
       }
     }
   };
-  const getAllCinemas = async () => {
-    try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas.map((cinema) => ({
-          value: cinema.uuid,
-          label: cinema.cinemaName
-        }));
-
-        setListCinemas(cinemasOptions); // Cập nhật state
-      } else {
-        message.error('Không có dữ liệu combo hợp lệ.');
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách combo.');
-    }
-  };
-
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -379,9 +354,9 @@ const AdminCombo = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listComboMap = listCombo.map((combo, index) => ({
     key: index + 1,
-    ...director
+    ...combo
   }));
   const columns = [
     {
@@ -389,39 +364,56 @@ const AdminCombo = () => {
       dataIndex: 'key',
       width: 50
     },
+    // {
+    //   title: 'Ảnh combo-nước uống',
+    //   dataIndex: 'imageUrl',
+    //   key: 'imageUrl',
+    //   width: 60,
+    //   render: (text, record) => {
+    //     console.log("Check record: ", record)
+    //     const fullURL = record?.imageUrl
+    //       ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${
+    //           record?.imageUrl
+    //         }`
+    //       : null;
+    //        console.log("Đây có phải là ảnh không" , fullURL)
+    //     return fullURL ? (
+    //       <Image
+    //         width={70}
+    //         height={70}
+    //         src={fullURL}
+    //         alt="Ảnh diễn viên"
+    //         style={{ borderRadius: '50%', objectFit: 'cover' }}
+    //       />
+    //     ) : null;
+    //   }
+    // },
     {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
-      width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      title: 'Tên combo - nước uống',
+      dataIndex: 'comboName',
+      key: 'comboName',
+      ...getColumnSearchProps('comboName'),
+      width: 100,
+      sorter: (a, b) => a.comboName.length - b.comboName.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (combo, record) => {
         return (
           <div>
-            {director} {/* Hiển thị tên quốc gia */}
+            {combo} {/* Hiển thị tên quốc gia */}
           </div>
         );
       }
     },
     {
-      title: 'Loại phòng chiếu',
-      dataIndex: 'screenType',
-      key: 'screenType',
-      width: 50
-    },
-    {
-      title: 'Số hàng',
-      dataIndex: 'rowScreen',
-      key: 'rowScreen',
-      width: 50
-    },
-    {
-      title: 'Số cột',
-      dataIndex: 'colScreen',
-      key: 'colScreen',
-      width: 50
+      title: 'Ngày tạo',
+      dataIndex: 'timeCreated',
+      key: 'timeCreated',
+      width: 100,
+      render: (text) => {
+        const date = new Date(text);
+        const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
+        return formattedDate;
+      },
     },
 
     {
@@ -429,13 +421,6 @@ const AdminCombo = () => {
       width: 50,
       render: (record) => (
         <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined />
-          </Button>
           <Popconfirm
             title="Xoá combo"
             description="Bạn muốn xoá combo này?"
@@ -459,8 +444,7 @@ const AdminCombo = () => {
     }
   ];
   useEffect(() => {
-    getAllDirector();
-    getAllCinemas();
+    getAllCombo();
   }, []);
   return (
     <>
@@ -479,7 +463,7 @@ const AdminCombo = () => {
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }} s
+          wrapperCol={{ span: 16 }}
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
@@ -503,16 +487,18 @@ const AdminCombo = () => {
               }
             ]}
           >
-            <Input />
+            <InputNumber
+                  placeholder="Nhập giá tiền"
+                  className='w-full'
+            />
           </Form.Item>
-
-          <Form.Item label="Mô tả" name="description"
+          <Form.Item label="Các loại vật phẩm" name="comboItems"
             rules={[{
               required: true,
-              message: 'Hãy điền mô tả về combo!'
+              message: 'Hãy nhập loại vật phẩm có tronf combo!'
             }]}>
             <Input.TextArea
-              placeholder="Nhập mô tả...."
+              placeholder="Nhập các loại vật phẩm...."
               autoSize={{ minRows: 2, maxRows: 6 }}
             />
           </Form.Item>
@@ -555,6 +541,7 @@ const AdminCombo = () => {
         footer={
           <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
         }
+        width={700}
       >
         <Form
           form={formUpdate}
@@ -563,52 +550,53 @@ const AdminCombo = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           initialValues={{ remember: true }}
-          onFinish={onFinishUpdateDirectorInfor}
+          onFinish={onFinishUpdateComboInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item
-            label="Tên combo"
-            name="directorName"
+            label="Tên combo - nước uống"
+            name="comboName"
             rules={[{ required: true, message: 'Hãy nhập tên combo!' }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            label="Ngày sinh"
-            name="birthday"
+            label="Giá tiền"
+            name="price"
             rules={[
               {
                 required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
+                message: 'Hãy nhập giá tiền của combo!'
               }
             ]}
           >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
+            <InputNumber
+                  placeholder="Nhập giá tiền"
+                  className='w-full'
             />
           </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
+          <Form.Item label="Các loại vật phẩm" name="comboItems"
+            rules={[{
+              required: true,
+              message: 'Hãy nhập loại vật phẩm có tronf combo!'
+            }]}>
             <Input.TextArea
-              placeholder="Nhập mô tả...."
+              placeholder="Nhập các loại vật phẩm...."
               autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
             />
           </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
+          <Form.Item label="Ảnh combo" name="imageUrl" rules={[]}>
             <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
               listType="picture-circle"
               fileList={fileList}
               onPreview={handlePreviewCreateImage}
               onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
+              beforeUpload={(file) => {
+                setFileList([file]);
+                return false; // Prevents automatic upload
+              }}
             >
               {fileList.length >= 1 ? null : uploadButton}
             </Upload>
@@ -633,7 +621,7 @@ const AdminCombo = () => {
       </Modal>
       <Table
         columns={columns}
-        dataSource={listDirectorMap}
+        dataSource={listComboMap}
         scroll={{ x: 1000, y: 500 }}
         pagination={{
           showTotal: (total, range) => {

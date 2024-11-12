@@ -149,6 +149,21 @@ export const APIDeleteNews = (data) => {
   return instance.post('/api/v1/News/update_news_status', data);
 };
 
+//Combo-nước
+export const APICreateCombo = (data) => {
+  return instance.post('/api/v1/Combo/upsert_combo', data);
+};
+export const APIGetAllCombo = (data) => {
+  return instance.post('/api/v1/Combo/page_list_combo', data);
+};
+export const APIGetComboDetail = (data) => {
+  return instance.post('/api/v1/Combo/combo_detail', data);
+};
+
+export const APIDeleteCombo = (data) => {
+  return instance.post('/api/v1/Combo/update_combo_status', data);
+};
+
 //Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();

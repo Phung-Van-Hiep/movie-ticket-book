@@ -78,7 +78,7 @@ const AdminNew = () => {
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetNewsDetail({ uuid });
-      console.log('update', res);
+      // console.log('update', res);
       if (res && res.status === 200) {
         const newsDetail = res.data.data;
         setNewsDetail(newsDetail);
@@ -113,6 +113,7 @@ const AdminNew = () => {
 
   const onFinishUpdateNewsInfor = async (values) => {
     const { content,imageUrl, ...restValues } = values;
+    // console.log("Có vào đây không ", content)
     let tempImagesUuid = imageUrl;
     // Kiểm tra nếu không có file trong fileList
     if (fileList.length === 0) {
@@ -139,7 +140,7 @@ const AdminNew = () => {
         title: restValues.title,
         shortTitle: newsDetail.shortTitle,
         status: newsDetail.status,
-        content: content?.level?.content,
+        content: content?.level?.content || newsDetail.content,
         imagesUuid:tempImagesUuid  // Gửi URL của ảnh nếu có
       });
       if (res && res.status === 200) {
@@ -169,7 +170,7 @@ const AdminNew = () => {
   const getAllNews = async () => {
     try {
       const res = await APIGetAllNews({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
+      // console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredNews = res.data?.data?.items.filter(
@@ -369,7 +370,7 @@ const AdminNew = () => {
         text
       )
   });
-  const listDirectorMap = listNews.map((news, index) => ({
+  const listNewsMap = listNews.map((news, index) => ({
     key: index + 1,
     ...news
   }));
@@ -395,6 +396,13 @@ const AdminNew = () => {
         );
       }
     },
+    
+    {
+      title: 'Lượt xem',
+      dataIndex: 'view',
+      key: 'view',
+      width: 50
+    },
     {
       title: 'Ngày tạo',
       dataIndex: 'timeCreated',
@@ -406,13 +414,6 @@ const AdminNew = () => {
         return formattedDate;
       },
     },
-    {
-      title: 'Lượt xem',
-      dataIndex: 'view',
-      key: 'view',
-      width: 50
-    },
-
 
     {
       title: '',
@@ -521,9 +522,9 @@ const AdminNew = () => {
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={6}>
-              <Form.Item label="Image" name="imagesUuid" rules={[]}>
+              <Form.Item label="Hình ảnh" name="imagesUuid" rules={[]}>
                 <Upload
-                  listType="picture-circle"
+                  listType="picture-card"
                   fileList={fileList}
                   onPreview={handlePreviewCreateImage}
                   onChange={handleChangeCreateImage}
@@ -531,10 +532,10 @@ const AdminNew = () => {
                     setFileList([file]);
                     return false; // Prevents automatic upload
                   }}
+                  className="w-full h-64"
                 >
                   {fileList.length >= 1 ? null : uploadButton}
                 </Upload>
-
                 {previewImage && (
                   <Image
                     wrapperStyle={{ display: 'none' }}
@@ -642,9 +643,9 @@ const AdminNew = () => {
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={6}>
-              <Form.Item label="Image" name="imageUrl" rules={[]}>
+              <Form.Item label="Hình ảnh" name="imageUrl" rules={[]}>
                 <Upload
-                  listType="picture-circle"
+                  listType="picture-card"
                   fileList={fileList}
                   onPreview={handlePreviewCreateImage}
                   onChange={handleChangeCreateImage}
@@ -691,7 +692,7 @@ const AdminNew = () => {
       </Modal>
       <Table
         columns={columns}
-        dataSource={listDirectorMap}
+        dataSource={listNewsMap}
         scroll={{ x: 1000, y: 500 }}
         pagination={{
           showTotal: (total, range) => {
