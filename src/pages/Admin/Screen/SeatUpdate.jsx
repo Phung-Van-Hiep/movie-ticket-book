@@ -49,13 +49,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
           } else {
             seatType = 1; // Nếu không nằm trong các hàng đặc biệt, thì mặc định là "Ghế thường"
           }
-        }
-        // Nếu đang ở cột cuối (thêm cột mới), gán kiểu ghế của cột trước cho cột mới
-        // if (isFirstNewColumn && cols > seatRow.length - 1 && seatRow[col - 1]?.type === 3) {
-        //   console.log("Check col", seatRow.length)
-        //   seatType = seatRow[col - 1].type; // Gán kiểu ghế từ cột trước
-        //   isFirstNewColumn = false; // Sau khi gán cho cột mới đầu tiên, ngừng gán cho các cột sau
-        // }        
+        }    
         if (col > 0 && col % 2 === 1) {
           seatType = seatRow[col - 1].type; // Gán kiểu ghế từ cột trước
         }

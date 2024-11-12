@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   DeleteOutlined,
   EditOutlined,
   SearchOutlined,
   TableOutlined
 } from '@ant-design/icons';
-import 'react-quill/dist/quill.snow.css'; // Import Quill CSS
-import ReactQuill from 'react-quill';
+import { Editor } from '@tinymce/tinymce-react'; // Import TinyMCE Editor
 import {
   Button,
   Col,
@@ -25,12 +24,11 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminNew.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
+  APICreateNews,
+  APIGetAllNews,
+  APIGetNewsDetail,
+  APIDeleteNews,
   APIUploadImage,
-  APIGetAllCinemas
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
@@ -47,27 +45,18 @@ const AdminNew = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listNews, setListNews] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [newsDetail, setNewsDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState([]);
   const [imagesUuid, setImagesUuid] = useState('');
-  const [listCinemas, setListCinemas] = useState([]);
-
-  const handleChangeStatus = (value) => {
-    console.log(`selected ${value}`);
-  }
-
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
-  };
-
+  const [content, setContent] = useState('');
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -76,13 +65,9 @@ const AdminNew = () => {
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
   };
-  // console.log('fileList,', fileList);
   const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
     const res = await APIUploadImage(file, '3');
-    console.log('Check var' + res);
     if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
       setImagesUuid(res.data.data);
     }
     onSuccess('ok');
@@ -99,19 +84,19 @@ const AdminNew = () => {
 
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetDirectorDetail({ uuid });
+      const res = await APIGetNewsDetail({ uuid });
       console.log('update', res);
       if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
+        const newsDetail = res.data.data;
+        setNewsDetail(newsDetail);
+        //  console.log("Lam gi thi lam ",newsDetail.imageUrl);
         const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${directorDetail.imageUrl}`;
+          }/resources/images/${newsDetail.imageUrl}`;
         formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
+          title: newsDetail.title,
+          birthday: moment(newsDetail.birthday, 'YYYY-MM-DD'),
+          description: newsDetail.description,
+          imageUrl: newsDetail.imageUrl
         });
         setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
@@ -144,8 +129,8 @@ const AdminNew = () => {
     const birthdayFormat = formatToDateString(birthdayObj);
     try {
       const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
+        uuid: newsDetail.uuid,
+        title: restValues.title,
         birthday: birthdayFormat,
         description: restValues.description,
         imagesUuid // Gửi URL của ảnh nếu có
@@ -155,7 +140,7 @@ const AdminNew = () => {
         form.resetFields();
         setFileList([]);
         setImagesUuid('');
-        getAllDirector();
+        getAllNews();
         handleCancelUpdate();
       }
     } catch (error) {
@@ -174,16 +159,16 @@ const AdminNew = () => {
     }
   };
 
-  const getAllDirector = async () => {
+  const getAllNews = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllNews({ pageSize: 1000, page: 1 });
       console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
-        const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+        const filteredNews = res.data?.data?.items.filter(
+          (news) => news.status !== 0
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListNews(filteredNews); // Cập nhật danh sách news đã lọc
         form.resetFields();
         handleCancel();
       }
@@ -192,21 +177,20 @@ const AdminNew = () => {
     }
   };
   const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
+    console.log("đã chạy vào đây chưa thế", values)
+    const { content, ...restValues } = values;
+    const dataNews = {
       ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
+      content: content, // Lưu nội dung trực tiếp từ TinyMCE
     };
     try {
-      const res = await APICreateDirector(dataDirector);
+      const res = await APICreateNews(dataNews);
       console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         setFileList([]);
-        getAllDirector();
+        getAllNews();
       }
       // console.log("Success:", values);
     } catch (error) {
@@ -266,7 +250,7 @@ const AdminNew = () => {
       const res = await APIDeleteDirector({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
+        getAllNews(); // Cập nhật lại danh sách news sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -283,25 +267,6 @@ const AdminNew = () => {
       } else {
         message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
       }
-    }
-  };
-  const getAllCinemas = async () => {
-    try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      console.log('API Response:', res);
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas.map((cinema) => ({
-          value: cinema.uuid,
-          label: cinema.cinemaName
-        }));
-
-        setListCinemas(cinemasOptions); // Cập nhật state
-      } else {
-        message.error('Không có dữ liệu tin tức hợp lệ.');
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách tin tức.');
     }
   };
 
@@ -386,9 +351,9 @@ const AdminNew = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listDirectorMap = listNews.map((news, index) => ({
     key: index + 1,
-    ...director
+    ...news
   }));
   const columns = [
     {
@@ -397,52 +362,45 @@ const AdminNew = () => {
       width: 50
     },
     {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
-      width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      title: 'Tiêu đề',
+      dataIndex: 'title',
+      key: 'title',
+      ...getColumnSearchProps('title'),
+      width: 150,
+      sorter: (a, b) => a.title.length - b.title.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (news, record) => {
         return (
           <div>
-            {director} {/* Hiển thị tên quốc gia */}
+            {news} {/* Hiển thị tên quốc gia */}
           </div>
         );
       }
     },
     {
-      title: 'Loại phòng chiếu',
-      dataIndex: 'screenType',
-      key: 'screenType',
-      width: 50
+      title: 'Ngày tạo',
+      dataIndex: 'timeCreated',
+      key: 'timeCreated',
+      width: 100,
+      render: (text) => {
+        const date = new Date(text);
+        const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
+        return formattedDate;
+      },
     },
     {
-      title: 'Số hàng',
-      dataIndex: 'rowScreen',
-      key: 'rowScreen',
+      title: 'Lượt xem',
+      dataIndex: 'view',
+      key: 'view',
       width: 50
     },
-    {
-      title: 'Số cột',
-      dataIndex: 'colScreen',
-      key: 'colScreen',
-      width: 50
-    },
+
 
     {
       title: '',
       width: 50,
       render: (record) => (
         <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined />
-          </Button>
           <Popconfirm
             title="Xoá tin tức"
             description="Bạn muốn xoá tin tức này?"
@@ -466,8 +424,7 @@ const AdminNew = () => {
     }
   ];
   useEffect(() => {
-    getAllDirector();
-    getAllCinemas();
+    getAllNews();
   }, []);
   return (
     <>
@@ -488,7 +445,7 @@ const AdminNew = () => {
           // labelCol={{ span: 8 }}
           // wrapperCol={{ span: 16 }}
           // style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
+          // initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
@@ -512,50 +469,77 @@ const AdminNew = () => {
                 <Select
                   placeholder="Chọn trạng thái"
                   options={[
-                    { value: 'draft', label: 'Nháp' },
-                    { value: 'published', label: 'Xuất bản' },
+                    { value: '1', label: 'Xuất bản' },
+                    { value: '2', label: 'Nháp' },
                   ]}
                 />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col className="gutter-row" span={16}>
-              <Form.Item
-                label="Nội dung"
-                name="content"
-                rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-              >
-                <ReactQuill theme="snow"
-                className="custom-quill-editor" />
+            <Col span={16}>
+              <Form.Item label="Nội dung" name="content" rules={[{ required: true, message: 'Hãy nhập nội dung tin tức!' }]}>
+                <Editor
+                  apiKey="qjczy5r2hhn67vhifshnfy0vxjjxtjdt9fi9k2ishabkzevm"  // Thêm API Key của bạn nếu cần
+                  value={String(content)} // Chuyển đổi content thành chuỗi nếu cần
+                  onEditorChange={(newContent) => setContent(newContent)}  // Cập nhật giá trị khi thay đổi
+                  init={{
+                    readonly: false, // Đảm bảo rằng chế độ chỉ đọc bị vô hiệu hóa
+                    height: 500,
+                    menubar: false,
+                    plugins: [
+                      'advlist',
+                      'autolink',
+                      'lists',
+                      'link',
+                      'image',
+                      'preview',
+                    ],
+                    toolbar: 'undo redo | styles | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image', 
+                  }}
+                />
               </Form.Item>
             </Col>
+
             {/* Trạng thái */}
             <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Danh mục"
-                name="category"
-                rules={[{ required: true, message: 'Hãy chọn danh mục!' }]}
-              >
-                <Select
-                  placeholder="Chọn danh mục"
-                  options={[
-                    { value: 'news', label: 'Tin tức' },
-                    { value: 'events', label: 'Sự kiện' },
-                  ]}
-                />
+              <Form.Item label="Image" name="imagesUuid" rules={[]}>
+                <Upload
+                  listType="picture-circle"
+                  fileList={fileList}
+                  onPreview={handlePreviewCreateImage}
+                  onChange={handleChangeCreateImage}
+                  beforeUpload={(file) => {
+                    setFileList([file]);
+                    return false; // Prevents automatic upload
+                  }}
+                >
+                  {fileList.length >= 1 ? null : uploadButton}
+                </Upload>
+
+                {previewImage && (
+                  <Image
+                    wrapperStyle={{ display: 'none' }}
+                    preview={{
+                      visible: previewOpen,
+                      onVisibleChange: (visible) => setPreviewOpen(visible),
+                      afterOpenChange: (visible) => !visible && setPreviewImage('')
+                    }}
+                    src={previewImage}
+                  />
+                )}
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={16}>
               {/* Danh mục */}
               <Form.Item
                 label="Mô tả"
-                name="description"
-                rules={[{ required: true, message: 'Hãy nhập mô tả cho tin tức!' }]}
+                name="shortTitle"
+                rules={[{ required: true, message: 'Hãy nhập tiêu đề ngắn cho tin tức!' }]}
               >
                 <Input.TextArea
-                  placeholder="Nhập mô tả...."
-                  autoSize={{ minRows: 4, maxRows: 8 }}
+                  placeholder="Nhập tiêu đề...."
+                  autoSize={{ minRows: 1, maxRows: 2 }}
                 />
               </Form.Item>
             </Col>
@@ -588,7 +572,7 @@ const AdminNew = () => {
         >
           <Form.Item
             label="Tên tin tức"
-            name="directorName"
+            name="title"
             rules={[{ required: true, message: 'Hãy nhập tên tin tức!' }]}
           >
             <Input />

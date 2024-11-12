@@ -134,8 +134,22 @@ export const APIGetALLSeat = (data) => {
   return instance.post('/api/v1/Screen/get_list_seat', data);
 };
 
-//Upload Image
+//News
+export const APICreateNews = (data) => {
+  return instance.post('/api/v1/News/upsert_news', data);
+};
+export const APIGetAllNews = (data) => {
+  return instance.post('/api/v1/News/page_list_news', data);
+};
+export const APIGetNewsDetail = (data) => {
+  return instance.post('/api/v1/News/news_detail', data);
+};
 
+export const APIDeleteNews = (data) => {
+  return instance.post('/api/v1/News/update_news_status', data);
+};
+
+//Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();
 
