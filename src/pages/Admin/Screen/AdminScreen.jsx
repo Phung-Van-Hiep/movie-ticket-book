@@ -236,6 +236,7 @@ const AdminScreen = () => {
       const res = await APIGetAllScreen({ pageSize: 1000, page: 1 });
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
+        // console.log("CHeckda ta",res.data.data.items)
         const filteredScreen = res.data?.data?.items.filter(
           (screen) => screen.status !== 0
         );

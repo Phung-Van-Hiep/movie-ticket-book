@@ -25,11 +25,10 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
-  APIUploadImage,
+  APICreateShowTime,
+  APIGetAllShowTime,
+  APIGetShowTimeDetail,
+  APIDeleteShowTime,
   APIGetAllCinemas,
   APIGetAllScreen,
   APIGetAllMovies
@@ -37,29 +36,18 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
 import moment from 'moment';
-const getBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
 
 const AdminShowTime = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listShowTime, setListShowTime] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [showtimeDetail, setShowTimeDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [fileList, setFileList] = useState([]);
-  const [imagesUuid, setImagesUuid] = useState('');
   const [listCinemas, setListCinemas] = useState([]);
   const [listScreen, setListScreen] = useState([]);
   const [listMovies, setListMovies] = useState([]);
@@ -67,14 +55,14 @@ const AdminShowTime = () => {
   const [selectedCinemaUuid, setSelectedCinemaUuid] = useState(null);
   const [showText, setShowText] = useState(false);
   const [cinemaLabel, setCinemaLabel] = useState('');
-const [screenLabel, setScreenLabel] = useState('');
-const [selectedCinemaLabel, setSelectedCinemaLabel] = useState('');
-const [selectedScreenLabel, setSelectedScreenLabel] = useState('');
-const handleSerchShowTime = () => {
-  setSelectedCinemaLabel(cinemaLabel);
-  setSelectedScreenLabel(screenLabel);
-  setShowText(true);
-};
+  const [screenLabel, setScreenLabel] = useState('');
+  const [selectedCinemaLabel, setSelectedCinemaLabel] = useState('');
+  const [selectedScreenLabel, setSelectedScreenLabel] = useState('');
+  const handleSerchShowTime = () => {
+    setSelectedCinemaLabel(cinemaLabel);
+    setSelectedScreenLabel(screenLabel);
+    setShowText(true);
+  };
   const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
@@ -88,51 +76,26 @@ const handleSerchShowTime = () => {
   const handleChangeScreen = (value, option) => {
     setScreenLabel(option?.label || '');
   };
-  const handlePreviewCreateImage = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
-
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
-  };
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {  
-    const res = await APIUploadImage(file, '3');
-    if (res && res.status === 200) {
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
-  const handleChangeCreateImage = ({ fileList: newFileList }) =>
-    setFileList(newFileList);
-
-  const uploadButton = (
-    <button style={{ border: 0, background: 'none' }} type="button">
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
-
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetDirectorDetail({ uuid });
-      // console.log('update', res);
+      const res = await APIGetShowTimeDetail({ uuid });
       if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${directorDetail.imageUrl}`;
+        const showtimeDetail = res.data.data;
+        setShowTimeDetail(showtimeDetail);
+        // console.log("Checkdata ",showtimeDetail);
+        const showTimeRange = [
+          moment(showtimeDetail.startTime, 'HH:mm:ss'),
+          moment(showtimeDetail.endTime, 'HH:mm:ss')
+        ];
         formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
+          cinemaUuid: showtimeDetail.cinemaUuid,
+          showDate: moment(showtimeDetail.showDate, 'YYYY-MM-DD'),
+          screenUuid: showtimeDetail.screenUuid,
+          moviesUuid:showtimeDetail.moviesUuid,
+          languageType:showtimeDetail.languageType,
+          showTime: showTimeRange,
         });
-        setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
-        // setFileList([]);
-        setPreviewImage('');
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
       }
@@ -149,52 +112,53 @@ const handleSerchShowTime = () => {
   };
 
   const formatToDateString = (dateObj) => moment(dateObj).format('YYYY-MM-DD');
+  const onFinishUpdateShowTimeInfor = async (values) => {
+    const { showDate, showTime, ...restValues } = values;
+  
+  // Định dạng lại ngày chiếu
+  const showDateFormat = moment(showDate).format('YYYY-MM-DD');
+  console.log("Check cái res", restValues)
+  // Định dạng lại khoảng thời gian chiếu
+  const [startTime, endTime] = showTime;
+  const formattedStartTime = moment(startTime).format('HH:mm:ss');
+  const formattedEndTime = moment(endTime).format('HH:mm:ss');
 
-  const onFinishUpdateDirectorInfor = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
-    try {
-      const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
-        birthday: birthdayFormat,
-        description: restValues.description,
-        imagesUuid // Gửi URL của ảnh nếu có
-      });
-      if (res && res.status === 200) {
-        message.success(res.data.error.errorMessage);
-        form.resetFields();
-        setFileList([]);
-        setImagesUuid('');
-        getAllDirector();
-        handleCancelUpdate();
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi update.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
+  try {
+    const res = await APICreateShowTime({
+      uuid: showtimeDetail.uuid,
+      // cinemaUuid: restValues.cinemaUuid,
+      screenUuid: restValues.screenUuid,
+      moviesUuid: restValues.moviesUuid,
+      showDate: showDateFormat,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
+      languageType: restValues.languageType,
+    });
+
+    if (res && res.status === 200) {
+      message.success('Cập nhật suất chiếu thành công');
+      formUpdate.resetFields();
+      getAllShowTime(); // Tải lại danh sách suất chiếu
+      handleCancelUpdate();
     }
-  };
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.error?.errorMessage || 'Đã xảy ra lỗi khi cập nhật suất chiếu';
+    message.error(errorMessage);
+  }
+};
 
-  const getAllDirector = async () => {
+  const getAllShowTime = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllShowTime({ pageSize: 1000, page: 1, cinemaUuid: null, screenUuid: null, findDate: moment().format('YYYY-MM-DD') });
       if (res && res.data && res.data.data) {
-        // Lọc các region có status khác "0"
-        const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+        // console.log(res.data.data.items)
+        const filteredShowTimes = res.data.data.items.flatMap(cinema => 
+          cinema.screens.flatMap(screen => 
+            screen.showtimes.filter(showtime => showtime.status === 1)
+          )
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListShowTime(filteredShowTimes); // Cập nhật danh sách showtime đã lọc
         form.resetFields();
         handleCancel();
       }
@@ -203,22 +167,22 @@ const handleSerchShowTime = () => {
     }
   };
   const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    // console.log("Check ngày", restValues)
-    const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
+    const { showDate, showTime,cinemaUuid, ...restValues } = values;
+    const startTime = showTime ? showTime[0].format("HH:mm:ss") : null;
+    const endTime = showTime ? showTime[1].format("HH:mm:ss") : null;
+    const showDateFormat = formatToDateString(new Date(showDate));
+    const dataShowTime = {
       ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
+      showDate: showDateFormat,
+      startTime: startTime,
+      endTime: endTime,
     };
     try {
-      const res = await APICreateDirector(dataDirector);
-      // console.log(res);
+      const res = await APICreateShowTime(dataShowTime);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setFileList([]);
-        getAllDirector();
+        getAllShowTime();
       }
       // console.log("Success:", values);
     } catch (error) {
@@ -241,7 +205,6 @@ const handleSerchShowTime = () => {
   };
   const showModal = () => {
     setIsModalOpen(true);
-    setFileList([]);
   };
 
   const handleOk = () => {
@@ -256,7 +219,6 @@ const handleSerchShowTime = () => {
 
   const handleCancelUpdate = () => {
     setIsModalUpdateOpen(false);
-    setFileList([]);
   };
 
   const onClose = () => {
@@ -275,10 +237,10 @@ const handleSerchShowTime = () => {
   };
   const confirm = async (uuid) => {
     try {
-      const res = await APIDeleteDirector({ uuid, status: 0 });
+      const res = await APIDeleteShowTime({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
+        getAllShowTime(); // Cập nhật lại danh sách showtime sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -417,9 +379,9 @@ const handleSerchShowTime = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listShowTimeMap = listShowTime.map((showtime, index) => ({
     key: index + 1,
-    ...director
+    ...showtime
   }));
   const columns = [
     {
@@ -428,40 +390,63 @@ const handleSerchShowTime = () => {
       width: 50
     },
     {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
+      title: 'Tên phim',
+      dataIndex: 'moviesName',
+      key: 'moviesName',
+      ...getColumnSearchProps('moviesName'),
       width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      sorter: (a, b) => a.moviesName.length - b.moviesName.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (movie, record) => {
         return (
           <div>
-            {director} {/* Hiển thị tên quốc gia */}
+            {movie} {/* Hiển thị tên quốc gia */}
           </div>
         );
       }
     },
     {
-      title: 'Loại phòng chiếu',
+      title: 'Hình thức dịch',
+      dataIndex: 'languageType',
+      key: 'languageType',
+      width: 50,
+      render: (languageType) => (languageType === 1 ? 'Phụ đề' : 'Lồng tiếng'),
+    },
+    {
+      title: 'Hình thức chiếu',
       dataIndex: 'screenType',
       key: 'screenType',
-      width: 50
+      width: 50,
+      render: (screenType) => {
+        switch (screenType) {
+          case 1: return '2D';
+          case 2: return '3D';
+          case 3: return 'IMAX 2D';
+          case 4: return 'IMAX 3D';
+          default: return '';
+        }
+      },
     },
     {
-      title: 'Số hàng',
-      dataIndex: 'rowScreen',
-      key: 'rowScreen',
-      width: 50
+      title: 'Thời gian chiếu',
+      key: 'timeRange',
+      width: 100,
+      render: (text, record) => `${record.startTime} - ${record.endTime}`,
     },
     {
-      title: 'Số cột',
-      dataIndex: 'colScreen',
-      key: 'colScreen',
-      width: 50
+      title: 'Trạng thái',
+      dataIndex: 'state',
+      key: 'state',
+      width: 50,
+      render: (state) => {
+        switch (state) {
+          case 0: return 'Sắp chiếu';
+          case 1: return 'Đang chiếu';
+          case 2: return 'Đã chiếu';
+          default: return '';
+        }
+      },
     },
-
     {
       title: '',
       width: 50,
@@ -490,7 +475,7 @@ const handleSerchShowTime = () => {
     }
   ];
   useEffect(() => {
-    getAllDirector();
+    getAllShowTime();
     getAllCinemas();
     getAllScreen();
     getAllMovies();
@@ -569,10 +554,10 @@ const handleSerchShowTime = () => {
         {showText && (
           <div className="text-center mt-20">
             <div className="text-white text-6xl font-semibold bg-blue-700 p-4 rounded-lg">
-           Rạp: {selectedCinemaLabel}
+              Rạp: {selectedCinemaLabel}
             </div>
             <div className="text-yellow-500 text-3xl font-semibold mt-10 text-left ml-10">
-            {selectedScreenLabel}
+              {selectedScreenLabel}
             </div>
           </div>
         )}
@@ -647,7 +632,7 @@ const handleSerchShowTime = () => {
           </Form.Item>
           <Form.Item
             label="Ngày chiếu phim"
-            name="movieDate"
+            name="showDate"
             rules={[
               {
                 required: true,
@@ -661,28 +646,8 @@ const handleSerchShowTime = () => {
               className="w-full"
             />
           </Form.Item>
-          <Form.Item
-            label="Hình thức phim"
-            name="moviesType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn hình thức phim!'
-              }
-            ]}
-          >
-            <Select
-              defaultValue=""
-              onChange={handleChangeStatus}
-              options={[
-                { value: 1, label: '2D' },
-                { value: 2, label: '3D' },
-                { value: 3, label: 'IMAX' }
-              ]}
-            />
-          </Form.Item>
           <Form.Item label="Hình thức dịch"
-            name="transForm"
+            name="languageType"
             rules={[{ required: true, message: 'Hãy chọn hình thức dịch' }]}>
             <Select
               defaultValue=""
@@ -720,66 +685,92 @@ const handleSerchShowTime = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           initialValues={{ remember: true }}
-          onFinish={onFinishUpdateDirectorInfor}
+          onFinish={onFinishUpdateShowTimeInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item
-            label="Tên suất chiếu"
-            name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên suất chiếu!' }]}
+            label="Rạp phim"
+            name="cinemaUuid"
+            rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
           >
-            <Input />
+            <Select
+              showSearch
+              defaultValue=""
+              onChange={handleChangeCinemas}
+              options={listCinemas}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
+            />
           </Form.Item>
-
           <Form.Item
-            label="Ngày sinh"
-            name="birthday"
+            label="Phòng chiếu"
+            name="screenUuid"
+            rules={[{ required: true, message: 'Hãy chọn phòng chiếu!' }]}
+          >
+            <Select
+              showSearch
+              defaultValue=""
+              // onChange={handleChangeCinemas}
+              options={listScreen}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+              className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item
+            label="Tên phim"
+            name="moviesUuid"
+            rules={[{ required: true, message: 'Hãy chọn phim chiếu!' }]}
+          >
+            <Select
+              showSearch
+              defaultValue=""
+              // onChange={handleChangeCinemas}
+              options={listMovies}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item
+            label="Ngày chiếu phim"
+            name="showDate"
             rules={[
               {
                 required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
+                message: 'Hãy nhập ngày chiếu phim!'
               }
             ]}
           >
             <DatePicker
-              placeholder="Ngày sinh"
+              // placeholder="Ngày sinh"
               variant="filled"
               className="w-full"
             />
           </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
+          <Form.Item label="Hình thức dịch"
+            name="languageType"
+            rules={[{ required: true, message: 'Hãy chọn hình thức dịch' }]}>
+            <Select
+              defaultValue=""
+              onChange={handleChangeStatus}
+              options={[
+                { value: 1, label: 'Phụ đề' },
+                { value: 2, label: 'Lồng tiếng' },
+              ]}
             />
           </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
-            <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
+          <Form.Item label="Thời gian chiếu"
+            name="showTime"
+            rules={[{ required: true, message: 'Hãy nhập thời gian chiếu' }]}>
+            <TimePicker.RangePicker />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
@@ -791,7 +782,7 @@ const handleSerchShowTime = () => {
       <div className='mt-10'>
         <Table
           columns={columns}
-          dataSource={listDirectorMap}
+          dataSource={listShowTimeMap}
           scroll={{ x: 1000, y: 500 }}
           pagination={{
             showTotal: (total, range) => {

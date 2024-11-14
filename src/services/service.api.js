@@ -164,6 +164,21 @@ export const APIDeleteCombo = (data) => {
   return instance.post('/api/v1/Combo/update_combo_status', data);
 };
 
+//Showtime
+export const APICreateShowTime = (data) => {
+  return instance.post('/api/v1/Showtimes/upsert_showtime', data);
+};
+export const APIGetAllShowTime = (data) => {
+  return instance.post('/api/v1/Showtimes/page_list_showtime', data);
+};
+export const APIGetShowTimeDetail = (data) => {
+  return instance.post('/api/v1/Showtimes/showtime_detail', data);
+};
+
+export const APIDeleteShowTime = (data) => {
+  return instance.post('/api/v1/Showtimes/update_showtime_status', data);
+};
+
 //Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();
