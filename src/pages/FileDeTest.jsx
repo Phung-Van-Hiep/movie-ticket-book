@@ -1,713 +1,234 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  DeleteOutlined,
-  EditOutlined,
-  SearchOutlined,
-  TableOutlined
+  CalendarOutlined,
+  DollarOutlined,
+  EnvironmentOutlined,
+  FileSearchOutlined,
+  GlobalOutlined,
+  HomeOutlined,
+  IdcardOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PercentageOutlined,
+  PlaySquareOutlined,
+  ShoppingCartOutlined,
+  TableOutlined,
+  UnorderedListOutlined,
+  UserOutlined,
+  UserSwitchOutlined,
+  VideoCameraAddOutlined,
+  VideoCameraOutlined
 } from '@ant-design/icons';
+import { Breadcrumb, Button, Layout, Menu, theme } from 'antd';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import Item from 'antd/es/list/Item';
 
-import {
-  Button,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Modal,
-  Popconfirm,
-  Row,
-  Select,
-  Space,
-  Table
-} from 'antd';
-import Highlighter from 'react-highlight-words';
-import '../../../css/AdminGenre.css';
-import {
-  APICreateScreen,
-  APIGetAllScreen,
-  APIGetScreenDetail,
-  APIDeleteScreen,
-  APIUploadImage,
-  APIGetAllCinemas,
-  APIUpdateScreen
-} from '../../../services/service.api';
-import { PlusOutlined } from '@ant-design/icons';
-import { Image, Upload } from 'antd';
-import moment from 'moment';
-import SeatLayout from './SeatLayOut';
+const { Header, Content, Footer, Sider } = Layout;
 
-const AdminScreen = () => {
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const searchInput = useRef(null);
-  const [listScreen, setListScreen] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [form] = Form.useForm();
-  const [formUpdate] = Form.useForm();
-  const [screenDetail, setScreenDetail] = useState(null);
-  const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  const [listCinemas, setListCinemas] = useState([]);
-  const [rows, setRows] = useState(0); // Default rows
-  const [cols, setCols] = useState(0); // Default columns
-  const [seatsData, setSeatsData] = useState([]);
-
-  const handleChangeStatus = (value) => {
-    // console.log(`selected ${value}`);
+const items = [
+  {
+    key: '1',
+    icon: <UserOutlined />,
+    label: 'Quản lý người dùng',
+    link: '/admin/user'
+  },
+  {
+    key: '2',
+    icon: <VideoCameraOutlined />,
+    label: 'Quản lý phim',
+    link: '/admin/movie'
+  },
+  {
+    key: '3',
+    icon: <EnvironmentOutlined />,
+    label: 'Quản lý rạp phim',
+    link: '/admin/cinemas'
+  },
+  {
+    key: '4',
+    icon: <PlaySquareOutlined />,
+    label: 'Quản lý phòng chiếu phim',
+    link: '/admin/screen'
+  },
+  {
+    key: '5',
+    icon: <CalendarOutlined />,
+    label: 'Quản lý lịch chiếu phim',
+    link: '/admin/schedule'
+  },
+  {
+    key: '6',
+    icon: <UnorderedListOutlined />,
+    label: 'Quản lý suất chiếu phim',
+    link: '/admin/showtime'
+  },
+  {
+    key: '7',
+    icon: <ShoppingCartOutlined />,
+    label: 'Quản lý đơn hàng',
+    link: '/admin/order'
+  },
+  {
+    key: '8',
+    icon: <DollarOutlined />,
+    label: 'Quản lý giá vé',
+    link: '/admin/ticketprice'
+  },
+  {
+    key: '9',
+    icon: <PercentageOutlined />,
+    label: 'Quản lý khuyến mãi',
+    link: '/admin/coupon'
+  },
+  {
+    key: '10',
+    icon: <FileSearchOutlined />,
+    label: 'Quản lý tin tức',
+    link: '/admin/news'
+  },
+  {
+    key: '11',
+    icon: <VideoCameraAddOutlined />,
+    label: 'Quản lý thể loại',
+    link: '/admin/genre'
+  },
+  {
+    key: '12',
+    icon: <GlobalOutlined />,
+    label: 'Quản lý quốc gia',
+    link: '/admin/region'
+  },
+  {
+    key: '13',
+    icon: <IdcardOutlined />,
+    label: 'Quản lý đạo diễn',
+    link: '/admin/director'
+  },
+  {
+    key: '14',
+    icon: <UserSwitchOutlined />,
+    label: 'Quản lý diễn viên',
+    link: '/admin/cast'
+  },
+  {
+    key: '15',
+    icon: <TableOutlined />,
+    label: 'Quản lý combo-nước',
+    link: '/admin/combo'
   }
+].map((item) => ({
+  key: item.key,
+  icon: <Link to={item.link}>{item.icon}</Link>,
+  label: item.label,
+  link: item.link
+}));
 
-  const handleChangeCinemas = (value) => {
-    // console.log(`selected ${value}`);
-  };
-
-  const handleRows = (value) => {
-    setRows(value);
-  }
-  const handleCol = (value) => {
-    setCols(value);
-  }
-  const handleSeatsUpdate = (seats) => {
-    setSeatsData(seats);
-  };
-  const showModalUpdate = async (uuid) => {
-    try {
-      const res = await APIGetScreenDetail({ uuid });
-      if (res && res.status === 200) {
-        const screenDetail = res.data.data;
-        setScreenDetail(screenDetail);
-        formUpdate.setFieldsValue({
-          screenName: screenDetail.screenName,
-          capacity: screenDetail.capacity,
-          cinemaUuid: screenDetail.cinemaUuid,
-          screenType: screenDetail.screenType,
-          collumn: screenDetail.collumn,
-          row: screenDetail.row,
-          status: screenDetail.status,
-        });
-        setRows(screenDetail.row);
-        setCols(screenDetail.collumn);
-        setIsModalUpdateOpen(true);
-      } else {
-        message.error('Không tìm thấy thông tin chi tiết.');
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-        message.error(errorMessage);
-      } else {
-        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-      }
-    }
-  };
-
-  const onFinishUpdateDirectorInfor = async (values) => {
-    // const { ...restValues } = values;
-    // // console.log("Check res",restValues)
-    // try {
-    //   const res = await APIUpdateScreen({
-    //     uuid: screenDetail?.uuid,
-    //     screenName: restValues.screenName,
-    //     capacity: restValues.collumn*restValues.row,
-    //     cinemaUuid: restValues.cinemaUuid,
-    //     screenType: restValues.screenType,
-    //     columns: restValues.collumn,
-    //     rows: restValues.row,
-    //     status: restValues.status,
-    //     seats: seatsData.map(seat => ({
-    //       seatUuid: seat.seatUuid,
-    //       seatCode: seat.seatName,
-    //       seatType: seat.seatType,
-    //     })),
-    //   });
-    //   if (res && res.status === 200) {
-    //     message.success(res.data.error.errorMessage);
-    //     form.resetFields();
-    //     getAllSceen();
-    //     handleCancelUpdate();
-    //   }
-    // } catch (error) {
-    //   if (error.response) {
-    //     const errorMessage =
-    //       error.response.data?.error?.errorMessage ||
-    //       'Đã xảy ra lỗi khi update.';
-    //     message.error(errorMessage);
-    //   } else if (error.request) {
-    //     message.error(
-    //       'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-    //     );
-    //   } else {
-    //     message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-    //   }
-    // }
-  };
-
-  const getAllScreen = async () => {
-    try {
-      const res = await APIGetAllScreen({ pageSize: 1000, page: 1 });
-      if (res && res.data && res.data.data) {
-        // Lọc các region có status khác "0"
-        const filteredScreen = res.data?.data?.items.filter(
-          (screen) => screen.status !== 0
-        );
-        setListScreen(filteredScreen); // Cập nhật danh sách director đã lọc
-        form.resetFields();
-        handleCancel();
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách phòng chiếu.');
-    }
-  };
-  const onFinish = async (values) => {
-    const { rows, columns, ...restValues } = values;
-    const dataScreen = {
-      ...restValues,
-      capacity: rows * columns,
-      rows: rows,
-      columns: columns,
-      seats: seatsData.map(seat => ({
-        seatUuid: null,
-        seatCode: seat.seatName,
-        seatType: seat.seatType,
-      })),
-    };
-    try {
-      const res = await APICreateScreen(dataScreen);
-      if (res && res.status === 200) {
-        message.success(res.data.error.errorMessage);
-        form.resetFields();
-        setFileList([]);
-        getAllScreen();
-      }
-      // console.log("Success:", values);
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi thêm mới.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
-  };
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const showModal = () => {
-    setIsModalOpen(true);
-    setCols(0);
-    setRows(0);
-  };
-
-  const handleOk = () => {
-    setIsModalOpen(false);
-    form.resetFields();
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    form.resetFields();
-  };
-
-  const handleCancelUpdate = () => {
-    setIsModalUpdateOpen(false);
-    setFileList([]);
-  };
-
-  const onClose = () => {
-    setOpen(false);
-    setIsModalUpdateOpen(false);
-  };
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText('');
-  };
-  const confirm = async (uuid) => {
-    try {
-      const res = await APIDeleteScreen({ uuid, status: 0 });
-      if (res && res.status === 200) {
-        message.success('Đã xoá thành công.');
-        getAllSceen(); // Cập nhật lại danh sách screen sau khi xoá
-      } else {
-        message.error('Xoá thất bại.');
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi cập nhật status.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
-  };
-  const getAllCinemas = async () => {
-    try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas
-          .filter((cinema) => cinema.status === 1) 
-          .map((cinema) => ({
-            value: cinema.uuid,
-            label: cinema.cinemaName
-          }));
-
-        setListCinemas(cinemasOptions);
-      } else {
-        message.error('Không có dữ liệu phòng chiếu hợp lệ.');
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách phòng chiếu.');
-    }
-  };
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close
-    }) => (
-      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Tìm kiếm đạo diễn`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Tìm kiếm
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Đặt lại
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Lọc
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            Đóng
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      )
-  });
-  const listScreenMap = listScreen.map((screen, index) => ({
-    key: index + 1,
-    ...screen
-  }));
-  const columns = [
-    {
-      title: 'STT',
-      dataIndex: 'key',
-      width: 50
-    },
-    {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'screenName',
-      key: 'screenName',
-      ...getColumnSearchProps('screenName'),
-      width: 50,
-      sorter: (a, b) => a.screenName.length - b.screenName.length,
-      sortDirections: ['descend', 'ascend'],
-      render: (screen, record) => {
-        return (
-          <div>
-            {screen} {/* Hiển thị tên phòng chiếu */}
-          </div>
-        );
-      }
-    },
-    {
-      title: 'Loại phòng chiếu',
-      dataIndex: 'screenType',
-      key: 'screenType',
-      width: 50,
-      render: (status) => {
-        let statusText;
-        switch (status) {
-          case 1:
-            statusText = '2D';
-            break;
-          case 2:
-            statusText = '3D';
-            break;
-          case 3:
-            statusText = 'IMAX2D';
-            break;
-          case 4:
-            statusText = 'IMAX3D';
-        }
-        return <div className="truncate-description">{statusText}</div>;
-      }
-    },
-    {
-      title: 'Tổng số ghế',
-      dataIndex: 'capacity',
-      key: 'capacity',
-      width: 50
-    },
-
-
-    {
-      title: '',
-      width: 50,
-      render: (record) => (
-        <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined />
-          </Button>
-          <Popconfirm
-            title="Xoá phòng chiếu"
-            description="Bạn muốn xoá phòng chiếu này?"
-            onConfirm={() => confirm(record.uuid)}
-            okText={<>Có</>}
-            cancelText="Không"
-          >
-            <Button danger>
-              <DeleteOutlined />
-            </Button>
-          </Popconfirm>
-          <Button
-            type="text"
-            className="bg-blue-700 text-white"
-            onClick={() => showModalUpdate(record.uuid)}
-          >
-            <EditOutlined />
-          </Button>
-        </div>
-      )
-    }
-  ];
+const LayoutAdmin = () => {
+  const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState('');
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const {
+    token: { colorBgContainer, borderRadiusLG }
+  } = theme.useToken();
   useEffect(() => {
-    getAllScreen();
-    getAllCinemas();
-  }, []);
+    const currentPath = location.pathname;
+    const currentItem = items.find(item => item.link === currentPath);
+    if (currentItem) {
+      setSelectedKeys([currentItem.key]);
+      setSelectedMenuItem(currentItem.label);
+    }
+  }, [location.pathname]);
+
+  const handleMenuClick = (info) => {
+    setSelectedKeys([info.key]);
+    const selectedItem = items.find(item => item.key === info.key);
+    if (selectedItem) {
+      setSelectedMenuItem(selectedItem.label);
+    }
+  };
   return (
-    <>
-      <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới phòng chiếu
-      </Button>
-      <Modal
-        title="Thêm mới phòng chiếu"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        footer={<></>}
-        width={1200}
-        height={1200}
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider
+        collapsible
+        theme="light"
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        width={250}
       >
-        <Form
-          form={form}
-          name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Row gutter={16}>
-            <Col className="gutter-row" span={8}>
-              <Form.Item
-                label="Tên phòng chiếu"
-                name="screenName"
-                rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <Form.Item
-                label="Rạp phim"
-                name="cinemaUuid"
-                rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-              >
-                <Select
-                  showSearch
-                  defaultValue=""
-                  onChange={handleChangeCinemas}
-                  options={listCinemas}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
+        <div className="demo-logo-vertical flex justify-center items-center py-8"></div>
+        <Menu
+          theme="light"
+          className="h-full"
+          mode="inline"
+          selectedKeys={selectedKeys}
+          items={items}
+          onClick={handleMenuClick}
+        />
+      </Sider>
+      <Layout>
+        <Header style={{ padding: '0 16px', background: colorBgContainer, display: 'flex', alignItems: 'center' }}>
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              fontSize: '16px',
+              width: 30,
+              height: 64,
+            }}
+          />
+          <Breadcrumb
+            items={[
+              {
+                title: selectedMenuItem,
+              },
+            ]}
+            // onClick={() => setCollapsed(!collapsed)}
+            style={{
+              fontSize: '20px',
+              paddingBottom: '5px',
+              cursor: 'pointer',
 
-            <Col className="gutter-row" span={8}>
-              <Form.Item
-                label="Loại phòng chiếu"
-                name="screenType"
-                rules={[{ required: true, message: 'Hãy chọn loại phòng chiếu!' }]}
-              >
-                <Select
-                  defaultValue=""
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 1, label: '2D' },
-                    { value: 2, label: '3D' },
-                    { value: 3, label: 'IMAX2D' },
-                    { value: 4, label: 'IMAX3D' },
-                  ]}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16} justify="center">
-            <Col className="gutter-row" span={12}>
-              <Form.Item label="Số hàng" name="rows" rules={[
-                { required: true, message: 'Nhập số hàng' },
-                { type: 'number', min: 1, max: 14, message: 'Số hàng phải từ 1 đến 15!' }
-              ]}>
-                <InputNumber
-                  onChange={handleRows}
-                  placeholder="Nhập số hàng"
-                  className='w-9/12'
-                  min={1}  // Minimum value
-                  max={15} // Maximum value
-                />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={12}>
-              <Form.Item label="Số cột" name="columns" rules={[
-                { required: true, message: 'Nhập số cột' },
-                { type: 'number', min: 1, max: 14, message: 'Số cột phải từ 1 đến 15!' }
-              ]}>
-                <InputNumber
-                  onChange={handleCol}
-                  placeholder="Nhập số cột"
-                  className='w-9/12'
-                  min={1}  // Minimum value
-                  max={15} // Maximum value
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          {/* Thêm phần SeatLayout ở đây */}
-          <div className="seat-layout-preview">
-            {rows && cols ? (
-              <SeatLayout
-                rows={rows}
-                cols={cols}
-                onSeatsChange={handleSeatsUpdate}
-              // Có thể thêm các props khác nếu cần
-              />
-            ) : null}
+            }}
+          />
+        </Header>
+        <Content style={{ margin: '16px' }}>
+          <Breadcrumb
+            style={{ margin: '8px' }}
+            items={[
+              {
+                title: (
+                  <Link
+                    to="/admin/user"
+                    onClick={() => setSelectedKeys('1')}
+                  >
+                    <HomeOutlined /> Admin
+                  </Link>
+                ),
+              },
+              {
+                title: selectedMenuItem,
+              },
+            ]}
+          />
+          <div
+            style={{
+              padding: 24,
+              minHeight: '75vh',
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG
+            }}
+          >
+            <Outlet />
           </div>
-          <div className="flex justify-center mt-10">
-            <Button type="primary" htmlType="submit" form="basic">
-              Thêm mới
-            </Button>
-          </div>
-        </Form>
-      </Modal>
-      <Modal
-        title="Cập nhật đạo diễn"
-        open={isModalUpdateOpen}
-        onCancel={() => setIsModalUpdateOpen(false)}
-        footer={
-          <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
-        }
-        width={1200}
-        height={1200}
-      >
-        <Form
-          form={formUpdate}
-          name="basic1"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinishUpdateDirectorInfor}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Row gutter={16}>
-            <Col className="gutter-row" span={8}>
-              <Form.Item
-                label="Tên phòng chiếu"
-                name="screenName"
-                rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <Form.Item
-                label="Rạp phim"
-                name="cinemaUuid"
-                rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-              >
-                <Select
-                  showSearch
-                  onChange={handleChangeCinemas}
-                  options={listCinemas}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-
-            <Col className="gutter-row" span={8}>
-              <Form.Item
-                label="Loại phòng chiếu"
-                name="screenType"
-                rules={[{ required: true, message: 'Hãy chọn loại phòng chiếu!' }]}
-              >
-                <Select
-                  defaultValue=""
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 1, label: '2D' },
-                    { value: 2, label: '3D' },
-                    { value: 3, label: 'IMAX2D' },
-                    { value: 4, label: 'IMAX3D' },
-                  ]}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16} justify="center">
-            <Col className="gutter-row" span={12}>
-              <Form.Item label="Số hàng" name="row" rules={[
-                { required: true, message: 'Nhập số hàng' },
-                { type: 'number', min: 1, max: 14, message: 'Số hàng phải từ 1 đến 15!' }
-              ]}>
-                <InputNumber
-                  onChange={handleRows}
-                  placeholder="Nhập số hàng"
-                  className='w-9/12'
-                  min={1}  // Minimum value
-                  max={15} // Maximum value
-                />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={12}>
-              <Form.Item label="Số cột" name="collumn" rules={[
-                { required: true, message: 'Nhập số cột' },
-                { type: 'number', min: 1, max: 14, message: 'Số cột phải từ 1 đến 15!' }
-              ]}>
-                <InputNumber
-                  onChange={handleCol}
-                  placeholder="Nhập số cột"
-                  className='w-9/12'
-                  min={1}  // Minimum value
-                  max={15} // Maximum value
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          {/* Thêm phần SeatLayout ở đây */}
-          <div className="seat-layout-preview">
-            {rows && cols ? (
-              <SeatLayout
-                rows={rows}
-                cols={cols}
-                onSeatsChange={handleSeatsUpdate}
-              // Có thể thêm các props khác nếu cần
-              />
-            ) : null}
-          </div>
-          <div className="flex justify-center mt-10">
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Button type="primary" htmlType="submit" form="basic1">
-                Cập nhật
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
-      </Modal>
-      <Table
-        columns={columns}
-        dataSource={listScreenMap}
-        scroll={{ x: 1000, y: 500 }}
-        pagination={{
-          showTotal: (total, range) => {
-            return `${range[0]}-${range[1]} of ${total} items`;
-          },
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          pageSizeOptions: ['5', '10', '20']
-        }}
-      />
-    </>
+        </Content>
+        <Footer style={{ textAlign: 'center' }}>
+          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+        </Footer>
+      </Layout>
+    </Layout>
   );
 };
 
-export default AdminScreen;
+export default LayoutAdmin;

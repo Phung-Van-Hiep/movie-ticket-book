@@ -26,7 +26,7 @@ import {
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -80,9 +80,7 @@ const AdminCast = () => {
           : null;
         formUpdate.setFieldsValue({
           castName: castDetail.castName,
-          birthday: castDetail.birthday
-            ? moment(castDetail.birthday, birthdayFormat)
-            : null,
+          birthday: castDetail.birthday ? dayjs(castDetail.birthday) : null,
           description: castDetail.description,
           imageUrl: castDetail.imageUrl
         });
@@ -105,15 +103,12 @@ const AdminCast = () => {
   };
 
   const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return dayjs(dateObj).format('YYYY-MM-DD');
   };
 
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday,imageUrl, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
+    const birthdayFormat = birthday ? formatToDateString(birthday) : null;
     let tempImagesUuid = imageUrl;
     // Kiểm tra nếu không có file trong fileList
     if (fileList.length === 0) {
@@ -176,7 +171,7 @@ const AdminCast = () => {
   };
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
+    const birthdayFormat = birthday ? formatToDateString(birthday) : null;
     let tempImagesUuid = imagesUuid;
     if (fileList.length > 0) {
       const uploadResponse = await APIUploadImage(
@@ -511,8 +506,11 @@ const AdminCast = () => {
           >
             <DatePicker
               placeholder="Ngày sinh"
-              variant="filled"
               className="w-full"
+              format="YYYY-MM-DD"
+              disabledDate={(current) => {
+                return current && current > dayjs().endOf('day');
+              }}
             />
           </Form.Item>
 
@@ -594,8 +592,11 @@ const AdminCast = () => {
           >
             <DatePicker
               placeholder="Ngày sinh"
-              variant="filled"
               className="w-full"
+              format="YYYY-MM-DD"
+              disabledDate={(current) => {
+                return current && current > dayjs().endOf('day');
+              }}
             />
           </Form.Item>
 

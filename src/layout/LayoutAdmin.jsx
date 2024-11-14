@@ -130,23 +130,6 @@ const LayoutAdmin = () => {
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken();
-
-  // const handleMenuClick = ({ key }) => {
-  //   const selectedItem = items.find((item) => item.key === key);
-  //   console.log('selectedItem>>', selectedItem);
-  //   setKey(key);
-  //   setSelectedMenuItem(selectedItem ? selectedItem.label : '');
-  // };
-  // useEffect(() => {
-  //   const currentPath = location.pathname;
-  //   console.log('currentPath>>', currentPath);
-  //   const currentItem = items.find((item) => currentPath === item.link);
-  //   console.log('currentItem>>', currentItem);
-  //   if (currentItem) {
-  //     setSelectedMenuItem(currentItem.label);
-  //     setKey(currentItem.key);
-  //   }
-  // }, [location]);
   console.log('selectedKeys>>', selectedKeys);
   useEffect(() => {
     const selectedItem = items.find((item) => item.key === selectedKeys);

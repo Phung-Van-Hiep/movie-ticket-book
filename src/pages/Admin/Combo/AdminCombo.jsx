@@ -495,7 +495,7 @@ const AdminCombo = () => {
           <Form.Item label="Các loại vật phẩm" name="comboItems"
             rules={[{
               required: true,
-              message: 'Hãy nhập loại vật phẩm có tronf combo!'
+              message: 'Hãy nhập loại vật phẩm có trong combo!'
             }]}>
             <Input.TextArea
               placeholder="Nhập các loại vật phẩm...."

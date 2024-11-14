@@ -463,12 +463,12 @@ const AdminMovies = () => {
       title: 'Tên phim',
       dataIndex: 'title',
       key: 'title',
-      // ...getColumnSearchProps('moviesName'),
+      ...getColumnSearchProps('title'),
       // width: 50,
-      sorter: (a, b) => a.moviesName.length - b.moviesName.length,
+      sorter: (a, b) => a.title.length - b.title.length,
       sortDirections: ['descend', 'ascend'],
-      render: (movies, record) => {
-        return <div>{movies}</div>;
+      render: (title, record) => {
+        return <div>{title}</div>;
       }
     },
     {

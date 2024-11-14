@@ -8,6 +8,7 @@ import {
 
 import {
   Button,
+  Col,
   DatePicker,
   Form,
   Input,
@@ -15,6 +16,7 @@ import {
   message,
   Modal,
   Popconfirm,
+  Row,
   Select,
   Space,
   Table,
@@ -28,7 +30,9 @@ import {
   APIGetDirectorDetail,
   APIDeleteDirector,
   APIUploadImage,
-  APIGetAllCinemas
+  APIGetAllCinemas,
+  APIGetAllScreen,
+  APIGetAllMovies
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
@@ -57,7 +61,18 @@ const AdminShowTime = () => {
   const [fileList, setFileList] = useState([]);
   const [imagesUuid, setImagesUuid] = useState('');
   const [listCinemas, setListCinemas] = useState([]);
+  const [listScreen, setListScreen] = useState([]);
+  const [listMovies, setListMovies] = useState([]);
+  const [cinemaSelected, setCinemaSelected] = useState(false);
+  const [showText, setShowText] = useState(false);
 
+  const handleSerchShowTime = () =>{
+    setShowText(true);
+  }
+  const handleCinemaChange = (value) => {
+    // Nếu người dùng chọn rạp, bật phòng chiếu; nếu bỏ chọn, vô hiệu hóa phòng chiếu
+    setCinemaSelected(!!value);
+  };
   const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
@@ -130,12 +145,8 @@ const AdminShowTime = () => {
     }
   };
 
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  const formatToDateString = (dateObj) => moment(dateObj).format('YYYY-MM-DD');
+
   const onFinishUpdateDirectorInfor = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayObj = new Date(birthday);
@@ -283,24 +294,42 @@ const AdminShowTime = () => {
       }
     }
   };
-  const getAllCinemas = async () => {
+  const fetchData = async (apiCall, mapDataToOptions, setState) => {
     try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      console.log('API Response:', res);
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas.map((cinema) => ({
-          value: cinema.uuid,
-          label: cinema.cinemaName
-        }));
+      const res = await apiCall({ pageSize: 1000, page: 1 });
+      console.log("Check res ", res);
 
-        setListCinemas(cinemasOptions); // Cập nhật state
+      if (res && res.data && Array.isArray(res.data.data.items)) {
+        const dataItems = res.data.data.items.filter(item => [1, 2, 3, 4].includes(item.status));// Chỉ lấy những mục có status là 1
+        const options = dataItems.map(mapDataToOptions);
+        setState(options); // Cập nhật state
       } else {
-        message.error('Không có dữ liệu suất chiếu hợp lệ.');
+        message.error('Không có dữ liệu hợp lệ.');
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách suất chiếu.');
+      message.error('Đã xảy ra lỗi khi lấy dữ liệu.');
     }
+  };
+  const getAllCinemas = async () => {
+    fetchData(
+      APIGetAllCinemas,
+      (cinema) => ({ value: cinema.uuid, label: cinema.cinemaName }),
+      setListCinemas
+    );
+  };
+  const getAllScreen = async () => {
+    fetchData(
+      APIGetAllScreen,
+      (screen) => ({ value: screen.uuid, label: screen.screenName }),
+      setListScreen
+    );
+  };
+  const getAllMovies = async () => {
+    fetchData(
+      APIGetAllMovies,
+      (movie) => ({ value: movie.uuid, label: movie.title }),
+      setListMovies
+    );
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -434,13 +463,6 @@ const AdminShowTime = () => {
       width: 50,
       render: (record) => (
         <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined />
-          </Button>
           <Popconfirm
             title="Xoá suất chiếu"
             description="Bạn muốn xoá suất chiếu này?"
@@ -466,12 +488,91 @@ const AdminShowTime = () => {
   useEffect(() => {
     getAllDirector();
     getAllCinemas();
+    getAllScreen();
+    getAllMovies();
   }, []);
   return (
     <>
+      <div>
       <Button className="float-end mb-4" type="primary" onClick={showModal}>
         Thêm mới suất chiếu
       </Button>
+      <Form
+        name="basic"
+        layout="inline"
+        onFinish={handleSerchShowTime}
+        onFinishFailed={onFinishFailed}
+        autoComplete="off"
+      >
+        <Row gutter={16} align="middle" style={{ width: '100%' }}>
+          <Col>
+            <Form.Item
+              label="Rạp chiếu"
+              name="cinemaUuid"
+            >
+              <Select
+                showSearch
+                defaultValue=""
+                options={listCinemas}
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                allowClear
+                onChange={handleCinemaChange}
+                style={{ width: 200 }}
+              />
+            </Form.Item>
+          </Col>
+          <Col>
+            <Form.Item
+              label="Phòng chiếu"
+              name="screenUuid"
+            >
+              <Select
+                showSearch
+                defaultValue=""
+                onChange={handleChangeCinemas}
+                options={listScreen}
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                allowClear
+                disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+                className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
+                style={{ width: 200 }}
+              />
+            </Form.Item>
+          </Col>
+          <Col>
+            <Form.Item
+              label="Ngày chiếu"
+              name="showDate"
+            >
+              <DatePicker
+                defaultValue={moment()}
+                variant="filled"
+                className="w-full"
+                style={{ width: 120 }} />
+            </Form.Item>
+          </Col>
+          <Col flex="auto">
+            <Button type="primary" htmlType="submit" style={{ float: 'left' }}>
+              Tìm kiếm
+            </Button>
+          </Col>
+        </Row>
+      </Form>
+      {showText && (
+        <div className="text-center mt-20">
+          <div className="text-white text-6xl font-semibold bg-blue-700 p-4 rounded-lg">
+            Rạp
+          </div>
+          <div className="text-yellow-500 text-2xl font-semibold mt-10 text-left ml-10">
+            Cinema 1
+          </div>
+        </div>
+      )}
+      </div>
       <Modal
         title="Thêm mới suất chiếu"
         open={isModalOpen}
@@ -507,6 +608,22 @@ const AdminShowTime = () => {
             />
           </Form.Item>
           <Form.Item
+            label="Phòng chiếu"
+            name="screenUuid"
+            rules={[{ required: true, message: 'Hãy chọn phòng chiếu!' }]}
+          >
+            <Select
+              showSearch
+              defaultValue=""
+              onChange={handleChangeCinemas}
+              options={listScreen}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item
             label="Tên phim"
             name="moviesUuid"
             rules={[{ required: true, message: 'Hãy chọn phim chiếu!' }]}
@@ -515,7 +632,7 @@ const AdminShowTime = () => {
               showSearch
               defaultValue=""
               onChange={handleChangeCinemas}
-              options={listCinemas}
+              options={listMovies}
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
@@ -558,7 +675,6 @@ const AdminShowTime = () => {
               ]}
             />
           </Form.Item>
-
           <Form.Item label="Hình thức dịch"
             name="transForm"
             rules={[{ required: true, message: 'Hãy chọn hình thức dịch' }]}>
@@ -666,6 +782,7 @@ const AdminShowTime = () => {
           </Form.Item>
         </Form>
       </Modal>
+      <div className='mt-10'>
       <Table
         columns={columns}
         dataSource={listDirectorMap}
@@ -676,9 +793,10 @@ const AdminShowTime = () => {
           },
           defaultPageSize: 10,
           showSizeChanger: true,
-          pageSizeOptions: ['5', '10', '20']
+          pageSizeOptions: ['5', '10', '20'],
         }}
       />
+      </div>
     </>
   );
 };
