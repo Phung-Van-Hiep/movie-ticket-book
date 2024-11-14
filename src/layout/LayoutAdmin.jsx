@@ -119,24 +119,34 @@ const items = [
 ].map((item) => ({
   key: item.key,
   icon: <Link to={item.link}>{item.icon}</Link>,
-  label: item.label
+  label: item.label,
+  link: item.link
 }));
 
 const LayoutAdmin = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('');
-  const [selectedKeys, setSelectedKeys] = useState([items[0].key]);
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken();
-  console.log('selectedKeys>>', selectedKeys);
   useEffect(() => {
-    const selectedItem = items.find((item) => item.key === selectedKeys);
-    console.log('selectedItem>>', selectedItem);
-    setSelectedMenuItem(selectedItem ? selectedItem.label : '');
-  }, [selectedKeys]);
-  useEffect;
+    const currentPath = location.pathname;
+    const currentItem = items.find(item => item.link === currentPath);
+    if (currentItem) {
+      setSelectedKeys([currentItem.key]);
+      setSelectedMenuItem(currentItem.label);
+    }
+  }, [location.pathname]);
+
+  const handleMenuClick = (info) => {
+    setSelectedKeys([info.key]);
+    const selectedItem = items.find(item => item.key === info.key);
+    if (selectedItem) {
+      setSelectedMenuItem(selectedItem.label);
+    }
+  };
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
@@ -150,44 +160,39 @@ const LayoutAdmin = () => {
         <Menu
           theme="light"
           className="h-full"
-          defaultSelectedKeys={[selectedKeys]}
           mode="inline"
           selectedKeys={selectedKeys}
-          onSelect={(selectedKeys) => {
-            console.log('selectedKeys>>>>>>>>>', selectedKeys);
-            setSelectedKeys(selectedKeys.key);
-          }}
           items={items}
-        // onClick={handleMenuClick}
+          onClick={handleMenuClick}
         />
       </Sider>
       <Layout>
-      <Header style={{ padding: '0 16px', background: colorBgContainer, display: 'flex', alignItems: 'center' }}>
-      <Button
-        type="text"
-        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        onClick={() => setCollapsed(!collapsed)}
-        style={{
-          fontSize: '16px',
-          width: 30,
-          height: 64,
-        }}
-      />
-      <Breadcrumb
-        items={[
-          {
-            title: selectedMenuItem,
-          },
-        ]}
-        onClick={() => setCollapsed(!collapsed)}
-        style={{
-          fontSize: '20px',
-          paddingBottom: '5px',
-          cursor:'pointer',
-          
-        }}
-      />
-    </Header>
+        <Header style={{ padding: '0 16px', background: colorBgContainer, display: 'flex', alignItems: 'center' }}>
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              fontSize: '16px',
+              width: 30,
+              height: 64,
+            }}
+          />
+          <Breadcrumb
+            items={[
+              {
+                title: selectedMenuItem,
+              },
+            ]}
+            // onClick={() => setCollapsed(!collapsed)}
+            style={{
+              fontSize: '20px',
+              paddingBottom: '5px',
+              cursor: 'pointer',
+
+            }}
+          />
+        </Header>
         <Content style={{ margin: '16px' }}>
           <Breadcrumb
             style={{ margin: '8px' }}

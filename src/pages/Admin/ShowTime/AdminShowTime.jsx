@@ -64,23 +64,30 @@ const AdminShowTime = () => {
   const [listScreen, setListScreen] = useState([]);
   const [listMovies, setListMovies] = useState([]);
   const [cinemaSelected, setCinemaSelected] = useState(false);
+  const [selectedCinemaUuid, setSelectedCinemaUuid] = useState(null);
   const [showText, setShowText] = useState(false);
-
-  const handleSerchShowTime = () =>{
-    setShowText(true);
-  }
-  const handleCinemaChange = (value) => {
-    // Nếu người dùng chọn rạp, bật phòng chiếu; nếu bỏ chọn, vô hiệu hóa phòng chiếu
-    setCinemaSelected(!!value);
-  };
+  const [cinemaLabel, setCinemaLabel] = useState('');
+const [screenLabel, setScreenLabel] = useState('');
+const [selectedCinemaLabel, setSelectedCinemaLabel] = useState('');
+const [selectedScreenLabel, setSelectedScreenLabel] = useState('');
+const handleSerchShowTime = () => {
+  setSelectedCinemaLabel(cinemaLabel);
+  setSelectedScreenLabel(screenLabel);
+  setShowText(true);
+};
   const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
 
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
+  const handleChangeCinemas = (value, option) => {
+    setSelectedCinemaUuid(value);
+    setCinemaLabel(option?.label || '');
+    getAllScreen(value);
+    setCinemaSelected(!!value);
   };
-
+  const handleChangeScreen = (value, option) => {
+    setScreenLabel(option?.label || '');
+  };
   const handlePreviewCreateImage = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -89,13 +96,9 @@ const AdminShowTime = () => {
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
   };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
+  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {  
     const res = await APIUploadImage(file, '3');
-    console.log('Check var' + res);
     if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
       setImagesUuid(res.data.data);
     }
     onSuccess('ok');
@@ -113,7 +116,7 @@ const AdminShowTime = () => {
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetDirectorDetail({ uuid });
-      console.log('update', res);
+      // console.log('update', res);
       if (res && res.status === 200) {
         const directorDetail = res.data.data;
         setDirectorDetail(directorDetail);
@@ -201,7 +204,7 @@ const AdminShowTime = () => {
   };
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
-    console.log("Check ngày", restValues)
+    // console.log("Check ngày", restValues)
     const birthdayFormat = formatToDateString(new Date(birthday));
     const dataDirector = {
       ...restValues,
@@ -210,7 +213,7 @@ const AdminShowTime = () => {
     };
     try {
       const res = await APICreateDirector(dataDirector);
-      console.log(res);
+      // console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
@@ -234,7 +237,7 @@ const AdminShowTime = () => {
     }
   };
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    // console.log('Failed:', errorInfo);
   };
   const showModal = () => {
     setIsModalOpen(true);
@@ -294,10 +297,10 @@ const AdminShowTime = () => {
       }
     }
   };
-  const fetchData = async (apiCall, mapDataToOptions, setState) => {
+  const fetchData = async (apiCall, mapDataToOptions, setState, cinemaUuid = undefined) => {
     try {
-      const res = await apiCall({ pageSize: 1000, page: 1 });
-      console.log("Check res ", res);
+      const res = await apiCall({ pageSize: 1000, page: 1, cinemaUuid });
+      // console.log("Check res ", res);
 
       if (res && res.data && Array.isArray(res.data.data.items)) {
         const dataItems = res.data.data.items.filter(item => [1, 2, 3, 4].includes(item.status));// Chỉ lấy những mục có status là 1
@@ -314,14 +317,15 @@ const AdminShowTime = () => {
     fetchData(
       APIGetAllCinemas,
       (cinema) => ({ value: cinema.uuid, label: cinema.cinemaName }),
-      setListCinemas
+      setListCinemas,
     );
   };
-  const getAllScreen = async () => {
+  const getAllScreen = async (cinemaUuid) => {
     fetchData(
       APIGetAllScreen,
       (screen) => ({ value: screen.uuid, label: screen.screenName }),
-      setListScreen
+      setListScreen,
+      cinemaUuid
     );
   };
   const getAllMovies = async () => {
@@ -494,84 +498,84 @@ const AdminShowTime = () => {
   return (
     <>
       <div>
-      <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới suất chiếu
-      </Button>
-      <Form
-        name="basic"
-        layout="inline"
-        onFinish={handleSerchShowTime}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-      >
-        <Row gutter={16} align="middle" style={{ width: '100%' }}>
-          <Col>
-            <Form.Item
-              label="Rạp chiếu"
-              name="cinemaUuid"
-            >
-              <Select
-                showSearch
-                defaultValue=""
-                options={listCinemas}
-                filterOption={(input, option) =>
-                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                }
-                allowClear
-                onChange={handleCinemaChange}
-                style={{ width: 200 }}
-              />
-            </Form.Item>
-          </Col>
-          <Col>
-            <Form.Item
-              label="Phòng chiếu"
-              name="screenUuid"
-            >
-              <Select
-                showSearch
-                defaultValue=""
-                onChange={handleChangeCinemas}
-                options={listScreen}
-                filterOption={(input, option) =>
-                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                }
-                allowClear
-                disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
-                className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
-                style={{ width: 200 }}
-              />
-            </Form.Item>
-          </Col>
-          <Col>
-            <Form.Item
-              label="Ngày chiếu"
-              name="showDate"
-            >
-              <DatePicker
-                defaultValue={moment()}
-                variant="filled"
-                className="w-full"
-                style={{ width: 120 }} />
-            </Form.Item>
-          </Col>
-          <Col flex="auto">
-            <Button type="primary" htmlType="submit" style={{ float: 'left' }}>
-              Tìm kiếm
-            </Button>
-          </Col>
-        </Row>
-      </Form>
-      {showText && (
-        <div className="text-center mt-20">
-          <div className="text-white text-6xl font-semibold bg-blue-700 p-4 rounded-lg">
-            Rạp
+        <Button className="float-end mb-4" type="primary" onClick={showModal}>
+          Thêm mới suất chiếu
+        </Button>
+        <Form
+          name="basic"
+          layout="inline"
+          onFinish={handleSerchShowTime}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Row gutter={16} align="middle" style={{ width: '100%' }}>
+            <Col>
+              <Form.Item
+                label="Rạp chiếu"
+                name="cinemaUuid"
+              >
+                <Select
+                  showSearch
+                  defaultValue=""
+                  options={listCinemas}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  allowClear
+                  onChange={handleChangeCinemas}
+                  style={{ width: 200 }}
+                />
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item
+                label="Phòng chiếu"
+                name="screenUuid"
+              >
+                <Select
+                  showSearch
+                  defaultValue=""
+                  onChange={handleChangeScreen}
+                  options={listScreen}
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  allowClear
+                  disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+                  className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
+                  style={{ width: 200 }}
+                />
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item
+                label="Ngày chiếu"
+                name="showDate"
+              >
+                <DatePicker
+                  defaultValue={moment()}
+                  variant="filled"
+                  className="w-full"
+                  style={{ width: 120 }} />
+              </Form.Item>
+            </Col>
+            <Col flex="auto">
+              <Button type="primary" htmlType="submit" style={{ float: 'left' }}>
+                Tìm kiếm
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+        {showText && (
+          <div className="text-center mt-20">
+            <div className="text-white text-6xl font-semibold bg-blue-700 p-4 rounded-lg">
+           Rạp: {selectedCinemaLabel}
+            </div>
+            <div className="text-yellow-500 text-3xl font-semibold mt-10 text-left ml-10">
+            {selectedScreenLabel}
+            </div>
           </div>
-          <div className="text-yellow-500 text-2xl font-semibold mt-10 text-left ml-10">
-            Cinema 1
-          </div>
-        </div>
-      )}
+        )}
       </div>
       <Modal
         title="Thêm mới suất chiếu"
@@ -615,11 +619,13 @@ const AdminShowTime = () => {
             <Select
               showSearch
               defaultValue=""
-              onChange={handleChangeCinemas}
+              // onChange={handleChangeCinemas}
               options={listScreen}
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
+              disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+              className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
               allowClear
             />
           </Form.Item>
@@ -631,7 +637,7 @@ const AdminShowTime = () => {
             <Select
               showSearch
               defaultValue=""
-              onChange={handleChangeCinemas}
+              // onChange={handleChangeCinemas}
               options={listMovies}
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -783,19 +789,19 @@ const AdminShowTime = () => {
         </Form>
       </Modal>
       <div className='mt-10'>
-      <Table
-        columns={columns}
-        dataSource={listDirectorMap}
-        scroll={{ x: 1000, y: 500 }}
-        pagination={{
-          showTotal: (total, range) => {
-            return `${range[0]}-${range[1]} of ${total} items`;
-          },
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          pageSizeOptions: ['5', '10', '20'],
-        }}
-      />
+        <Table
+          columns={columns}
+          dataSource={listDirectorMap}
+          scroll={{ x: 1000, y: 500 }}
+          pagination={{
+            showTotal: (total, range) => {
+              return `${range[0]}-${range[1]} of ${total} items`;
+            },
+            defaultPageSize: 10,
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20'],
+          }}
+        />
       </div>
     </>
   );

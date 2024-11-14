@@ -60,13 +60,16 @@ const AdminCast = () => {
   };
   const handleChangeCreateImage = ({ fileList: newFileList }) =>
     setFileList(newFileList);
-
+  
   const uploadButton = (
     <button style={{ border: 0, background: 'none' }} type="button">
       <PlusOutlined />
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
+  const formatToDateString = (dateObj) => {
+    return dayjs(dateObj).format('YYYY-MM-DD');
+  };
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetCastDetail({ uuid });
@@ -78,6 +81,7 @@ const AdminCast = () => {
         const imageUrl = castDetail.imageUrl
           ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${castDetail.imageUrl}`
           : null;
+          console.log("Check đường dẫn ảnh ",imageUrl);
         formUpdate.setFieldsValue({
           castName: castDetail.castName,
           birthday: castDetail.birthday ? dayjs(castDetail.birthday) : null,
@@ -85,8 +89,9 @@ const AdminCast = () => {
           imageUrl: castDetail.imageUrl
         });
         setFileList(imageUrl ? [{ url: imageUrl }] : []);
-        setIsModalUpdateOpen(true);
         setPreviewImage('');
+        setIsModalUpdateOpen(true);
+        
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
       }
@@ -101,10 +106,7 @@ const AdminCast = () => {
       }
     }
   };
-
-  const formatToDateString = (dateObj) => {
-    return dayjs(dateObj).format('YYYY-MM-DD');
-  };
+  
 
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday,imageUrl, ...restValues } = values;
@@ -609,7 +611,7 @@ const AdminCast = () => {
               // }}
             />
           </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
+          <Form.Item label="Image" name="imageUrl" rules={[]} >
             <Upload
               listType="picture-circle"
               fileList={fileList}
