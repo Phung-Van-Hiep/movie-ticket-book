@@ -35,7 +35,7 @@ import {
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const AdminShowTime = () => {
   const [searchText, setSearchText] = useState('');
@@ -60,29 +60,29 @@ const AdminShowTime = () => {
   const [selectedCinemaLabel, setSelectedCinemaLabel] = useState('');
   const [selectedScreenLabel, setSelectedScreenLabel] = useState('');
   const handleSerchShowTime = async (values) => {
+    // console.log("Trog values ày có gì ", values);
     const { cinemaUuid, screenUuid, showDate } = values;
     setSelectedCinemaLabel(cinemaLabel);
     setSelectedScreenLabel(screenLabel);
     try {
-      const formattedDate = showDate ? moment(showDate).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+      const findDate = dayjs(showDate).format('YYYY-MM-DD');
+      console.log("Selected date", findDate);
       const res = await APIGetAllShowTime({
         pageSize: 1000,
         page: 1,
         cinemaUuid,
         screenUuid,
-        formattedDate
+        findDate
       });
+      console.log("Cehck ", res.data.data)
       if (res && res.data && res.data.data) {
-        const filteredShowTimes = res.data.data.items.flatMap(cinema =>
-          cinema.screens.flatMap(screen =>
-            screen.showtimes.filter(showtime =>
-              showtime.status === 1 && // Lọc theo trạng thái suất chiếu
-              cinema.cinemaName === cinemaLabel && // Kiểm tra trùng tên rạp
-              screen.screenName === screenLabel // Kiểm tra trùng tên phòng chiếu
-              // moment(showtime.showDate).format('YYYY-MM-DD') === formattedDate // Kiểm tra trùng ngày chiếu
-            )
-          )
+        console.log("sdfsdfssfs chay vào chưa",res.data.data)
+        const filteredShowTimes = res.data.data.items.flatMap(item =>
+          item.screens?.flatMap(screen =>
+            screen.showtimes?.filter(showtime => showtime.status === 1) || [] // Lọc các showtime có status = 1
+          ) || [] // Nếu không có screens thì trả về mảng rỗng
         );
+        console.log("Xem độ dài nào", filteredShowTimes)
         // Chỉ set danh sách suất chiếu nếu có kết quả
         if (filteredShowTimes.length > 0) {
           setListShowTime(filteredShowTimes);
@@ -93,7 +93,6 @@ const AdminShowTime = () => {
           getAllShowTime();
         }
       }
-
     } catch (error) {
       console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
@@ -104,7 +103,6 @@ const AdminShowTime = () => {
     setCinemaLabel(option?.label || '');
     getAllScreen(value);
     setCinemaSelected(!!value);
-
     formSearch.setFieldsValue({
       screenUuid: undefined,
     });
@@ -132,12 +130,12 @@ const AdminShowTime = () => {
         setShowTimeDetail(showtimeDetail);
         // console.log("Checkdata ",showtimeDetail);
         const showTimeRange = [
-          moment(showtimeDetail.startTime, 'HH:mm:ss'),
-          moment(showtimeDetail.endTime, 'HH:mm:ss')
+          dayjs(showtimeDetail.startTime, 'HH:mm:ss'),
+          dayjs(showtimeDetail.endTime, 'HH:mm:ss')
         ];
         formUpdate.setFieldsValue({
           cinemaUuid: showtimeDetail.cinemaUuid,
-          showDate: moment(showtimeDetail.showDate, 'YYYY-MM-DD'),
+          showDate: dayjs(showtimeDetail.showDate, 'YYYY-MM-DD'),
           screenUuid: showtimeDetail.screenUuid,
           moviesUuid: showtimeDetail.moviesUuid,
           languageType: showtimeDetail.languageType,
@@ -159,16 +157,16 @@ const AdminShowTime = () => {
     }
   };
 
-  const formatToDateString = (dateObj) => moment(dateObj).format('YYYY-MM-DD');
+  const formatToDateString = (dateObj) => dayjs(dateObj).format('YYYY-MM-DD');
   const onFinishUpdateShowTimeInfor = async (values) => {
     const { showDate, showTime, ...restValues } = values;
     // Định dạng lại ngày chiếu
-    const showDateFormat = moment(showDate).format('YYYY-MM-DD');
+    const showDateFormat = dayjs(showDate).format('YYYY-MM-DD');
     // console.log("Check cái res", restValues)
     // Định dạng lại khoảng thời gian chiếu
     const [startTime, endTime] = showTime;
-    const formattedStartTime = moment(startTime).format('HH:mm:ss');
-    const formattedEndTime = moment(endTime).format('HH:mm:ss');
+    const formattedStartTime = dayjs(startTime).format('HH:mm:ss');
+    const formattedEndTime = dayjs(endTime).format('HH:mm:ss');
 
     try {
       const res = await APICreateShowTime({
@@ -197,6 +195,7 @@ const AdminShowTime = () => {
   };
 
   const getAllShowTime = async () => {
+    // const findDate = dayjs(finddate).format('YYYY-MM-DD');
     try {
       const res = await APIGetAllShowTime({ pageSize: 1000, page: 1 });
       console.log("Chay vào", res)
@@ -217,8 +216,8 @@ const AdminShowTime = () => {
   };
   const onFinish = async (values) => {
     const { showDate, showTime, cinemaUuid, ...restValues } = values;
-    const startTime = showTime ? showTime[0].format("HH:mm:ss") : null;
-    const endTime = showTime ? showTime[1].format("HH:mm:ss") : null;
+    const startTime = showTime ? dayjs(showTime[0]).format("HH:mm:ss") : null;
+    const endTime = showTime ? dayjs(showTime[1]).format("HH:mm:ss") : null;
     const showDateFormat = formatToDateString(new Date(showDate));
     const dataShowTime = {
       ...restValues,
@@ -317,6 +316,7 @@ const AdminShowTime = () => {
       if (res && res.data && Array.isArray(res.data.data.items)) {
         const dataItems = res.data.data.items.filter(item => [1, 2, 3, 4].includes(item.status));// Chỉ lấy những mục có status là 1
         const options = dataItems.map(mapDataToOptions);
+        // console.log("Lấy được type không", options);
         setState(options); // Cập nhật state
       } else {
         message.error('Không có dữ liệu hợp lệ.');
@@ -343,7 +343,7 @@ const AdminShowTime = () => {
   const getAllMovies = async () => {
     fetchData(
       APIGetAllMovies,
-      (movie) => ({ value: movie.uuid, label: movie.title }),
+      (movie) => ({ value: movie.uuid, label: movie.title, screenType: movie.screenType }),
       setListMovies
     );
   };
@@ -550,7 +550,7 @@ const AdminShowTime = () => {
           onFinishFailed={onFinishFailed}
           autoComplete="off"
           initialValues={{
-            showDate: moment() // Đặt giá trị mặc định là ngày hiện tại
+            showDate: dayjs() // Đặt giá trị mặc định là ngày hiện tại
           }}
         >
           <Row gutter={16} align="middle" style={{ width: '100%' }}>
