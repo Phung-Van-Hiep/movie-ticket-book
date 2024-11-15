@@ -67,32 +67,33 @@ const AdminShowTime = () => {
     try {
       const findDate = dayjs(showDate).format('YYYY-MM-DD');
       console.log("Selected date", findDate);
-      const res = await APIGetAllShowTime({
-        pageSize: 1000,
-        page: 1,
-        cinemaUuid,
-        screenUuid,
-        findDate
-      });
-      console.log("Cehck ", res.data.data)
-      if (res && res.data && res.data.data) {
-        console.log("sdfsdfssfs chay vào chưa",res.data.data)
-        const filteredShowTimes = res.data.data.items.flatMap(item =>
-          item.screens?.flatMap(screen =>
-            screen.showtimes?.filter(showtime => showtime.status === 1) || [] // Lọc các showtime có status = 1
-          ) || [] // Nếu không có screens thì trả về mảng rỗng
-        );
-        console.log("Xem độ dài nào", filteredShowTimes)
-        // Chỉ set danh sách suất chiếu nếu có kết quả
-        if (filteredShowTimes.length > 0) {
-          setListShowTime(filteredShowTimes);
-          setShowText(true);
-        } else {
-          setShowText(false);
-          setListShowTime([]);
-          getAllShowTime();
-        }
-      }
+      getAllShowTime(cinemaUuid,screenUuid,findDate)
+      // const res = await APIGetAllShowTime({
+      //   pageSize: 1000,
+      //   page: 1,
+      //   cinemaUuid,
+      //   screenUuid,
+      //   findDate
+      // });
+      // if (res && res.data && res.data.data) {
+      //   console.log("sdfsdfssfs chay vào chưa",res.data.data)
+      //   const filteredShowTimes = res.data.data.items.flatMap(item =>
+      //     item.screens?.flatMap(screen =>
+      //       screen.showtimes?.filter(showtime => showtime.status === 1  && item.cinemaName === cinemaLabel && // Kiểm tra trùng tên rạp
+      //         screen.screenName === screenLabel) || [] // Lọc các showtime có status = 1
+      //     ) || [] // Nếu không có screens thì trả về mảng rỗng
+      //   );
+      //   console.log("Xem độ dài nào", filteredShowTimes)
+      //   // Chỉ set danh sách suất chiếu nếu có kết quả
+      //   if (filteredShowTimes.length > 0) {
+      //     setListShowTime(filteredShowTimes);
+      //     setShowText(true);
+      //   } else {
+      //     setShowText(false);
+      //     setListShowTime([]);
+      //     getAllShowTime();
+      //   }
+      // }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
@@ -101,6 +102,8 @@ const AdminShowTime = () => {
   const handleChangeSearchCinemas = (value, option) => {
     setSelectedCinemaUuid(value);
     setCinemaLabel(option?.label || '');
+    setSelectedCinemaLabel('');
+    setSelectedScreenLabel('');
     getAllScreen(value);
     setCinemaSelected(!!value);
     formSearch.setFieldsValue({
@@ -194,19 +197,20 @@ const AdminShowTime = () => {
     }
   };
 
-  const getAllShowTime = async () => {
-    // const findDate = dayjs(finddate).format('YYYY-MM-DD');
+  const getAllShowTime = async (cinemaUuid = null, screenUuid = null, finddate = new Date()) => {
+    const findDate = dayjs(finddate).format('YYYY-MM-DD');
     try {
-      const res = await APIGetAllShowTime({ pageSize: 1000, page: 1 });
-      console.log("Chay vào", res)
+      const res = await APIGetAllShowTime({ pageSize: 1000, page: 1, cinemaUuid, screenUuid, findDate });
+      // console.log("Chay vào", res)
       if (res && res.data && res.data.data) {
-        console.log(res.data.data.items)
+        // console.log(res.data.data.items)
         const filteredShowTimes = res.data.data.items.flatMap(cinema =>
           cinema.screens.flatMap(screen =>
             screen.showtimes.filter(showtime => showtime.status === 1)
           )
         );
-        setListShowTime(filteredShowTimes); // Cập nhật danh sách showtime đã lọc
+        setListShowTime(filteredShowTimes);
+        setShowText(true);
         form.resetFields();
         handleCancel();
       }
@@ -613,10 +617,10 @@ const AdminShowTime = () => {
         {showText && (
           <div className="text-center mt-20">
             <div className="text-white text-6xl font-semibold bg-blue-700 p-4 rounded-lg">
-              Rạp: {selectedCinemaLabel}
+            {selectedCinemaLabel ? `Rạp: ${selectedCinemaLabel}` : `Rạp`}
             </div>
             <div className="text-yellow-500 text-3xl font-semibold mt-10 text-left ml-10">
-              {selectedScreenLabel}
+              {selectedScreenLabel ? `${selectedScreenLabel}` : `Phòng chiếu` }
             </div>
           </div>
         )}
