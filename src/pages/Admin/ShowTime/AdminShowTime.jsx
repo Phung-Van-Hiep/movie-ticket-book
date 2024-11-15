@@ -46,6 +46,7 @@ const AdminShowTime = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
+  const [formSearch] = Form.useForm();
   const [showtimeDetail, setShowTimeDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
   const [listCinemas, setListCinemas] = useState([]);
@@ -58,20 +59,66 @@ const AdminShowTime = () => {
   const [screenLabel, setScreenLabel] = useState('');
   const [selectedCinemaLabel, setSelectedCinemaLabel] = useState('');
   const [selectedScreenLabel, setSelectedScreenLabel] = useState('');
-  const handleSerchShowTime = () => {
+  const handleSerchShowTime = async (values) => {
+    const { cinemaUuid, screenUuid, showDate } = values;
     setSelectedCinemaLabel(cinemaLabel);
     setSelectedScreenLabel(screenLabel);
-    setShowText(true);
+    try {
+      const formattedDate = showDate ? moment(showDate).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+      const res = await APIGetAllShowTime({
+        pageSize: 1000,
+        page: 1,
+        cinemaUuid,
+        screenUuid,
+        formattedDate
+      });
+      if (res && res.data && res.data.data) {
+        const filteredShowTimes = res.data.data.items.flatMap(cinema =>
+          cinema.screens.flatMap(screen =>
+            screen.showtimes.filter(showtime =>
+              showtime.status === 1 && // Lọc theo trạng thái suất chiếu
+              cinema.cinemaName === cinemaLabel && // Kiểm tra trùng tên rạp
+              screen.screenName === screenLabel // Kiểm tra trùng tên phòng chiếu
+              // moment(showtime.showDate).format('YYYY-MM-DD') === formattedDate // Kiểm tra trùng ngày chiếu
+            )
+          )
+        );
+        // Chỉ set danh sách suất chiếu nếu có kết quả
+        if (filteredShowTimes.length > 0) {
+          setListShowTime(filteredShowTimes);
+          setShowText(true);
+        } else {
+          setListShowTime([]);
+          setShowText(false);
+        }
+      }
+
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm suất chiếu:", error);
+      message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
+    }
+  };
+  const handleChangeSearchCinemas = (value, option) => {
+    setSelectedCinemaUuid(value);
+    setCinemaLabel(option?.label || '');
+    getAllScreen(value);
+    setCinemaSelected(!!value);
+
+    formSearch.setFieldsValue({
+      screenUuid: undefined,
+    });
   };
   const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
 
-  const handleChangeCinemas = (value, option) => {
+  const handleChangeCinemas = (value) => {
     setSelectedCinemaUuid(value);
-    setCinemaLabel(option?.label || '');
     getAllScreen(value);
     setCinemaSelected(!!value);
+    formUpdate.setFieldsValue({
+      screenUuid: undefined,
+    });
   };
   const handleChangeScreen = (value, option) => {
     setScreenLabel(option?.label || '');
@@ -91,8 +138,8 @@ const AdminShowTime = () => {
           cinemaUuid: showtimeDetail.cinemaUuid,
           showDate: moment(showtimeDetail.showDate, 'YYYY-MM-DD'),
           screenUuid: showtimeDetail.screenUuid,
-          moviesUuid:showtimeDetail.moviesUuid,
-          languageType:showtimeDetail.languageType,
+          moviesUuid: showtimeDetail.moviesUuid,
+          languageType: showtimeDetail.languageType,
           showTime: showTimeRange,
         });
         setIsModalUpdateOpen(true);
@@ -114,47 +161,48 @@ const AdminShowTime = () => {
   const formatToDateString = (dateObj) => moment(dateObj).format('YYYY-MM-DD');
   const onFinishUpdateShowTimeInfor = async (values) => {
     const { showDate, showTime, ...restValues } = values;
-  
-  // Định dạng lại ngày chiếu
-  const showDateFormat = moment(showDate).format('YYYY-MM-DD');
-  console.log("Check cái res", restValues)
-  // Định dạng lại khoảng thời gian chiếu
-  const [startTime, endTime] = showTime;
-  const formattedStartTime = moment(startTime).format('HH:mm:ss');
-  const formattedEndTime = moment(endTime).format('HH:mm:ss');
+    // Định dạng lại ngày chiếu
+    const showDateFormat = moment(showDate).format('YYYY-MM-DD');
+    // console.log("Check cái res", restValues)
+    // Định dạng lại khoảng thời gian chiếu
+    const [startTime, endTime] = showTime;
+    const formattedStartTime = moment(startTime).format('HH:mm:ss');
+    const formattedEndTime = moment(endTime).format('HH:mm:ss');
 
-  try {
-    const res = await APICreateShowTime({
-      uuid: showtimeDetail.uuid,
-      // cinemaUuid: restValues.cinemaUuid,
-      screenUuid: restValues.screenUuid,
-      moviesUuid: restValues.moviesUuid,
-      showDate: showDateFormat,
-      startTime: formattedStartTime,
-      endTime: formattedEndTime,
-      languageType: restValues.languageType,
-    });
+    try {
+      const res = await APICreateShowTime({
+        uuid: showtimeDetail.uuid,
+        // cinemaUuid: restValues.cinemaUuid,
+        screenUuid: restValues.screenUuid,
+        moviesUuid: restValues.moviesUuid,
+        showDate: showDateFormat,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        languageType: restValues.languageType,
+      });
 
-    if (res && res.status === 200) {
-      message.success('Cập nhật suất chiếu thành công');
-      formUpdate.resetFields();
-      getAllShowTime(); // Tải lại danh sách suất chiếu
-      handleCancelUpdate();
+      if (res && res.status === 200) {
+        message.success('Cập nhật suất chiếu thành công');
+        formUpdate.resetFields();
+        getAllShowTime(); // Tải lại danh sách suất chiếu
+        handleCancelUpdate();
+        setShowText(false);
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.error?.errorMessage || 'Đã xảy ra lỗi khi cập nhật suất chiếu';
+      message.error(errorMessage);
     }
-  } catch (error) {
-    const errorMessage =
-      error.response?.data?.error?.errorMessage || 'Đã xảy ra lỗi khi cập nhật suất chiếu';
-    message.error(errorMessage);
-  }
-};
+  };
 
   const getAllShowTime = async () => {
     try {
-      const res = await APIGetAllShowTime({ pageSize: 1000, page: 1, cinemaUuid: null, screenUuid: null, findDate: moment().format('YYYY-MM-DD') });
+      const res = await APIGetAllShowTime({ pageSize: 1000, page: 1 });
+      console.log("Chay vào", res)
       if (res && res.data && res.data.data) {
-        // console.log(res.data.data.items)
-        const filteredShowTimes = res.data.data.items.flatMap(cinema => 
-          cinema.screens.flatMap(screen => 
+        console.log(res.data.data.items)
+        const filteredShowTimes = res.data.data.items.flatMap(cinema =>
+          cinema.screens.flatMap(screen =>
             screen.showtimes.filter(showtime => showtime.status === 1)
           )
         );
@@ -167,7 +215,7 @@ const AdminShowTime = () => {
     }
   };
   const onFinish = async (values) => {
-    const { showDate, showTime,cinemaUuid, ...restValues } = values;
+    const { showDate, showTime, cinemaUuid, ...restValues } = values;
     const startTime = showTime ? showTime[0].format("HH:mm:ss") : null;
     const endTime = showTime ? showTime[1].format("HH:mm:ss") : null;
     const showDateFormat = formatToDateString(new Date(showDate));
@@ -183,6 +231,7 @@ const AdminShowTime = () => {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         getAllShowTime();
+        setShowText(false);
       }
       // console.log("Success:", values);
     } catch (error) {
@@ -487,17 +536,22 @@ const AdminShowTime = () => {
           Thêm mới suất chiếu
         </Button>
         <Form
+          form={formSearch}
           name="basic"
           layout="inline"
           onFinish={handleSerchShowTime}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
+          initialValues={{
+            showDate: moment() // Đặt giá trị mặc định là ngày hiện tại
+          }}
         >
           <Row gutter={16} align="middle" style={{ width: '100%' }}>
             <Col>
               <Form.Item
                 label="Rạp chiếu"
                 name="cinemaUuid"
+              // rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
               >
                 <Select
                   showSearch
@@ -507,7 +561,7 @@ const AdminShowTime = () => {
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
                   allowClear
-                  onChange={handleChangeCinemas}
+                  onChange={handleChangeSearchCinemas}
                   style={{ width: 200 }}
                 />
               </Form.Item>
@@ -516,6 +570,7 @@ const AdminShowTime = () => {
               <Form.Item
                 label="Phòng chiếu"
                 name="screenUuid"
+              // rules={[{ required: true, message: 'Hãy chọn phòng chiếu phim!' }]}
               >
                 <Select
                   showSearch
@@ -538,9 +593,6 @@ const AdminShowTime = () => {
                 name="showDate"
               >
                 <DatePicker
-                  defaultValue={moment()}
-                  variant="filled"
-                  className="w-full"
                   style={{ width: 120 }} />
               </Form.Item>
             </Col>

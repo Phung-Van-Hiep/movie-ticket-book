@@ -112,7 +112,7 @@ const AdminNew = () => {
   };
 
   const onFinishUpdateNewsInfor = async (values) => {
-    const { content,imageUrl, ...restValues } = values;
+    const { content, imageUrl, ...restValues } = values;
     // console.log("Có vào đây không ", content)
     let tempImagesUuid = imageUrl;
     // Kiểm tra nếu không có file trong fileList
@@ -139,9 +139,9 @@ const AdminNew = () => {
         uuid: newsDetail?.uuid,
         title: restValues.title,
         shortTitle: newsDetail.shortTitle,
-        status: newsDetail.status,
+        status: restValues.status,
         content: content?.level?.content || newsDetail.content,
-        imagesUuid:tempImagesUuid  // Gửi URL của ảnh nếu có
+        imagesUuid: tempImagesUuid  // Gửi URL của ảnh nếu có
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
@@ -200,7 +200,7 @@ const AdminNew = () => {
       imagesUuid: tempImagesUuid
       // timeCreated: "2024-11-12"
     };
-    // console.log("data", dataNews)
+    console.log("data", dataNews)
     try {
       const res = await APICreateNews(dataNews);
       console.log(res);
@@ -396,7 +396,7 @@ const AdminNew = () => {
         );
       }
     },
-    
+
     {
       title: 'Lượt xem',
       dataIndex: 'view',
@@ -457,7 +457,7 @@ const AdminNew = () => {
         onCancel={handleCancel}
         footer={<></>}
         width={1200}
-        destroyOnClose={true} 
+        destroyOnClose={true}
       >
         <Form
           form={form}
@@ -465,7 +465,7 @@ const AdminNew = () => {
           // labelCol={{ span: 8 }}
           // wrapperCol={{ span: 16 }}
           // style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
+          initialValues={{ remember: true, status:2 }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
@@ -484,14 +484,16 @@ const AdminNew = () => {
               <Form.Item
                 label="Trạng thái"
                 name="status"
-                rules={[{ required: true, message: 'Hãy chọn trạng thái!' }]}
+                // rules={[{ required: true, message: 'Hãy chọn trạng thái!' }]}
               >
                 <Select
                   placeholder="Chọn trạng thái"
                   options={[
-                    { value: '1', label: 'Xuất bản' },
-                    { value: '2', label: 'Nháp' },
+                    // { value: 1, label: 'Xuất bản' },
+                    { value: 2, label: 'Nháp' },
                   ]}
+                  defaultValue={2}
+                  disabled={true}
                 />
               </Form.Item>
             </Col>
@@ -578,7 +580,7 @@ const AdminNew = () => {
           <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
         }
         width={1200}
-        destroyOnClose={true} 
+        destroyOnClose={true}
       >
         <Form
           form={formUpdate}
@@ -610,8 +612,8 @@ const AdminNew = () => {
                 <Select
                   placeholder="Chọn trạng thái"
                   options={[
-                    { value: '1', label: 'Xuất bản' },
-                    { value: '2', label: 'Nháp' },
+                    { value: 1, label: 'Xuất bản' },
+                    { value: 2, label: 'Nháp' },
                   ]}
                 />
               </Form.Item>
