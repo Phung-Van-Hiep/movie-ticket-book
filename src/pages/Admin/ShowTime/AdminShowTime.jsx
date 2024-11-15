@@ -88,8 +88,9 @@ const AdminShowTime = () => {
           setListShowTime(filteredShowTimes);
           setShowText(true);
         } else {
-          setListShowTime([]);
           setShowText(false);
+          setListShowTime([]);
+          getAllShowTime();
         }
       }
 
@@ -481,6 +482,12 @@ const AdminShowTime = () => {
       key: 'timeRange',
       width: 100,
       render: (text, record) => `${record.startTime} - ${record.endTime}`,
+    },
+    {
+      title: 'Ngày chiếu',
+      dataIndex: 'showDate',
+      key: 'showDate',
+      width: 100,
     },
     {
       title: 'Trạng thái',
