@@ -13,7 +13,7 @@ import {
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -80,7 +80,7 @@ const AdminCast = () => {
           gender: userDetail.gender,
           phoneNumber: userDetail.phoneNumber,
           birthday: userDetail.birthday
-            ? moment(userDetail.birthday, birthdayFormat)
+            ? dayjs(userDetail.birthday)
             : null,
           imageUrl: userDetail.imageUrl,
           status: userDetail.status
@@ -103,13 +103,7 @@ const AdminCast = () => {
     }
   };
 
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
+  const formatToDateString = (dateObj) => dayjs(dateObj).format('YYYY-MM-DD');
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
@@ -172,13 +166,13 @@ const AdminCast = () => {
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách diễn viên.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách người dùng.');
     }
   };
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-    console.log("Đây là dataUser ", restValues)
+    // console.log("Đây là dataUser ", restValues)
 
     // let tempImagesUuid = imagesUuid;
     // if (fileList.length > 0) {
@@ -290,7 +284,7 @@ const AdminCast = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm tên diễn viên`}
+          placeholder={`Tìm kiếm tên người dùng`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -385,7 +379,7 @@ const AdminCast = () => {
             width={70}
             height={70}
             src={fullURL}
-            alt="Ảnh diễn viên"
+            alt="Ảnh người dùng"
             className="rounded-full object-cover"
           />
         ) : (
@@ -409,7 +403,7 @@ const AdminCast = () => {
           // className="hover:text-[#4096ff] cursor-pointer"
           // onClick={() => showDrawer(record.uuid)} // Gọi hàm showDrawer với uuid
           >
-            {fullname} {/* Hiển thị tên diễn viên */}
+            {fullname} {/* Hiển thị tên người dùng */}
           </div>
         );
       }
@@ -444,7 +438,12 @@ const AdminCast = () => {
       title: 'Ngày tạo',
       dataIndex: 'timeCreated',
       key: 'timeCreated',
-      width: 50
+      width: 50,
+      render: (text) => {
+        const date = new Date(text);
+        const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
+        return formattedDate;
+      },
     },
     {
       title: '',
@@ -452,7 +451,7 @@ const AdminCast = () => {
       render: (record) => (
         <div className="flex gap-4">
           <Popconfirm
-            title="Xoá diễn viên"
+            title="Xoá người dùng"
             description="Bạn muốn xoá người dùng này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
@@ -482,7 +481,7 @@ const AdminCast = () => {
         Thêm mới người dùng
       </Button>
       <Modal
-        title="Thêm mới diễn viên"
+        title="Thêm mới người dùng"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}

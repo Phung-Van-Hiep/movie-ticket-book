@@ -38,7 +38,7 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
 
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -101,12 +101,7 @@ const AdminMovies = () => {
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  const formatToDateString = (dateObj) => dayjs(dateObj).format('YYYY-MM-DD');
 
   const showModalUpdate = async (uuid) => {
     try {
@@ -120,7 +115,7 @@ const AdminMovies = () => {
   
         formUpdate.setFieldsValue({
           title: moviesDetail.title,
-          realeaseDate: moment(moviesDetail.realeaseDate, 'YYYY-MM-DD'),
+          realeaseDate: dayjs(moviesDetail.realeaseDate, 'YYYY-MM-DD'),
           description: moviesDetail.description,
           averageReview: moviesDetail.averageReview,
           cast: moviesDetail.cast.map((item) => item.uuid),
@@ -612,8 +607,10 @@ const AdminMovies = () => {
                   {
                     required: true,
                     message: 'Hãy nhập thời lượng phim của bạn!'
-                  }
+                  },
+                  { type: 'number', min: 1, max: 300, message: 'Thời lượng phim chỉ từ 1 phút trở lên' }
                 ]}
+                
               >
                 <InputNumber className="w-full" />
               </Form.Item>
@@ -897,7 +894,8 @@ const AdminMovies = () => {
                   {
                     required: true,
                     message: 'Hãy nhập thời lượng phim của bạn!'
-                  }
+                  },
+                  { type: 'number', min: 1, max: 300, message: 'Thời lượng phim chỉ từ 1 phút trở lên' }
                 ]}
               >
                 <InputNumber className="w-full" />

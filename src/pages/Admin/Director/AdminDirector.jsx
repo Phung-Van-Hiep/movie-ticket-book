@@ -27,7 +27,7 @@ import {
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
 import { Image, Upload } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -90,7 +90,7 @@ const AdminDirector = () => {
           }/resources/images/${directorDetail.imageUrl}`:null;
         formUpdate.setFieldsValue({
           directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
+          birthday: dayjs(directorDetail.birthday, 'YYYY-MM-DD'),
           description: directorDetail.description,
           imageUrl: directorDetail.imageUrl
         });
@@ -113,12 +113,7 @@ const AdminDirector = () => {
     }
   };
 
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  const formatToDateString = (dateObj) => dayjs(dateObj).format('YYYY-MM-DD');
   const onFinishUpdateDirectorInfor = async (values) => {
     const { birthday,imageUrl, ...restValues } = values;
     const birthdayObj = new Date(birthday);

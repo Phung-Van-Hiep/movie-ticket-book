@@ -15,6 +15,7 @@ import {
   InputNumber,
   message,
   Modal,
+  Pagination,
   Popconfirm,
   Row,
   Select,
@@ -59,41 +60,28 @@ const AdminShowTime = () => {
   const [screenLabel, setScreenLabel] = useState('');
   const [selectedCinemaLabel, setSelectedCinemaLabel] = useState('');
   const [selectedScreenLabel, setSelectedScreenLabel] = useState('');
+  const [selectedCinema, setSelectedCinema] = useState(null);
+  const [selectedScreen, setSelectedScreen] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const handlePageChange = (page, pageSize) => {
+    setCurrentPage(page);
+    setPageSize(pageSize);
+  };
+
+  const getPagedData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    // console.log("trong listSHowTime có gì", listShowTime)
+    return listShowTime.slice(startIndex, endIndex);
+  };
   const handleSerchShowTime = async (values) => {
-    // console.log("Trog values ày có gì ", values);
     const { cinemaUuid, screenUuid, showDate } = values;
-    setSelectedCinemaLabel(cinemaLabel);
-    setSelectedScreenLabel(screenLabel);
+
     try {
       const findDate = dayjs(showDate).format('YYYY-MM-DD');
-      console.log("Selected date", findDate);
       getAllShowTime(cinemaUuid,screenUuid,findDate)
-      // const res = await APIGetAllShowTime({
-      //   pageSize: 1000,
-      //   page: 1,
-      //   cinemaUuid,
-      //   screenUuid,
-      //   findDate
-      // });
-      // if (res && res.data && res.data.data) {
-      //   console.log("sdfsdfssfs chay vào chưa",res.data.data)
-      //   const filteredShowTimes = res.data.data.items.flatMap(item =>
-      //     item.screens?.flatMap(screen =>
-      //       screen.showtimes?.filter(showtime => showtime.status === 1  && item.cinemaName === cinemaLabel && // Kiểm tra trùng tên rạp
-      //         screen.screenName === screenLabel) || [] // Lọc các showtime có status = 1
-      //     ) || [] // Nếu không có screens thì trả về mảng rỗng
-      //   );
-      //   console.log("Xem độ dài nào", filteredShowTimes)
-      //   // Chỉ set danh sách suất chiếu nếu có kết quả
-      //   if (filteredShowTimes.length > 0) {
-      //     setListShowTime(filteredShowTimes);
-      //     setShowText(true);
-      //   } else {
-      //     setShowText(false);
-      //     setListShowTime([]);
-      //     getAllShowTime();
-      //   }
-      // }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
@@ -102,8 +90,8 @@ const AdminShowTime = () => {
   const handleChangeSearchCinemas = (value, option) => {
     setSelectedCinemaUuid(value);
     setCinemaLabel(option?.label || '');
-    setSelectedCinemaLabel('');
-    setSelectedScreenLabel('');
+    // setSelectedCinemaLabel('');
+    // setSelectedScreenLabel('');
     getAllScreen(value);
     setCinemaSelected(!!value);
     formSearch.setFieldsValue({
@@ -201,15 +189,28 @@ const AdminShowTime = () => {
     const findDate = dayjs(finddate).format('YYYY-MM-DD');
     try {
       const res = await APIGetAllShowTime({ pageSize: 1000, page: 1, cinemaUuid, screenUuid, findDate });
-      // console.log("Chay vào", res)
       if (res && res.data && res.data.data) {
-        // console.log(res.data.data.items)
-        const filteredShowTimes = res.data.data.items.flatMap(cinema =>
-          cinema.screens.flatMap(screen =>
-            screen.showtimes.filter(showtime => showtime.status === 1)
-          )
-        );
-        setListShowTime(filteredShowTimes);
+        const cinemaData = res.data.data.items;
+        if (cinemaData.length > 0) {
+          const selectedCinema = cinemaData.find(cinema => cinema.uuid === cinemaUuid) || cinemaData[0];
+          setSelectedCinema(selectedCinema);
+          console.log("Ra gì đó đi",selectedCinema)
+          setSelectedCinemaLabel(selectedCinema.cinemaName);
+          if (selectedCinema.screens.length > 0) {
+            const selectedScreen = selectedCinema.screens.find(screen => screen.uuid === screenUuid) || selectedCinema.screens[0];
+            setSelectedScreen(selectedScreen);
+            setSelectedScreenLabel(selectedScreen.screenName);
+          } else {
+            setSelectedScreen(null);
+            setSelectedScreenLabel('');
+          }
+        } else {
+          setSelectedCinema(null);
+          setSelectedScreen(null);
+          setSelectedCinemaLabel('');
+          setSelectedScreenLabel('');
+        }
+        setListShowTime(cinemaData);
         setShowText(true);
         form.resetFields();
         handleCancel();
@@ -614,16 +615,7 @@ const AdminShowTime = () => {
             </Col>
           </Row>
         </Form>
-        {showText && (
-          <div className="text-center mt-20">
-            <div className="text-white text-6xl font-semibold bg-blue-700 p-4 rounded-lg">
-            {selectedCinemaLabel ? `Rạp: ${selectedCinemaLabel}` : `Rạp`}
-            </div>
-            <div className="text-yellow-500 text-3xl font-semibold mt-10 text-left ml-10">
-              {selectedScreenLabel ? `${selectedScreenLabel}` : `Phòng chiếu` }
-            </div>
-          </div>
-        )}
+        
       </div>
       <Modal
         title="Thêm mới suất chiếu"
@@ -843,18 +835,37 @@ const AdminShowTime = () => {
         </Form>
       </Modal>
       <div className='mt-10'>
-        <Table
-          columns={columns}
-          dataSource={listShowTimeMap}
-          scroll={{ x: 1000, y: 500 }}
-          pagination={{
-            showTotal: (total, range) => {
-              return `${range[0]}-${range[1]} of ${total} items`;
-            },
-            defaultPageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ['5', '10', '20'],
-          }}
+        {getPagedData().map((cinema) => (
+          <React.Fragment key={cinema.cinemaName}>
+            <div className="text-white text-center text-6xl font-semibold bg-blue-700 p-4 rounded-lg mb-5">
+              {`Rạp: ${cinema.cinemaName}`}
+            </div>
+            {cinema.screens.map((screen) => (
+              <React.Fragment key={screen.screenName}>
+                <div className="text-yellow-500 text-3xl font-semibold mt-5 mb-5 text-left ml-10">
+                  {screen.screenName}
+                </div>
+                <Table
+                  columns={columns}
+                  dataSource={screen.showtimes.map((showtime, index) => ({
+                    key: index + 1,
+                    ...showtime
+                  }))}
+                  scroll={{ x: 1000, y: 500 }}
+                  pagination={false}
+                />
+              </React.Fragment>
+            ))}
+          </React.Fragment>
+        ))}
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={listShowTime.length}
+          onChange={handlePageChange}
+          showSizeChanger
+          showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+          className='mt-10'
         />
       </div>
     </>

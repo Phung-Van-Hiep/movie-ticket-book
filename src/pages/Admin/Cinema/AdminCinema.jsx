@@ -301,14 +301,14 @@ const AdminCinemas = () => {
     {
       title: 'STT',
       dataIndex: 'key',
-      width: 10
+      width: 50
     },
     {
       title: 'Tên rạp phim',
       dataIndex: 'cinemaName',
       key: 'cinemaName',
       ...getColumnSearchProps('cinemaName'),
-      width: 50,
+      width: 100,
       sorter: (a, b) => a.cinemaName.length - b.cinemaName.length,
       sortDirections: ['descend', 'ascend'],
       render: (cinema, record) => {
@@ -323,13 +323,18 @@ const AdminCinemas = () => {
       title: 'Ngày tạo',
       dataIndex: 'timeCreated',
       key: 'timeCreated',
-      width: 50
+      width: 50,
+      render: (text) => {
+        const date = new Date(text);
+        const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
+        return formattedDate;
+      },
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       key: 'address',
-      width: 50
+      width: 100
     },
     {
       title: '',

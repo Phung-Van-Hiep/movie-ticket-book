@@ -561,8 +561,8 @@ const AdminScreen = () => {
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          initialValues={{ 
-            remember: true, 
+          initialValues={{
+            remember: true,
             screenType: "",   // Thêm giá trị mặc định cho `screenType`
             cinemaUuid: ""    // Thêm giá trị mặc định cho `cinemaUuid`
           }}
@@ -679,8 +679,8 @@ const AdminScreen = () => {
           name="basic1"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          initialValues={{ 
-            remember: true, 
+          initialValues={{
+            remember: true,
             screenType: "",   // Thêm giá trị mặc định cho `screenType`
             cinemaUuid: ""    // Thêm giá trị mặc định cho `cinemaUuid`
           }}
@@ -777,7 +777,7 @@ const AdminScreen = () => {
             ) : null}
           </div>
           <div className="flex justify-center mt-10">
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Form.Item >
               <Button type="primary" htmlType="submit" form="basic1">
                 Cập nhật
               </Button>
@@ -789,10 +789,9 @@ const AdminScreen = () => {
         title="Ghế ngồi trong rạp phim"
         open={modalUpdateOpen}
         onCancel={() => setModalUpdateOpen(false)}
-        
         footer={
           <div className="flex justify-center mt-10 mr-2" >
-          <Button onClick={() => setModalUpdateOpen(false)}>Đóng</Button>
+            <Button onClick={() => setModalUpdateOpen(false)}>Đóng</Button>
           </div>
         }
         width={1200}
@@ -819,13 +818,67 @@ const AdminScreen = () => {
               />
             ) : null}
           </div>
-          {/* <div className="flex justify-center mt-10 mr-14">
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Button type="primary" htmlType="submit" form="basic2">
-                Đóng
-              </Button>
-            </Form.Item>
-          </div> */}
+          <div className="flex justify-center mt-5">
+            <div>
+              <Row gutter={[48, 48]}>
+                <Col span={14}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        backgroundColor: "#5A4FCF", // Màu ghế thường
+                        borderRadius: "0.5rem",
+                      }}
+                    ></div>
+                    <span style={{ whiteSpace: "nowrap" }}>Ghế thường</span>
+                  </div>
+                </Col>
+                <Col span={10}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        backgroundColor: "#FF4D4F", // Màu ghế VIP
+                        borderRadius: "0.5rem",
+                      }}
+                    ></div>
+                    <span style={{ whiteSpace: "nowrap" }}>Ghế VIP</span>
+                  </div>
+                </Col>
+              </Row>
+              <Row gutter={[48, 48]} className="mt-10">
+                <Col span={14}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        backgroundColor: "#FF69B4", // Màu ghế đôi
+                        borderRadius: "0.5rem",
+                      }}
+                    ></div>
+                    <span style={{ whiteSpace: "nowrap" }}>Ghế đôi</span>
+                  </div>
+                </Col>
+                <Col span={10}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: "30px",
+                        height: "30px",
+                        backgroundColor: "#808080", // Màu ghế không khả dụng
+                        borderRadius: "0.5rem",
+                      }}
+                    ></div>
+                    <span style={{ whiteSpace: "nowrap" }}>Ghế không khả dụng</span>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
         </Form>
       </Modal>
       <Table
