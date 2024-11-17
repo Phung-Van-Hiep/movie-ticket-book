@@ -69,27 +69,137 @@ const ContentApp = () => {
     },
     {
       id: 7,
-      title: 'Cô Dâu Hào Môn',
+      title: '7',
       genre: 'Hài, Gia Đình',
       rating: 8.0,
       age: '18+',
       image: '/images/movie5.jpeg',
       link: '/movie/7'
+    },
+    {
+      id: 8,
+      title: '8',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 9,
+      title: '9',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 10,
+      title: '10',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    },
+    {
+      id: 11,
+      title: '11',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 12,
+      title: '12',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 13,
+      title: '13',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    },
+    {
+      id: 14,
+      title: '14',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 15,
+      title: '15',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    },
+    {
+      id: 16,
+      title: '11',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 17,
+      title: '12',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 18,
+      title: '13',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    },
+    {
+      id: 19,
+      title: '14',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
+    }, {
+      id: 20,
+      title: '15',
+      genre: 'Hài, Gia Đình',
+      rating: 8.0,
+      age: '18+',
+      image: '/images/movie5.jpeg',
+      link: '/movie/6'
     }
   ];
-
+  //   const itemWidth = 304; // Chiều rộng thực tế của mỗi phần tử (288px + 16px space)
+  // const maxIndex = Math.max(0, movies.length - moviesPerPage); // Giới hạn chỉ số bắt đầu
   const handleNextNowShowing = () => {
     if (nowShowingStartIndex + moviesPerPage < movies.length) {
       setNowShowingStartIndex(nowShowingStartIndex + moviesPerPage);
+
     }
   };
-
   const handlePrevNowShowing = () => {
     if (nowShowingStartIndex - moviesPerPage >= 0) {
       setNowShowingStartIndex(nowShowingStartIndex - moviesPerPage);
     }
   };
-
+  console.log("Gia tri", nowShowingStartIndex)
   const handleNextUpcoming = () => {
     if (upcomingStartIndex + moviesPerPage < movies.length) {
       setUpcomingStartIndex(upcomingStartIndex + moviesPerPage);
@@ -117,7 +227,7 @@ const ContentApp = () => {
             Phim đang chiếu
           </h1>
           <div className="flex justify-center items-center relative">
-            <div className="relative flex space-x-4 overflow-hidden p-10">
+            <div className="relative flex space-x-5 overflow-hidden p-10">
               {nowShowingStartIndex > 0 && (
                 <Button
                   type="text"
@@ -130,51 +240,57 @@ const ContentApp = () => {
                   className="absolute left-7 top-1/3 transform -translate-x-1 -translate-y-1 bg-opacity-75 hover:opacity-75 rounded-full p-2 z-10"
                 />
               )}
-              {movies
-                .slice(
-                  nowShowingStartIndex,
-                  nowShowingStartIndex + moviesPerPage
-                )
-                .map((movie) => (
-                  <div
-                    key={movie.id}
-                    className="relative w-72 rounded-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
-                    onClick={() => navigate(movie.link)}
-                  >
-                    <img
-                      className="w-full h-80 object-cover transition-transform duration-300 transform hover:scale-105"
-                      src={movie.image}
-                      alt={movie.title}
-                    />
-                    <div className="absolute top-2 left-2 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">
-                      {movie.age}
+              <div
+                className="flex space-x-4 transition-transform duration-500 ease-in-out -translate-x-10 "
+                style={{
+                  transform: `translateX(-${nowShowingStartIndex *(288+16)}px)`,
+                }}
+              >
+                {movies
+                  // .slice(
+                  //   nowShowingStartIndex,
+                  //   nowShowingStartIndex + moviesPerPage
+                  // )
+                  .map((movie) => (
+                    <div
+                      key={movie.id}
+                      className="relative w-72 rounded-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
+                      onClick={() => navigate(movie.link)}
+                    >
+                      <img
+                        className="w-full h-80 object-cover transition-transform duration-300 transform hover:scale-105"
+                        src={movie.image}
+                        alt={movie.title}
+                      />
+                      <div className="absolute top-2 left-2 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">
+                        {movie.age}
+                      </div>
+                      <Button
+                        type="text"
+                        className="absolute inset-0 m-auto flex items-center justify-center rounded-full bg-opacity-50 hover:bg-opacity-70 pb-20"
+                        icon={
+                          <PlayCircleOutlined
+                            style={{
+                              fontSize: 32,
+                              color: 'white',
+                              borderRadius: '50%'
+                            }}
+                          />
+                        }
+                      />
+                      <div className="p-4 text-white">
+                        <h3 className="font-bold text-lg truncate overflow-hidden whitespace-nowrap">
+                          {movie.title}
+                        </h3>
+                        <p className="text-sm text-gray-300">{movie.genre}</p>
+                        <p className="flex items-center mt-1 text-yellow-400">
+                          <span className="text-sm mr-1">★</span>
+                          {movie.rating}
+                        </p>
+                      </div>
                     </div>
-                    <Button
-                      type="text"
-                      className="absolute inset-0 m-auto flex items-center justify-center rounded-full bg-opacity-50 hover:bg-opacity-70 pb-20"
-                      icon={
-                        <PlayCircleOutlined
-                          style={{
-                            fontSize: 32,
-                            color: 'white',
-                            borderRadius: '50%'
-                          }}
-                        />
-                      }
-                    />
-                    <div className="p-4 text-white">
-                      <h3 className="font-bold text-lg truncate overflow-hidden whitespace-nowrap">
-                        {movie.title}
-                      </h3>
-                      <p className="text-sm text-gray-300">{movie.genre}</p>
-                      <p className="flex items-center mt-1 text-yellow-400">
-                        <span className="text-sm mr-1">★</span>
-                        {movie.rating}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
+                  ))}
+              </div>
               {nowShowingStartIndex + moviesPerPage < movies.length && (
                 <Button
                   type="text"
@@ -208,48 +324,54 @@ const ContentApp = () => {
                 style={{ boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)' }}
               />
             )}
-            {movies
-              .slice(upcomingStartIndex, upcomingStartIndex + moviesPerPage)
-              .map((movie) => (
-                <div
-                  key={movie.id}
-                  className="relative w-72 rounded-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
-                  onClick={() => navigate(movie.link)}
-                >
-                  <img
-                    className="w-full h-80 object-cover transition-transform duration-300 transform hover:scale-105"
-                    src={movie.image}
-                    alt={movie.title}
-                  />
-                  <div className="absolute top-2 left-2 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    {movie.age}
+            <div
+              className="flex space-x-4 transition-transform duration-1000 ease-in-out"
+              style={{
+                transform: `translateX(-${upcomingStartIndex}px)`
+              }}
+            >
+              {movies
+                .slice(upcomingStartIndex, upcomingStartIndex + moviesPerPage)
+                .map((movie) => (
+                  <div
+                    key={movie.id}
+                    className="relative w-72 rounded-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
+                    onClick={() => navigate(movie.link)}
+                  >
+                    <img
+                      className="w-full h-80 object-cover transition-transform duration-300 transform hover:scale-105"
+                      src={movie.image}
+                      alt={movie.title}
+                    />
+                    <div className="absolute top-2 left-2 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      {movie.age}
+                    </div>
+                    <Button
+                      type="text"
+                      className="absolute inset-0 m-auto flex items-center justify-center rounded-full bg-opacity-50 hover:bg-opacity-70 pb-20"
+                      icon={
+                        <PlayCircleOutlined
+                          style={{
+                            fontSize: 32,
+                            color: 'white',
+                            borderRadius: '50%'
+                          }}
+                        />
+                      }
+                    />
+                    <div className="p-4 text-black">
+                      <h3 className="font-bold text-lg truncate overflow-hidden whitespace-nowrap">
+                        {movie.title}
+                      </h3>
+                      <p className="text-sm text-gray-800">{movie.genre}</p>
+                      <p className="flex items-center mt-1 text-yellow-400">
+                        <span className="text-sm mr-1">★</span>
+                        {movie.rating}
+                      </p>
+                    </div>
                   </div>
-                  <Button
-                    type="text"
-                    className="absolute inset-0 m-auto flex items-center justify-center rounded-full bg-opacity-50 hover:bg-opacity-70 pb-20"
-                    icon={
-                      <PlayCircleOutlined
-                        style={{
-                          fontSize: 32,
-                          color: 'white',
-                          borderRadius: '50%'
-                        }}
-                      />
-                    }
-                  />
-                  <div className="p-4 text-black">
-                    <h3 className="font-bold text-lg truncate overflow-hidden whitespace-nowrap">
-                      {movie.title}
-                    </h3>
-                    <p className="text-sm text-gray-800">{movie.genre}</p>
-                    <p className="flex items-center mt-1 text-yellow-400">
-                      <span className="text-sm mr-1">★</span>
-                      {movie.rating}
-                    </p>
-                  </div>
-                </div>
-              ))}
-
+                ))}
+            </div>
             {upcomingStartIndex + moviesPerPage < movies.length && (
               <Button
                 type="text"

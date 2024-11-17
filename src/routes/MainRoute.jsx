@@ -20,6 +20,7 @@ import AdminTicketPrice from "../pages/Admin/TicketPrice/AdminTicketPrice";
 import AdminCoupon from "../pages/Admin/Coupon/AdminCoupon";
 import AdminNew from "../pages/Admin/News/AdminNew";
 import AdminCombo from "../pages/Admin/Combo/AdminCombo";
+import Testting from "../pages/FileDeTest";
 
 const router = createBrowserRouter([
   {
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/testing",
-    element: <SeatLayout />,
+    element: <Testting />,
   },
   {
     path: "/admin",
