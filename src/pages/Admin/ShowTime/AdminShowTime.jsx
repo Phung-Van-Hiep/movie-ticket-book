@@ -81,7 +81,7 @@ const AdminShowTime = () => {
 
     try {
       const findDate = dayjs(showDate).format('YYYY-MM-DD');
-      getAllShowTime(cinemaUuid,screenUuid,findDate)
+      getAllShowTime(cinemaUuid, screenUuid, findDate)
     } catch (error) {
       console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
@@ -194,7 +194,7 @@ const AdminShowTime = () => {
         if (cinemaData.length > 0) {
           const selectedCinema = cinemaData.find(cinema => cinema.uuid === cinemaUuid) || cinemaData[0];
           setSelectedCinema(selectedCinema);
-          console.log("Ra gì đó đi",selectedCinema)
+          console.log("Ra gì đó đi", selectedCinema)
           setSelectedCinemaLabel(selectedCinema.cinemaName);
           if (selectedCinema.screens.length > 0) {
             const selectedScreen = selectedCinema.screens.find(screen => screen.uuid === screenUuid) || selectedCinema.screens[0];
@@ -442,7 +442,7 @@ const AdminShowTime = () => {
     {
       title: 'STT',
       dataIndex: 'key',
-      width: 50
+      width: 20
     },
     {
       title: 'Tên phim',
@@ -465,34 +465,64 @@ const AdminShowTime = () => {
       dataIndex: 'languageType',
       key: 'languageType',
       width: 50,
-      render: (languageType) => (languageType === 1 ? 'Phụ đề' : 'Lồng tiếng'),
+      render: (languageType) => (languageType === 1 ?<span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600">Phụ đề  </span> 
+        : <span className="bg-violet-100 text-violet-600 px-2 py-1 rounded-md border border-violet-600"> Lồng tiếng</span>),
     },
     {
-      title: 'Hình thức chiếu',
+      title: 'Loại phòng chiếu',
       dataIndex: 'screenType',
       key: 'screenType',
       width: 50,
-      render: (screenType) => {
-        switch (screenType) {
-          case 1: return '2D';
-          case 2: return '3D';
-          case 3: return 'IMAX 2D';
-          case 4: return 'IMAX 3D';
-          default: return '';
+      render: (status) => {
+        let statusText;
+        let colorClass; // Thêm biến để xác định màu sắc
+    
+        switch (status) {
+          case 1:
+            statusText = '2D';
+            colorClass = 'bg-blue-100 text-blue-600 border-blue-600'; // Xanh nước biển
+            break;
+          case 2:
+            statusText = '3D';
+            colorClass = 'bg-green-100 text-green-600 border-green-600'; // Xanh lá cây
+            break;
+          case 3:
+            statusText = 'IMAX2D';
+            colorClass = 'bg-yellow-100 text-yellow-600 border-yellow-600'; // Vàng
+            break;
+          case 4:
+            statusText = 'IMAX3D';
+            colorClass = 'bg-red-100 text-red-600 border-red-600'; // Đỏ
+            break;
         }
+        return (
+          <div className={` inline-block rounded-md border ${colorClass}`}>
+            {statusText}
+          </div>
+        );
       },
     },
     {
       title: 'Thời gian chiếu',
       key: 'timeRange',
-      width: 100,
-      render: (text, record) => `${record.startTime} - ${record.endTime}`,
+      width: 60,
+      render: (text, record) => 
+        <div className="bg-pink-100 text-pink-600 px-2 py-1 rounded-md border border-pink-600 inline-block">
+        {record.startTime} - {record.endTime}
+        </div>
     },
     {
       title: 'Ngày chiếu',
       dataIndex: 'showDate',
       key: 'showDate',
-      width: 100,
+      width: 50,
+      render: (text) => {
+        return (
+          <span className="bg-red-100 text-red-600 px-2 py-1 rounded-md border border-red-600">
+            {text}
+          </span>
+        );
+      },
     },
     {
       title: 'Trạng thái',
@@ -500,12 +530,32 @@ const AdminShowTime = () => {
       key: 'state',
       width: 50,
       render: (state) => {
+        let statusText;
+        let colorClass;
+    
         switch (state) {
-          case 0: return 'Sắp chiếu';
-          case 1: return 'Đang chiếu';
-          case 2: return 'Đã chiếu';
-          default: return '';
+          case 0:
+            statusText = 'Sắp chiếu';
+            colorClass = 'bg-sky-100 text-sky-600 border-sky-600'; // Màu Sky
+            break;
+          case 1:
+            statusText = 'Đang chiếu';
+            colorClass = 'bg-green-100 text-green-600 border-green-600'; // Màu Green
+            break;
+          case 2:
+            statusText = 'Đã chiếu';
+            colorClass = 'bg-red-100 text-red-600 border-red-600'; // Màu Red
+            break;
+          default:
+            statusText = '';
+            colorClass = '';
+            break;
         }
+        return (
+          <div className={`inline-block rounded-md border ${colorClass} px-2 py-1`}>
+            {statusText}
+          </div>
+        );
       },
     },
     {
@@ -615,7 +665,7 @@ const AdminShowTime = () => {
             </Col>
           </Row>
         </Form>
-        
+
       </div>
       <Modal
         title="Thêm mới suất chiếu"
@@ -835,29 +885,35 @@ const AdminShowTime = () => {
         </Form>
       </Modal>
       <div className='mt-10'>
-        {getPagedData().map((cinema) => (
-          <React.Fragment key={cinema.cinemaName}>
-            <div className="text-white text-center text-6xl font-semibold bg-blue-700 p-4 rounded-lg mb-5">
-              {`Rạp: ${cinema.cinemaName}`}
-            </div>
-            {cinema.screens.map((screen) => (
-              <React.Fragment key={screen.screenName}>
-                <div className="text-yellow-500 text-3xl font-semibold mt-5 mb-5 text-left ml-10">
-                  {screen.screenName}
-                </div>
-                <Table
-                  columns={columns}
-                  dataSource={screen.showtimes.map((showtime, index) => ({
-                    key: index + 1,
-                    ...showtime
-                  }))}
-                  scroll={{ x: 1000, y: 500 }}
-                  pagination={false}
-                />
-              </React.Fragment>
-            ))}
-          </React.Fragment>
-        ))}
+        {listShowTime.length > 0 ? (
+          getPagedData().map((cinema) => (
+            <React.Fragment key={cinema.cinemaName}>
+              <div className="text-white text-center text-6xl font-semibold bg-blue-700 p-4 rounded-lg mb-5">
+                {`Rạp: ${cinema.cinemaName}`}
+              </div>
+              {cinema.screens.map((screen) => (
+                <React.Fragment key={screen.screenName}>
+                  <div className="text-yellow-500 text-3xl font-semibold mt-5 mb-5 text-left ml-10">
+                    {screen.screenName}
+                  </div>
+                  <Table
+                    columns={columns}
+                    dataSource={screen.showtimes.map((showtime, index) => ({
+                      key: index + 1,
+                      ...showtime
+                    }))}
+                    scroll={{ x: 1000, y: 500 }}
+                    pagination={false}
+                  />
+                </React.Fragment>
+              ))}
+            </React.Fragment>
+          ))
+        ) : (
+          <div className="text-center text-2xl mt-10">
+            Không tìm thấy suất chiếu phù hợp.
+          </div>
+        )}
         <Pagination
           current={currentPage}
           pageSize={pageSize}

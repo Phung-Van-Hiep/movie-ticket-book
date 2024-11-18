@@ -511,26 +511,6 @@ const AdminTicketPrice = () => {
                 />
           </Form.Item>
           <Form.Item
-            label="Hình thức chiếu"
-            name="projectionType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn hình thức chiếu!'
-              }
-            ]}
-          >
-            <Select
-                  defaultValue="Chọn hình thức chiếu"
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 0, label: '2D' },
-                    { value: 1, label: '3D' },
-                    { value: 2, label: 'IMAX' },
-                  ]}
-                />
-          </Form.Item>
-          <Form.Item
             label="Loại suất chiếu"
             name="showTimeType"
             rules={[
@@ -579,12 +559,13 @@ const AdminTicketPrice = () => {
             ]}
           >
             <Select
-                  defaultValue="Chọn phòng chiếu"
+                  defaultValue="Chọn hình thức chiếu"
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 0, label: 'Tiêu chuẩn' },
-                    { value: 1, label: 'GOLD CLASS' },
-                    { value: 2, label: 'IMAX' },
+                    { value: 0, label: '2D' },
+                    { value: 1, label: '3D' },
+                    { value: 2, label: 'IMAX2D' },
+                    { value: 3, label: 'IMAX3D' },
                   ]}
                 />
           </Form.Item>

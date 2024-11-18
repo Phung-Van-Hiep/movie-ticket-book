@@ -480,27 +480,46 @@ const AdminScreen = () => {
       width: 50,
       render: (status) => {
         let statusText;
+        let colorClass; // Thêm biến để xác định màu sắc
+    
         switch (status) {
           case 1:
             statusText = '2D';
+            colorClass = 'bg-blue-100 text-blue-600 border-blue-600'; // Xanh nước biển
             break;
           case 2:
             statusText = '3D';
+            colorClass = 'bg-green-100 text-green-600 border-green-600'; // Xanh lá cây
             break;
           case 3:
             statusText = 'IMAX2D';
+            colorClass = 'bg-yellow-100 text-yellow-600 border-yellow-600'; // Vàng
             break;
           case 4:
             statusText = 'IMAX3D';
+            colorClass = 'bg-red-100 text-red-600 border-red-600'; // Đỏ
+            break;
         }
-        return <div className="truncate-description">{statusText}</div>;
-      }
+        return (
+          <div className={` inline-block rounded-md border ${colorClass}`}>
+            {statusText}
+          </div>
+        );
+      },
     },
+    
     {
       title: 'Tổng số ghế',
       dataIndex: 'capacity',
       key: 'capacity',
-      width: 50
+      width: 50,
+      render: (text) => {
+        return (
+          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md border border-gray-600">
+            {text}
+          </span>
+        );
+      },
     },
 
 

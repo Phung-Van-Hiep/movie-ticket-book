@@ -243,14 +243,14 @@ const ContentApp = () => {
               <div
                 className="flex space-x-4 transition-transform duration-500 ease-in-out -translate-x-10 "
                 style={{
-                  transform: `translateX(-${nowShowingStartIndex *(288+16)}px)`,
+                  transform: `translateX(-${nowShowingStartIndex }px)`,
                 }}
               >
                 {movies
-                  // .slice(
-                  //   nowShowingStartIndex,
-                  //   nowShowingStartIndex + moviesPerPage
-                  // )
+                  .slice(
+                    nowShowingStartIndex,
+                    nowShowingStartIndex + moviesPerPage
+                  )
                   .map((movie) => (
                     <div
                       key={movie.id}

@@ -399,7 +399,7 @@ const AdminCast = () => {
       sortDirections: ['descend', 'ascend'],
       render: (fullname, record) => {
         return (
-          <div
+          <div 
           // className="hover:text-[#4096ff] cursor-pointer"
           // onClick={() => showDrawer(record.uuid)} // Gọi hàm showDrawer với uuid
           >
@@ -425,14 +425,16 @@ const AdminCast = () => {
       dataIndex: 'role',
       key: 'role',
       width: 50,
-      render: (role) => (role === 0 ? 'Admin' : 'User')
+      render: (role) => (role === 0 ? <span className="bg-red-100 text-red-600 px-2 py-1 rounded-md border border-red-600" >Admin  </span>
+        :<span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md border border-blue-600"> User</span>)
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       width: 50,
-      render: (status) => (status === 1 ? 'Hoạt động' : 'Đang khoá')
+      render: (status) => (status === 1 ?<span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600">Hoạt động</span>  
+        : <span className="bg-red-100 text-red-600 px-2 py-1 rounded-md border border-red-600">Đang khoá</span>)
     },
     {
       title: 'Ngày tạo',

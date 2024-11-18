@@ -411,7 +411,11 @@ const AdminNew = () => {
       render: (text) => {
         const date = new Date(text);
         const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
-        return formattedDate;
+        return (         
+        <span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600">
+          {formattedDate}
+        </span>)
+
       },
     },
 

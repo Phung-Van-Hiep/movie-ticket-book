@@ -470,6 +470,13 @@ const AdminMovies = () => {
       title: 'Ngày phát hành',
       dataIndex: 'realeaseDate',
       key: 'realeaseDate',
+      render: (text) => {
+        return (
+          <span className="bg-red-100 text-red-600 px-2 py-1 rounded-md border border-red-600">
+            {text}
+          </span>
+        );
+      },
     },
     {
       title: 'Ngày tạo',
@@ -478,7 +485,11 @@ const AdminMovies = () => {
       render: (text) => {
         const date = new Date(text);
         const formattedDate = date.toISOString().split('T')[0]; // Lấy định dạng YYYY-MM-DD
-        return formattedDate;
+        return (
+          <span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600">
+            {formattedDate}
+          </span>
+        );
       },
     },
     {
