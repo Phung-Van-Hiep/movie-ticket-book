@@ -66,6 +66,8 @@ const AdminShowTime = () => {
   const [pageSize, setPageSize] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [updateButtonDisabled, setUpdateButtonDisabled] = useState(false);
+  const [searchDate, setSearchDate] = useState(dayjs());
+
   const handlePageChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -74,15 +76,16 @@ const AdminShowTime = () => {
   const getPagedData = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    // console.log("trong listSHowTime có gì", listShowTime)
+    console.log("trong listSHowTime có gì", listShowTime[0].screens.length >0)
     return listShowTime.slice(startIndex, endIndex);
   };
   const handleSerchShowTime = async (values) => {
     const { cinemaUuid, screenUuid, showDate } = values;
-
+  
     try {
       const findDate = dayjs(showDate).format('YYYY-MM-DD');
-      getAllShowTime(cinemaUuid, screenUuid, findDate)
+      setSearchDate(dayjs(showDate)); // Update the searchDate state
+      getAllShowTime(cinemaUuid, screenUuid, findDate);
     } catch (error) {
       console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
@@ -180,7 +183,7 @@ const AdminShowTime = () => {
       if (res && res.status === 200) {
         message.success('Cập nhật suất chiếu thành công');
         formUpdate.resetFields();
-        getAllShowTime(); // Tải lại danh sách suất chiếu
+        getAllShowTime(null, null, searchDate); // Tải lại danh sách suất chiếu
         handleCancelUpdate();
         setShowText(false);
       }
@@ -191,32 +194,16 @@ const AdminShowTime = () => {
     }
   };
 
-  const getAllShowTime = async (cinemaUuid = null, screenUuid = null, finddate = new Date()) => {
+  const getAllShowTime = async (cinemaUuid = null, screenUuid = null, finddate = searchDate) => {
     const findDate = dayjs(finddate).format('YYYY-MM-DD');
     try {
       const res = await APIGetAllShowTime({ pageSize: 1000, page: 1, cinemaUuid, screenUuid, findDate });
       if (res && res.data && res.data.data) {
         const cinemaData = res.data.data.items;
-        if (cinemaData.length > 0) {
-          const selectedCinema = cinemaData.find(cinema => cinema.uuid === cinemaUuid) || cinemaData[0];
-          setSelectedCinema(selectedCinema);
-          console.log("Ra gì đó đi", selectedCinema)
-          setSelectedCinemaLabel(selectedCinema.cinemaName);
-          if (selectedCinema.screens.length > 0) {
-            const selectedScreen = selectedCinema.screens.find(screen => screen.uuid === screenUuid) || selectedCinema.screens[0];
-            setSelectedScreen(selectedScreen);
-            setSelectedScreenLabel(selectedScreen.screenName);
-          } else {
-            setSelectedScreen(null);
-            setSelectedScreenLabel('');
-          }
-        } else {
-          setSelectedCinema(null);
-          setSelectedScreen(null);
-          setSelectedCinemaLabel('');
-          setSelectedScreenLabel('');
-        }
-        setListShowTime(cinemaData);
+        // if(cinemaData.length > 0 &&  cinemaData[0].screens.length > 0 ){
+          console.log("gì đó", cinemaData)
+          setListShowTime(cinemaData);
+        // }
         setShowText(true);
         form.resetFields();
         handleCancel();
@@ -241,7 +228,7 @@ const AdminShowTime = () => {
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        getAllShowTime();
+        getAllShowTime(null, null, searchDate);
         setShowText(false);
       }
       // console.log("Success:", values);
@@ -300,7 +287,7 @@ const AdminShowTime = () => {
       const res = await APIDeleteShowTime({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllShowTime(); // Cập nhật lại danh sách showtime sau khi xoá
+        getAllShowTime(null, null, searchDate); // Cập nhật lại danh sách showtime sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -325,7 +312,7 @@ const AdminShowTime = () => {
       // console.log("Check res ", res);
 
       if (res && res.data && Array.isArray(res.data.data.items)) {
-        const dataItems = res.data.data.items.filter(item => [1, 2, 3, 4].includes(item.status));// Chỉ lấy những mục có status là 1
+        const dataItems = res.data.data.items.filter(item => [1, 3].includes(item.status));// Chỉ lấy những mục có status là 1
         const options = dataItems.map(mapDataToOptions);
         // console.log("Lấy được type không", options);
         setState(options); // Cập nhật state
@@ -344,12 +331,19 @@ const AdminShowTime = () => {
     );
   };
   const getAllScreen = async (cinemaUuid) => {
-    fetchData(
-      APIGetAllScreen,
-      (screen) => ({ value: screen.uuid, label: screen.screenName }),
-      setListScreen,
-      cinemaUuid
-    );
+    try {
+      const res = await APIGetAllScreen({ pageSize: 1000, page: 1, cinemaUuid });
+      if (res && res.data && Array.isArray(res.data.data.items)) {
+        const dataItems = res.data.data.items.filter(item => [1, 3].includes(item.status));
+        const options = dataItems.map(screen => ({ value: screen.uuid, label: screen.screenName }));
+        setListScreen(options);
+      } else {
+        setListScreen([]);
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách phòng chiếu:', error);
+      setListScreen([]);
+    }
   };
   const getAllMovies = async () => {
     fetchData(
@@ -594,7 +588,7 @@ const AdminShowTime = () => {
   useEffect(() => {
     getAllShowTime();
     getAllCinemas();
-    getAllScreen();
+    // getAllScreen();
     getAllMovies();
   }, []);
   return (
@@ -649,8 +643,8 @@ const AdminShowTime = () => {
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
                   allowClear
-                  disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
-                  className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
+                  disabled={!selectedCinemaUuid} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+                  className={!selectedCinemaUuid ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
                   style={{ width: 200 }}
                 />
               </Form.Item>
@@ -720,8 +714,8 @@ const AdminShowTime = () => {
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-              disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
-              className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
+              disabled={!selectedCinemaUuid} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+              className={!selectedCinemaUuid ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
               allowClear
             />
           </Form.Item>
@@ -829,8 +823,8 @@ const AdminShowTime = () => {
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-              disabled={!cinemaSelected} // Vô hiệu hóa nếu chưa chọn rạp chiếu
-              className={!cinemaSelected ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
+              disabled={!selectedCinemaUuid} // Vô hiệu hóa nếu chưa chọn rạp chiếu
+              className={!selectedCinemaUuid ? 'cursor-no-drop' : ''} // Thêm lớp cursor-no-drop nếu bị vô hiệu hóa
               allowClear
             />
           </Form.Item>
@@ -905,7 +899,7 @@ const AdminShowTime = () => {
         </Form>
       </Modal>
       <div className='mt-10'>
-        {listShowTime.length > 0 ? (
+        {listShowTime.length > 0 && listShowTime[0].screens.length >0  ? (
           getPagedData().map((cinema) => (
             <React.Fragment key={cinema.cinemaName}>
               <div className="text-white text-center text-6xl font-semibold bg-blue-700 p-4 rounded-lg mb-5">

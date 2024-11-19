@@ -199,6 +199,22 @@ export const APIGetTicketDetail = (data) => {
 export const APIDeleteTicket = (data) => {
   return instance.post('/api/v1/Ticket/update_ticket_status', data);
 };
+
+//Coupon
+export const APICreateCoupon = (data) => {
+  return instance.post('/api/v1/Coupon/upsert_coupon', data);
+};
+export const APIGetAllCoupon = (data) => {
+  return instance.post('/api/v1/Coupon/page_list_coupon', data);
+};
+export const APIGetCouponDetail = (data) => {
+  return instance.post('/api/v1/Coupon/coupon_detail', data);
+};
+
+export const APIDeleteCoupon = (data) => {
+  return instance.post('/api/v1/Coupon/update_coupon_status', data);
+};
+
 //Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();

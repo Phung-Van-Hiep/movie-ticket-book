@@ -642,9 +642,13 @@ const AdminTicketPrice = () => {
               allowClear
             />
           </Form.Item>
-          <Form.Item label="Giá tiền" name="price" rules={[{ required: true, message: 'Hãy nhập giá tiền' }]}>
+          <Form.Item label="Giá tiền" name="price" rules={[{ required: true, message: 'Hãy nhập giá tiền' },
+          { type: 'number', min: 1, message: 'Giá vé phải lớn hơn 0' }
+          ]}>
             <InputNumber
               placeholder="Nhập giá tiền"
+              className='w-full'
+              min={1}
             />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

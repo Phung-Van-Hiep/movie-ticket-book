@@ -3,7 +3,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   SearchOutlined,
-  TableOutlined
 } from '@ant-design/icons';
 
 import {
@@ -22,98 +21,44 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
-  APIUploadImage,
-  APIGetAllCinemas
+  APICreateCoupon,
+  APIGetAllCoupon,
+  APIGetCouponDetail,
+  APIDeleteCoupon,
 } from '../../../services/service.api';
-import { PlusOutlined } from '@ant-design/icons';
-import { Image, Upload } from 'antd';
-import moment from 'moment';
-const getBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
-
+import dayjs from 'dayjs';
 const AdminCoupon = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listCoupon, setListCoupon] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [couponDetail, setCouponDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [fileList, setFileList] = useState([]);
-  const [imagesUuid, setImagesUuid] = useState('');
-  const [listCinemas, setListCinemas] = useState([]);
 
   const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
 
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const handlePreviewCreateImage = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
-
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
-  };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
-    const res = await APIUploadImage(file, '3');
-    console.log('Check var' + res);
-    if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
-  const handleChangeCreateImage = ({ fileList: newFileList }) =>
-    setFileList(newFileList);
-
-  const uploadButton = (
-    <button style={{ border: 0, background: 'none' }} type="button">
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
-
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetDirectorDetail({ uuid });
+      const res = await APIGetCouponDetail({ uuid });
       console.log('update', res);
       if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${import.meta.env.VITE_BACKEND_URL
-          }/resources/images/${directorDetail.imageUrl}`;
+        const couponDetail = res.data.data;
+        setCouponDetail(couponDetail);
         formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
+          code: couponDetail.code,
+          quantity:couponDetail.quantity,
+          discount:couponDetail.discount,
+          startDate: dayjs(couponDetail.startDate, 'YYYY-MM-DD'),
+          endDate: dayjs(couponDetail.endDate, 'YYYY-MM-DD'),
+          status: couponDetail.status,
         });
-        setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
-        // setFileList([]);
-        setPreviewImage('');
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
       }
@@ -130,28 +75,25 @@ const AdminCoupon = () => {
   };
 
   const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return dayjs(dateObj).format('YYYY-MM-DD');
   };
   const onFinishUpdateDirectorInfor = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
+    const { startDate,endDate, ...restValues } = values;
+    const startDateFormat = formatToDateString(startDate);
+    const endDateFormat = formatToDateString(endDate);
     try {
-      const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
-        birthday: birthdayFormat,
-        description: restValues.description,
-        imagesUuid // Gửi URL của ảnh nếu có
+      const res = await APICreateCoupon({
+        uuid: couponDetail?.uuid,
+        code: restValues.code,
+        quantity:restValues.quantity,
+        discount:restValues.discount,
+        startDate: startDateFormat,
+        endDate: endDateFormat,
+        status: restValues.status,
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setFileList([]);
-        setImagesUuid('');
         getAllDirector();
         handleCancelUpdate();
       }
@@ -173,36 +115,36 @@ const AdminCoupon = () => {
 
   const getAllDirector = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllCoupon({ pageSize: 1000, page: 1 });
       console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
-        const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+        const filteredCoupons = res.data?.data?.items.filter(
+          (coupon) => coupon.status !== 0
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListCoupon(filteredCoupons); // Cập nhật danh sách coupon đã lọc
         form.resetFields();
         handleCancel();
       }
     } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách combo.');
+      message.error('Đã xảy ra lỗi khi lấy danh sách khuyến mãi.');
     }
   };
   const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
+    const { startDate,endDate, ...restValues } = values;
+    const startDateFormat = formatToDateString(startDate);
+    const endDateFormat = formatToDateString(endDate);
     const dataDirector = {
       ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
+      startDate: startDateFormat,
+      endDate: endDateFormat,
     };
     try {
-      const res = await APICreateDirector(dataDirector);
+      const res = await APICreateCoupon(dataDirector);
       console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setFileList([]);
         getAllDirector();
       }
       // console.log("Success:", values);
@@ -226,7 +168,6 @@ const AdminCoupon = () => {
   };
   const showModal = () => {
     setIsModalOpen(true);
-    setFileList([]);
   };
 
   const handleOk = () => {
@@ -241,7 +182,6 @@ const AdminCoupon = () => {
 
   const handleCancelUpdate = () => {
     setIsModalUpdateOpen(false);
-    setFileList([]);
   };
 
   const onClose = () => {
@@ -260,10 +200,10 @@ const AdminCoupon = () => {
   };
   const confirm = async (uuid) => {
     try {
-      const res = await APIDeleteDirector({ uuid, status: 0 });
+      const res = await APIDeleteCoupon({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
+        getAllDirector(); // Cập nhật lại danh sách coupon sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -282,25 +222,6 @@ const AdminCoupon = () => {
       }
     }
   };
-  const getAllCinemas = async () => {
-    try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      console.log('API Response:', res);
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas.map((cinema) => ({
-          value: cinema.uuid,
-          label: cinema.cinemaName
-        }));
-
-        setListCinemas(cinemasOptions); // Cập nhật state
-      } else {
-        message.error('Không có dữ liệu combo hợp lệ.');
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách combo.');
-    }
-  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -313,7 +234,7 @@ const AdminCoupon = () => {
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm combo`}
+          placeholder={`Tìm kiếm khuyến mãi`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -383,66 +304,101 @@ const AdminCoupon = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listCouponMap = listCoupon.map((coupon, index) => ({
     key: index + 1,
-    ...director
+    ...coupon
   }));
   const columns = [
     {
       title: 'STT',
       dataIndex: 'key',
-      width: 50
+      width: 20
     },
     {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
-      width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      title: 'Mã khuyến mãi',
+      dataIndex: 'code',
+      key: 'code',
+      ...getColumnSearchProps('code'),
+      width: 40,
+      sorter: (a, b) => a.code.length - b.code.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (coupon, record) => {
         return (
           <div>
-            {director} {/* Hiển thị tên quốc gia */}
+            {coupon} {/* Hiển thị tên quốc gia */}
           </div>
         );
       }
     },
     {
-      title: 'Loại phòng chiếu',
-      dataIndex: 'screenType',
-      key: 'screenType',
-      width: 50
+      title: 'Phần trăm giảm giá',
+      dataIndex: 'discount',
+      key: 'discount',
+      width: 40,
+      render: (discount, record) => {
+        return (
+          <div>
+            {discount}%
+          </div>
+        )
+      }
     },
     {
-      title: 'Số hàng',
-      dataIndex: 'rowScreen',
-      key: 'rowScreen',
-      width: 50
+      title: 'Số lượng',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      width: 30
     },
     {
-      title: 'Số cột',
-      dataIndex: 'colScreen',
-      key: 'colScreen',
-      width: 50
+      title: 'Thời gian áp dụng',
+      // dataIndex: 'startDate',
+      key: 'timeApplication',
+      render: (_, record) => {
+        const startDate = dayjs(record.startDate).format('DD/MM/YYYY');
+        const endDate = dayjs(record.endDate).format('DD/MM/YYYY');
+        return `${startDate} - ${endDate}`;
+      },
+      width: 50,
     },
-
+    {
+      title: 'Đã sử dụng',
+      dataIndex: 'used',
+      key: 'used',
+      width: 30
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 30,
+      render: (status) =>{
+        let statusText;
+        let colorClass;
+        switch (status) {
+          case 1:
+            statusText = 'Kích hoạt';
+            colorClass = 'bg-green-100 text-green-600 border-green-600';
+            break;
+          case 2:
+            statusText = 'Ẩn';
+            colorClass = 'bg-gray-100 text-gray-600 border-gray-600';
+            break;
+          default:
+            statusText = '';
+            colorClass = '';
+        }
+        return <div className={` inline-block rounded-md border ${colorClass}`}>{statusText}</div>;
+      }
+      
+    },
     {
       title: '',
       width: 50,
       render: (record) => (
         <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined />
-          </Button>
           <Popconfirm
-            title="Xoá combo"
-            description="Bạn muốn xoá combo này?"
+            title="Xoá khuyến mãi"
+            description="Bạn muốn xoá khuyến mãi này?"
             onConfirm={() => confirm(record.uuid)}
             okText={<>Có</>}
             cancelText="Không"
@@ -464,7 +420,6 @@ const AdminCoupon = () => {
   ];
   useEffect(() => {
     getAllDirector();
-    getAllCinemas();
   }, []);
   return (
     <>
@@ -491,14 +446,19 @@ const AdminCoupon = () => {
         >
           <Form.Item
             label="Mã khuyến mãi"
-            name="codeName"
+            name="code"
             rules={[{ required: true, message: 'Hãy nhập mã khuyến mãi!' }]}
           >
             <Input placeholder='Nhập mã khuyến mãi' />
           </Form.Item>
-          <Form.Item label="Phần trăm" name="percent" rules={[{ required: true, message: 'Hãy nhập phần trăm' }]}>
-            <Input
-              placeholder="Nhập phần trăm giảm giá"
+          <Form.Item label="Phần trăm" name="discount" rules={[{ required: true, message: 'Hãy nhập phần trăm' },
+          { type: 'number', min: 1,max:99, message: 'Giá khuyến mãi phải lớn hơn 0, nhỏ hơn 100' },
+          ]}>
+            <InputNumber
+              placeholder="Nhập phần trăm"
+              className='w-full'
+              min={1}
+              max={100}
             />
           </Form.Item>
           <Form.Item label="Số lượng" name="quantity" rules={[{ required: true, message: 'Hãy nhập số lượng' }]}>
@@ -511,8 +471,8 @@ const AdminCoupon = () => {
               defaultValue="Chọn trạng thái"
               onChange={handleChangeStatus}
               options={[
-                { value: 0, label: 'Ẩn' },
                 { value: 1, label: 'Kích hoạt' },
+                { value: 2, label: 'Ẩn' },
                 
               ]}
               allowClear
@@ -538,7 +498,7 @@ const AdminCoupon = () => {
         </Form>
       </Modal>
       <Modal
-        title="Cập nhật combo"
+        title="Cập nhật khuyến mãi"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
@@ -557,61 +517,50 @@ const AdminCoupon = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên combo"
-            name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên combo!' }]}
+            label="Mã khuyến mãi"
+            name="code"
+            rules={[{ required: true, message: 'Hãy nhập mã khuyến mãi!' }]}
           >
-            <Input />
+            <Input placeholder='Nhập mã khuyến mãi' />
           </Form.Item>
-
-          <Form.Item
-            label="Ngày sinh"
-            name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
-          >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
+          <Form.Item label="Phần trăm" name="discount" rules={[{ required: true, message: 'Hãy nhập phần trăm' },
+          { type: 'number', min: 1,max:99, message: 'Giá khuyến mãi phải lớn hơn 0, nhỏ hơn 100' },
+          ]}>
+            <InputNumber
+              placeholder="Nhập phần trăm"
+              className='w-full'
+              min={1}
+              max={100}
             />
           </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
+          <Form.Item label="Số lượng" name="quantity" rules={[{ required: true, message: 'Hãy nhập số lượng' }]}>
+            <Input
+              placeholder="Nhập số lượng"
             />
           </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
-            <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
+          <Form.Item label="Trạng thái" name="status" rules={[{ required: true, message: 'Hãy chọn trạng thái' }]}>
+            <Select
+              defaultValue="Chọn trạng thái"
+              onChange={handleChangeStatus}
+              options={[
+                { value: 1, label: 'Kích hoạt' },
+                { value: 2, label: 'Ẩn' },
+                
+              ]}
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item label="Ngày bắt đầu" name="startDate" rules={[{ required: true, message: 'Hãy chọn ngày bắt đầu' }]}>
+            <DatePicker 
+            placeholder="Ngày bắt đầu"
+            variant="filled"
+            className="w-full"/>
+          </Form.Item>
+          <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: 'Hãy chọn ngày kết thúc' }]}>
+            <DatePicker 
+            placeholder="Ngày kết thúc"
+            variant="filled"
+            className="w-full"/>
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
@@ -622,7 +571,7 @@ const AdminCoupon = () => {
       </Modal>
       <Table
         columns={columns}
-        dataSource={listDirectorMap}
+        dataSource={listCouponMap}
         scroll={{ x: 1000, y: 500 }}
         pagination={{
           showTotal: (total, range) => {
