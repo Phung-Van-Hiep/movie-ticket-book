@@ -133,6 +133,12 @@ export const APIDeleteScreen = (data) => {
 export const APIGetALLSeat = (data) => {
   return instance.post('/api/v1/Screen/get_list_seat', data);
 };
+export const APIGetALLSeatType = (data) => {
+  return instance.post('/api/v1/Screen/category-seat-type', data);
+};
+export const APIGetALLScreenType = (data) => {
+  return instance.post('/api/v1/Screen/category-screen-type', data);
+};
 
 //News
 export const APICreateNews = (data) => {
@@ -179,6 +185,20 @@ export const APIDeleteShowTime = (data) => {
   return instance.post('/api/v1/Showtimes/update_showtime_status', data);
 };
 
+//Ticket 
+export const APICreateTicket = (data) => {
+  return instance.post('/api/v1/Ticket/upsert_ticket_price', data);
+};
+export const APIGetAllTicket = (data) => {
+  return instance.post('/api/v1/Ticket/page_list_ticket_price', data);
+};
+export const APIGetTicketDetail = (data) => {
+  return instance.post('/api/v1/Ticket/ticket_detail', data);
+};
+
+export const APIDeleteTicket = (data) => {
+  return instance.post('/api/v1/Ticket/update_ticket_status', data);
+};
 //Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();

@@ -3,7 +3,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   SearchOutlined,
-  TableOutlined
 } from '@ant-design/icons';
 
 import {
@@ -22,99 +21,47 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
-  APIGetDirectorDetail,
-  APIDeleteDirector,
-  APIUploadImage,
-  APIGetAllCinemas
+  APICreateTicket,
+  APIGetAllTicket,
+  APIGetTicketDetail,
+  APIDeleteTicket,
+  APIGetALLScreenType,
+  APIGetALLSeatType,
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
-import { Image, Upload } from 'antd';
-import moment from 'moment';
-const getBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
 
 const AdminTicketPrice = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listTicket, setListTicket] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [ticketDetail, setTicketDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [fileList, setFileList] = useState([]);
-  const [imagesUuid, setImagesUuid] = useState('');
-  // const [listCinemas, setListCinemas] = useState([]);
-
-  const handleChangeStatus = (value) =>{
+  const [listScreenType, setListScreenType] = useState([]);
+  const [listSeatType, setListSeatType] = useState([]);
+  const handleChangeStatus = (value) => {
     console.log(`selected ${value}`);
   }
 
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
-  };
-  
-  const handlePreviewCreateImage = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
-
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
-  };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
-    const res = await APIUploadImage(file, '3');
-    console.log('Check var' + res);
-    if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
-  const handleChangeCreateImage = ({ fileList: newFileList }) =>
-    setFileList(newFileList);
-
-  const uploadButton = (
-    <button style={{ border: 0, background: 'none' }} type="button">
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
-
   const showModalUpdate = async (uuid) => {
     try {
-      const res = await APIGetDirectorDetail({ uuid });
-      console.log('update', res);
+      const res = await APIGetTicketDetail({ uuid });
+      // console.log('update', res);
       if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${
-          import.meta.env.VITE_BACKEND_URL
-        }/resources/images/${directorDetail.imageUrl}`;
+        const ticketDetail = res.data.data;
+        setTicketDetail(ticketDetail);
+        // console.log("update", ticketDetail)
         formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
+          seatTypeUuid: ticketDetail.seatTypeUuid,
+          screenTypeUuid: ticketDetail.screenTypeUuid,
+          dateState: ticketDetail.dateState,
+          price: ticketDetail.price,
         });
-        setFileList([{ url: imageUrl }]);
         setIsModalUpdateOpen(true);
-        // setFileList([]);
-        setPreviewImage('');
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
       }
@@ -129,31 +76,20 @@ const AdminTicketPrice = () => {
       }
     }
   };
-
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  const onFinishUpdateDirectorInfor = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
+  const onFinishUpdateTicketInfor = async (values) => {
+    const { ...restValues } = values;
     try {
-      const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
-        directorName: restValues.directorName,
-        birthday: birthdayFormat,
-        description: restValues.description,
-        imagesUuid // Gửi URL của ảnh nếu có
+      const res = await APICreateTicket({
+        uuid: ticketDetail?.uuid,
+        seatTypeUuid: restValues.seatTypeUuid,
+        screenTypeUuid: restValues.screenTypeUuid,
+        dateState: restValues.dateState,
+        price: restValues.price,
       });
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setFileList([]);
-        setImagesUuid('');
-        getAllDirector();
+        getAllTicket();
         handleCancelUpdate();
       }
     } catch (error) {
@@ -172,16 +108,16 @@ const AdminTicketPrice = () => {
     }
   };
 
-  const getAllDirector = async () => {
+  const getAllTicket = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
+      const res = await APIGetAllTicket({ pageSize: 1000, page: 1 });
       console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
-        const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+        const filteredTickets = res.data?.data?.items.filter(
+          (tickets) => tickets.status !== 0
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListTicket(filteredTickets); // Cập nhật danh sách tickets đã lọc
         form.resetFields();
         handleCancel();
       }
@@ -190,21 +126,14 @@ const AdminTicketPrice = () => {
     }
   };
   const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
-      ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
-    };
+
     try {
-      const res = await APICreateDirector(dataDirector);
+      const res = await APICreateTicket(values);
       console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
-        setFileList([]);
-        getAllDirector();
+        getAllTicket();
       }
       // console.log("Success:", values);
     } catch (error) {
@@ -227,7 +156,6 @@ const AdminTicketPrice = () => {
   };
   const showModal = () => {
     setIsModalOpen(true);
-    setFileList([]);
   };
 
   const handleOk = () => {
@@ -242,7 +170,6 @@ const AdminTicketPrice = () => {
 
   const handleCancelUpdate = () => {
     setIsModalUpdateOpen(false);
-    setFileList([]);
   };
 
   const onClose = () => {
@@ -261,10 +188,10 @@ const AdminTicketPrice = () => {
   };
   const confirm = async (uuid) => {
     try {
-      const res = await APIDeleteDirector({ uuid, status: 0 });
+      const res = await APIDeleteTicket({ uuid, status: 0 });
       if (res && res.status === 200) {
         message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
+        getAllTicket(); // Cập nhật lại danh sách tickets sau khi xoá
       } else {
         message.error('Xoá thất bại.');
       }
@@ -283,25 +210,38 @@ const AdminTicketPrice = () => {
       }
     }
   };
-  // const getAllCinemas = async () => {
-  //   try {
-  //     const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-  //     console.log('API Response:', res);
-  //     if (res && res.data && Array.isArray(res.data.data.items)) {
-  //       const cinemas = res.data.data.items;
-  //       const cinemasOptions = cinemas.map((cinema) => ({
-  //         value: cinema.uuid,
-  //         label: cinema.cinemaName
-  //       }));
+  const fetchData = async (apiCall, mapDataToOptions, setState, filterCondition) => {
+    try {
+      const res = await apiCall({ keyword: '', uuid: '' });
+      if (res && res.data && res.data.data) {
+        // Lọc dữ liệu dựa trên điều kiện filterCondition
+        const filteredData = res.data.data.filter(filterCondition);
+        const dataItems = filteredData.map(mapDataToOptions);
+        setState(dataItems); // Cập nhật state
+      } else {
+        message.error('Không có dữ liệu hợp lệ.');
+      }
+    } catch (error) {
+      message.error('Đã xảy ra lỗi khi lấy dữ liệu.');
+    }
+  };
+  const getAllScreenType = async () => {
+    fetchData(
+      APIGetALLScreenType,
+      (screen) => ({ value: screen.uuid, label: screen.name }),
+      setListScreenType,
+      (screen) => screen.name !== "Không khả dụng" // Điều kiện lọc
+    );
+  };
 
-  //       setListCinemas(cinemasOptions); // Cập nhật state
-  //     } else {
-  //       message.error('Không có dữ liệu giá vé hợp lệ.');
-  //     }
-  //   } catch (error) {
-  //     message.error('Đã xảy ra lỗi khi lấy danh sách giá vé.');
-  //   }
-  // };
+  const getAllSeatType = async () => {
+    fetchData(
+      APIGetALLSeatType,
+      (seat) => ({ value: seat.uuid, label: seat.name }),
+      setListSeatType,
+      (seat) => seat.name !== "Không khả dụng" // Điều kiện lọc
+    );
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -384,9 +324,9 @@ const AdminTicketPrice = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listTicketMap = listTicket.map((tickets, index) => ({
     key: index + 1,
-    ...director
+    ...tickets
   }));
   const columns = [
     {
@@ -396,46 +336,102 @@ const AdminTicketPrice = () => {
     },
     {
       title: 'Loại ghế',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
+      dataIndex: 'seatType',
+      key: 'seatType',
+      ...getColumnSearchProps('seatType'),
       width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      sorter: (a, b) => a.seatType.length - b.seatType.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (seatType, record) => {
+        let seatTypeName;
+        let colorClass;
+        switch (seatType) {
+          case 1:
+            seatTypeName = 'Ghế thường';
+            colorClass = 'bg-sky-100 text-sky-800 border-sky-800'
+            break;
+          case 2:
+            seatTypeName = 'Ghế VIP';
+            colorClass = 'bg-rose-100 text-rose-800 border-rose-800'
+            break;
+          case 3:
+            seatTypeName = 'Ghế Couple';
+            colorClass = 'bg-pink-100 text-pink-500 border-pink-500'
+            break;
+          default:
+            seatTypeName = 'Không xác định';
+        }
         return (
-          <div>
-            {director} {/* Hiển thị tên quốc gia */}
+          <div className={` inline-block rounded-md border ${colorClass}`}>
+            {seatTypeName} {/* Hiển thị loại ghế */}
           </div>
         );
-      }
+      },
     },
     {
       title: 'Loại phòng chiếu',
       dataIndex: 'screenType',
       key: 'screenType',
-      width: 50
-    },
-    {
-      title: 'Hình thức chiếu',
-      dataIndex: 'projectionType',
-      key: 'projectionType',
-      width: 50
+      width: 50,
+      render: (status) => {
+        let statusText;
+        let colorClass; // Thêm biến để xác định màu sắc
+
+        switch (status) {
+          case 1:
+            statusText = '2D';
+            colorClass = 'bg-blue-100 text-blue-600 border-blue-600'; // Xanh nước biển
+            break;
+          case 2:
+            statusText = '3D';
+            colorClass = 'bg-green-100 text-green-600 border-green-600'; // Xanh lá cây
+            break;
+          case 3:
+            statusText = 'IMAX2D';
+            colorClass = 'bg-yellow-100 text-yellow-600 border-yellow-600'; // Vàng
+            break;
+          case 4:
+            statusText = 'IMAX3D';
+            colorClass = 'bg-red-100 text-red-600 border-red-600'; // Đỏ
+            break;
+        }
+        return (
+          <div className={` inline-block rounded-md border ${colorClass}`}>
+            {statusText}
+          </div>
+        );
+      },
     },
     {
       title: 'Loại ngày áp dụng',
-      dataIndex: 'price',
-      key: 'price',
-      width: 50
+      dataIndex: 'dateState',
+      key: 'dateState',
+      width: 50,
+      render: (dateState) => {
+        let dateStateName;
+        let colorClass;
+        switch (dateState) {
+          case 1:
+            dateStateName = 'Trong tuần';
+            colorClass = 'bg-orange-100 text-orange-600 border-orange-600';
+            break;
+          case 2:
+            dateStateName = 'Cuối tuần';
+            colorClass = 'bg-fuchsia-100 text-fuchsia-600 border-fuchsia-600';
+            break;
+          default:
+            dateStateName = 'Không xác định';
+        }
+        return <div className={` inline-block rounded-md border ${colorClass}`}>{dateStateName}</div>;
+      },
     },
+
     {
       title: 'Giá vé',
       dataIndex: 'price',
       key: 'price',
       width: 50
     },
-    
-
     {
       title: '',
       width: 50,
@@ -464,8 +460,9 @@ const AdminTicketPrice = () => {
     }
   ];
   useEffect(() => {
-    getAllDirector();
-    // getAllCinemas();
+    getAllTicket();
+    getAllScreenType();
+    getAllSeatType();
   }, []);
   return (
     <>
@@ -492,7 +489,7 @@ const AdminTicketPrice = () => {
         >
           <Form.Item
             label="Loại ghế"
-            name="chairType"
+            name="seatTypeUuid"
             rules={[
               {
                 required: true,
@@ -501,37 +498,19 @@ const AdminTicketPrice = () => {
             ]}
           >
             <Select
-                  defaultValue="Chọn loại ghế"
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 0, label: 'Ghế thường' },
-                    { value: 1, label: 'Ghế vip' },
-                    { value: 2, label: 'Ghế couple' },
-                  ]}
-                />
-          </Form.Item>
-          <Form.Item
-            label="Loại suất chiếu"
-            name="showTimeType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn loại suất chiếu!'
+              showSearch
+              defaultValue=""
+              options={listSeatType}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-            ]}
-          >
-            <Select
-                  defaultValue="Chọn loại suất chiếu"
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 0, label: 'Suất chiếu sớm' },
-                    { value: 1, label: 'Suất chiếu theo lịch' },
-                  ]}
-                />
+              allowClear
+            />
+
           </Form.Item>
           <Form.Item
             label="Loại ngày"
-            name="dayType"
+            name="dateState"
             rules={[
               {
                 required: true,
@@ -540,17 +519,17 @@ const AdminTicketPrice = () => {
             ]}
           >
             <Select
-                  defaultValue="Chọn ngày"
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 0, label: 'Ngày trong tuần(T2->T6)' },
-                    { value: 1, label: 'Ngày lễ - ngày nghỉ(T7-CN)' },
-                  ]}
-                />
+              defaultValue="Chọn ngày"
+              onChange={handleChangeStatus}
+              options={[
+                { value: 1, label: 'Ngày trong tuần(T2->T6)' },
+                { value: 2, label: 'Ngày lễ - ngày nghỉ(T7-CN)' },
+              ]}
+            />
           </Form.Item>
           <Form.Item
             label="Loại phòng chiếu"
-            name="screenType"
+            name="screenTypeUuid"
             rules={[
               {
                 required: true,
@@ -559,19 +538,22 @@ const AdminTicketPrice = () => {
             ]}
           >
             <Select
-                  defaultValue="Chọn hình thức chiếu"
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 0, label: '2D' },
-                    { value: 1, label: '3D' },
-                    { value: 2, label: 'IMAX2D' },
-                    { value: 3, label: 'IMAX3D' },
-                  ]}
-                />
+              showSearch
+              defaultValue=""
+              options={listScreenType}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
+            />
           </Form.Item>
-          <Form.Item label="Giá tiền" name="price" rules={[{required: true, message: 'Hãy nhập giá tiền'}]}>
-            <Input
+          <Form.Item label="Giá tiền" name="price" rules={[{ required: true, message: 'Hãy nhập giá tiền' },
+          { type: 'number', min: 1, message: 'Giá vé phải lớn hơn 0' }
+          ]}>
+            <InputNumber
               placeholder="Nhập giá tiền"
+              className='w-full'
+              min={1}
             />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
@@ -596,66 +578,74 @@ const AdminTicketPrice = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           initialValues={{ remember: true }}
-          onFinish={onFinishUpdateDirectorInfor}
+          onFinish={onFinishUpdateTicketInfor}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item
-            label="Tên giá vé"
-            name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên giá vé!' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Ngày sinh"
-            name="birthday"
+            label="Loại ghế"
+            name="seatTypeUuid"
             rules={[
               {
                 required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
+                message: 'Hãy chọn loại ghế!'
               }
             ]}
           >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
+            <Select
+              defaultValue="Chọn loại ghế"
+              onChange={handleChangeStatus}
+              options={[
+                { value: 0, label: 'Ghế thường' },
+                { value: 1, label: 'Ghế vip' },
+                { value: 2, label: 'Ghế couple' },
+              ]}
             />
           </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
+          <Form.Item
+            label="Loại ngày"
+            name="dateState"
+            rules={[
+              {
+                required: true,
+                message: 'Hãy chọn ngày!'
+              }
+            ]}
+          >
+            <Select
+              defaultValue="Chọn ngày"
+              onChange={handleChangeStatus}
+              options={[
+                { value: 1, label: 'Ngày trong tuần(T2->T6)' },
+                { value: 2, label: 'Ngày lễ - ngày nghỉ(T7-CN)' },
+              ]}
             />
           </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
-            <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
+          <Form.Item
+            label="Loại phòng chiếu"
+            name="screenTypeUuid"
+            rules={[
+              {
+                required: true,
+                message: 'Hãy chọn phòng chiếu!'
+              }
+            ]}
+          >
+            <Select
+              defaultValue="Chọn hình thức chiếu"
+              onChange={handleChangeStatus}
+              options={[
+                { value: 0, label: '2D' },
+                { value: 1, label: '3D' },
+                { value: 2, label: 'IMAX2D' },
+                { value: 3, label: 'IMAX3D' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="Giá tiền" name="price" rules={[{ required: true, message: 'Hãy nhập giá tiền' }]}>
+            <InputNumber
+              placeholder="Nhập giá tiền"
+            />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
@@ -666,7 +656,7 @@ const AdminTicketPrice = () => {
       </Modal>
       <Table
         columns={columns}
-        dataSource={listDirectorMap}
+        dataSource={listTicketMap}
         scroll={{ x: 1000, y: 500 }}
         pagination={{
           showTotal: (total, range) => {
