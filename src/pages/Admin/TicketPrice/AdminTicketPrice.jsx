@@ -54,7 +54,7 @@ const AdminTicketPrice = () => {
       if (res && res.status === 200) {
         const ticketDetail = res.data.data;
         setTicketDetail(ticketDetail);
-        // console.log("update", ticketDetail)
+        console.log("update", ticketDetail)
         formUpdate.setFieldsValue({
           seatTypeUuid: ticketDetail.seatTypeUuid,
           screenTypeUuid: ticketDetail.screenTypeUuid,
@@ -78,6 +78,7 @@ const AdminTicketPrice = () => {
   };
   const onFinishUpdateTicketInfor = async (values) => {
     const { ...restValues } = values;
+    console.log("Cái gì đây ", restValues);
     try {
       const res = await APICreateTicket({
         uuid: ticketDetail?.uuid,
@@ -592,14 +593,14 @@ const AdminTicketPrice = () => {
               }
             ]}
           >
-            <Select
-              defaultValue="Chọn loại ghế"
-              onChange={handleChangeStatus}
-              options={[
-                { value: 0, label: 'Ghế thường' },
-                { value: 1, label: 'Ghế vip' },
-                { value: 2, label: 'Ghế couple' },
-              ]}
+             <Select
+              showSearch
+              defaultValue=""
+              options={listSeatType}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
             />
           </Form.Item>
           <Form.Item
@@ -632,14 +633,13 @@ const AdminTicketPrice = () => {
             ]}
           >
             <Select
-              defaultValue="Chọn hình thức chiếu"
-              onChange={handleChangeStatus}
-              options={[
-                { value: 0, label: '2D' },
-                { value: 1, label: '3D' },
-                { value: 2, label: 'IMAX2D' },
-                { value: 3, label: 'IMAX3D' },
-              ]}
+              showSearch
+              defaultValue=""
+              options={listScreenType}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              allowClear
             />
           </Form.Item>
           <Form.Item label="Giá tiền" name="price" rules={[{ required: true, message: 'Hãy nhập giá tiền' }]}>

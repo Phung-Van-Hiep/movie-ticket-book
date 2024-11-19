@@ -65,6 +65,7 @@ const AdminShowTime = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [updateButtonDisabled, setUpdateButtonDisabled] = useState(false);
   const handlePageChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -119,7 +120,6 @@ const AdminShowTime = () => {
       if (res && res.status === 200) {
         const showtimeDetail = res.data.data;
         setShowTimeDetail(showtimeDetail);
-        // console.log("Checkdata ",showtimeDetail);
         const showTimeRange = [
           dayjs(showtimeDetail.startTime, 'HH:mm:ss'),
           dayjs(showtimeDetail.endTime, 'HH:mm:ss')
@@ -131,8 +131,10 @@ const AdminShowTime = () => {
           moviesUuid: showtimeDetail.moviesUuid,
           languageType: showtimeDetail.languageType,
           showTime: showTimeRange,
+          state: showtimeDetail.state
         });
         setIsModalUpdateOpen(true);
+        setUpdateButtonDisabled(showtimeDetail.state === 1 || showtimeDetail.state === 2);
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
       }
@@ -150,6 +152,10 @@ const AdminShowTime = () => {
 
   const formatToDateString = (dateObj) => dayjs(dateObj).format('YYYY-MM-DD');
   const onFinishUpdateShowTimeInfor = async (values) => {
+    if (updateButtonDisabled) {
+      message.error('Không thể cập nhật suất chiếu đang chiếu hoặc đã chiếu.');
+      return;
+    }
     const { showDate, showTime, ...restValues } = values;
     // Định dạng lại ngày chiếu
     const showDateFormat = dayjs(showDate).format('YYYY-MM-DD');
@@ -465,7 +471,7 @@ const AdminShowTime = () => {
       dataIndex: 'languageType',
       key: 'languageType',
       width: 50,
-      render: (languageType) => (languageType === 1 ?<span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600">Phụ đề  </span> 
+      render: (languageType) => (languageType === 1 ? <span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600">Phụ đề  </span>
         : <span className="bg-violet-100 text-violet-600 px-2 py-1 rounded-md border border-violet-600"> Lồng tiếng</span>),
     },
     {
@@ -476,7 +482,7 @@ const AdminShowTime = () => {
       render: (status) => {
         let statusText;
         let colorClass; // Thêm biến để xác định màu sắc
-    
+
         switch (status) {
           case 1:
             statusText = '2D';
@@ -506,9 +512,9 @@ const AdminShowTime = () => {
       title: 'Thời gian chiếu',
       key: 'timeRange',
       width: 60,
-      render: (text, record) => 
+      render: (text, record) =>
         <div className="bg-pink-100 text-pink-600 px-2 py-1 rounded-md border border-pink-600 inline-block">
-        {record.startTime} - {record.endTime}
+          {record.startTime} - {record.endTime}
         </div>
     },
     {
@@ -532,7 +538,7 @@ const AdminShowTime = () => {
       render: (state) => {
         let statusText;
         let colorClass;
-    
+
         switch (state) {
           case 0:
             statusText = 'Sắp chiếu';
@@ -878,10 +884,24 @@ const AdminShowTime = () => {
             <TimePicker.RangePicker />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={updateButtonDisabled}
+            >
               Cập nhật
             </Button>
           </Form.Item>
+          {updateButtonDisabled && (
+            <div className="text-center mt-2 mr-10">
+              <p className="text-red-500">
+                {showtimeDetail.state === 1
+                  ? "Không thể cập nhật suất chiếu đang chiếu."
+                  : "Không thể cập nhật suất chiếu đã chiếu."}
+              </p>
+            </div>
+          )}
+
         </Form>
       </Modal>
       <div className='mt-10'>
