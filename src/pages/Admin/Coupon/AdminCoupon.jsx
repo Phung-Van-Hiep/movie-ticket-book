@@ -484,7 +484,19 @@ const AdminCoupon = () => {
             variant="filled"
             className="w-full"/>
           </Form.Item>
-          <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: 'Hãy chọn ngày kết thúc' }]}>
+          <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: 'Hãy chọn ngày kết thúc' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const startDate = getFieldValue("startDate");
+                if (!value || !startDate || dayjs(value).isAfter(startDate)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu!")
+                );
+              },
+            }),
+          ]}>
             <DatePicker 
             placeholder="Ngày kết thúc"
             variant="filled"
@@ -556,7 +568,19 @@ const AdminCoupon = () => {
             variant="filled"
             className="w-full"/>
           </Form.Item>
-          <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: 'Hãy chọn ngày kết thúc' }]}>
+          <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: 'Hãy chọn ngày kết thúc' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const startDate = getFieldValue("startDate");
+                if (!value || !startDate || dayjs(value).isAfter(startDate)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu!")
+                );
+              },
+            }),
+          ]}>
             <DatePicker 
             placeholder="Ngày kết thúc"
             variant="filled"
