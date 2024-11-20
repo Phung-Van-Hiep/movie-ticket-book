@@ -250,12 +250,12 @@ const AdminTicketPrice = () => {
       selectedKeys,
       confirm,
       clearFilters,
-      close
+      close,
     }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
-          placeholder={`Tìm kiếm giá vé`}
+          placeholder={`Tìm kiếm giá ghế ngồi`}
           value={selectedKeys[0]}
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -306,8 +306,15 @@ const AdminTicketPrice = () => {
     filterIcon: (filtered) => (
       <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
     ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilter: (value, record) => {
+      // Ánh xạ seatType thành seatTypeName
+      const seatTypeName = {
+        1: 'Ghế thường',
+        2: 'Ghế VIP',
+        3: 'Ghế Couple',
+      }[record[dataIndex]] || 'Không xác định';
+      return seatTypeName.toLowerCase().includes(value.toLowerCase());
+    },
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
@@ -323,8 +330,8 @@ const AdminTicketPrice = () => {
         />
       ) : (
         text
-      )
-  });
+      ),
+  });  
   const listTicketMap = listTicket.map((tickets, index) => ({
     key: index + 1,
     ...tickets
