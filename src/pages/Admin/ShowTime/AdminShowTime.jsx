@@ -76,7 +76,7 @@ const AdminShowTime = () => {
   const getPagedData = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    console.log("trong listSHowTime có gì", listShowTime[0].screens.length >0)
+    console.log("trong listSHowTime có gì", listShowTime[0].screens.length >0 && listShowTime.length >0  )
     return listShowTime.slice(startIndex, endIndex);
   };
   const handleSerchShowTime = async (values) => {
@@ -85,7 +85,8 @@ const AdminShowTime = () => {
     try {
       const findDate = dayjs(showDate).format('YYYY-MM-DD');
       setSearchDate(dayjs(showDate)); // Update the searchDate state
-      getAllShowTime(cinemaUuid, screenUuid, findDate);
+      await getAllShowTime(cinemaUuid, screenUuid, findDate);
+      setCurrentPage(1);
     } catch (error) {
       console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
@@ -106,15 +107,17 @@ const AdminShowTime = () => {
     console.log(`selected ${value}`);
   }
 
-  const handleChangeCinemas = (value) => {
+  const handleChangeCinemas = async (value) => {
     setSelectedCinemaUuid(value);
-    getAllScreen(value);
+    setSelectedCinema(value);
+    await getAllScreen(value);
     setCinemaSelected(!!value);
     formUpdate.setFieldsValue({
       screenUuid: undefined,
     });
   };
   const handleChangeScreen = (value, option) => {
+    setSelectedScreen(value);
     setScreenLabel(option?.label || '');
   };
   const showModalUpdate = async (uuid) => {
@@ -122,11 +125,17 @@ const AdminShowTime = () => {
       const res = await APIGetShowTimeDetail({ uuid });
       if (res && res.status === 200) {
         const showtimeDetail = res.data.data;
+        // console.log("có một càidfjgdf", showtimeDetail)
         setShowTimeDetail(showtimeDetail);
         const showTimeRange = [
           dayjs(showtimeDetail.startTime, 'HH:mm:ss'),
           dayjs(showtimeDetail.endTime, 'HH:mm:ss')
         ];
+        setSelectedCinema(showtimeDetail.cinemaUuid);
+        setSelectedScreen(showtimeDetail.screenUuid);
+
+        // Fetch the screen options for the selected cinema
+        await getAllScreen(showtimeDetail.cinemaUuid);
         formUpdate.setFieldsValue({
           cinemaUuid: showtimeDetail.cinemaUuid,
           showDate: dayjs(showtimeDetail.showDate, 'YYYY-MM-DD'),
@@ -204,7 +213,6 @@ const AdminShowTime = () => {
           console.log("gì đó", cinemaData)
           setListShowTime(cinemaData);
         // }
-        setShowText(true);
         form.resetFields();
         handleCancel();
       }
@@ -229,7 +237,6 @@ const AdminShowTime = () => {
         message.success(res.data.error.errorMessage);
         form.resetFields();
         getAllShowTime(null, null, searchDate);
-        setShowText(false);
       }
       // console.log("Success:", values);
     } catch (error) {
@@ -262,10 +269,14 @@ const AdminShowTime = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
+    setSelectedCinemaUuid(null)
   };
 
   const handleCancelUpdate = () => {
     setIsModalUpdateOpen(false);
+    setSelectedCinema(null);
+    setSelectedScreen(null);
+    setSelectedCinemaUuid(null); 
   };
 
   const onClose = () => {
@@ -335,7 +346,19 @@ const AdminShowTime = () => {
       const res = await APIGetAllScreen({ pageSize: 1000, page: 1, cinemaUuid });
       if (res && res.data && Array.isArray(res.data.data.items)) {
         const dataItems = res.data.data.items.filter(item => [1, 3].includes(item.status));
-        const options = dataItems.map(screen => ({ value: screen.uuid, label: screen.screenName }));
+        const options = dataItems.map(screen => ({
+          value: screen.uuid,
+          label: (
+            <div className="flex items-center space-x-2">
+              <span className='mr-5'>{screen.screenName}</span>
+              <div className={`inline-block rounded-md border ${getColorClass(screen.screenType)}`}>
+                {getScreenTypeLabel(screen.screenType)}
+              </div>
+            </div>
+          ),
+          type: screen.screenType, // Lưu type để sử dụng sau nếu cần
+        }));
+        console.log("Trong này có gì", options);
         setListScreen(options);
       } else {
         setListScreen([]);
@@ -345,10 +368,47 @@ const AdminShowTime = () => {
       setListScreen([]);
     }
   };
+  const getScreenTypeLabel = (type) => {
+    switch (type) {
+      case 1:
+        return '2D';
+      case 2:
+        return '3D';
+      case 3:
+        return 'IMAX 2D';
+      case 4:
+        return 'IMAX 3D';
+      default:
+        return 'Khác';
+    }
+  };
+  const getColorClass = (type) => {
+    switch (type) {
+      case 1:
+        return 'bg-blue-100 text-blue-600 border-blue-600'; // Xanh nước biển
+      case 2:
+        return 'bg-green-100 text-green-600 border-green-600'; // Xanh lá cây
+      case 3:
+        return 'bg-yellow-100 text-yellow-600 border-yellow-600'; // Vàng
+      case 4:
+        return 'bg-red-100 text-red-600 border-red-600'; // Đỏ
+      default:
+        return 'bg-gray-100 text-gray-600 border-gray-600'; // Mặc định
+    }
+  };
   const getAllMovies = async () => {
     fetchData(
       APIGetAllMovies,
-      (movie) => ({ value: movie.uuid, label: movie.title, screenType: movie.screenType }),
+      (movie) => ({
+        value: movie.uuid,
+        label: (
+          <div className="flex justify-between items-center">
+            <span>{movie.title}</span>
+            <span className="text-gray-500 text-xl">{movie.duration} phút</span>
+          </div>
+        ),
+        duration: movie.duration,
+      }),
       setListMovies
     );
   };
@@ -588,7 +648,7 @@ const AdminShowTime = () => {
   useEffect(() => {
     getAllShowTime();
     getAllCinemas();
-    // getAllScreen();
+    getAllScreen();
     getAllMovies();
   }, []);
   return (
@@ -778,9 +838,13 @@ const AdminShowTime = () => {
       <Modal
         title="Cập nhật suất chiếu"
         open={isModalUpdateOpen}
-        onCancel={() => setIsModalUpdateOpen(false)}
+        onCancel={handleCancelUpdate}
         footer={
-          <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
+          <Button onClick={() => {
+            handleCancelUpdate();
+          }}>
+            Đóng
+          </Button>
         }
       >
         <Form
@@ -818,7 +882,7 @@ const AdminShowTime = () => {
             <Select
               showSearch
               defaultValue=""
-              // onChange={handleChangeCinemas}
+              onChange={handleChangeScreen}
               options={listScreen}
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -899,7 +963,7 @@ const AdminShowTime = () => {
         </Form>
       </Modal>
       <div className='mt-10'>
-        {listShowTime.length > 0 && listShowTime[0].screens.length >0  ? (
+        {listShowTime.length > 0 && listShowTime[0].screens.length > 0 ? (
           getPagedData().map((cinema) => (
             <React.Fragment key={cinema.cinemaName}>
               <div className="text-white text-center text-6xl font-semibold bg-blue-700 p-4 rounded-lg mb-5">
@@ -928,16 +992,16 @@ const AdminShowTime = () => {
             Không tìm thấy suất chiếu phù hợp.
           </div>
         )}
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={listShowTime.length}
-          onChange={handlePageChange}
-          showSizeChanger
-          showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
-          className='mt-10'
-        />
       </div>
+      <Pagination
+        current={currentPage}
+        pageSize={pageSize}
+        total={listShowTime.length}
+        onChange={handlePageChange}
+        showSizeChanger
+        showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+        className='mt-10'
+      />
     </>
   );
 };
