@@ -78,6 +78,9 @@ const AdminDirector = () => {
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
+  const formatToDateString = (dateObj) => {
+    return dayjs(dateObj).format('YYYY-MM-DD');
+  };
 
   const showModalUpdate = async (uuid) => {
     try {
@@ -90,7 +93,7 @@ const AdminDirector = () => {
           }/resources/images/${directorDetail.imageUrl}`:null;
         formUpdate.setFieldsValue({
           directorName: directorDetail.directorName,
-          birthday: dayjs(directorDetail.birthday, 'YYYY-MM-DD'),
+          birthday: directorDetail.birthday ? dayjs(directorDetail.birthday) : null,
           description: directorDetail.description,
           imageUrl: directorDetail.imageUrl
         });
@@ -113,12 +116,9 @@ const AdminDirector = () => {
     }
   };
 
-  const formatToDateString = (dateObj) => dayjs(dateObj).format('YYYY-MM-DD');
   const onFinishUpdateDirectorInfor = async (values) => {
     const { birthday,imageUrl, ...restValues } = values;
-    const birthdayObj = new Date(birthday);
-    const birthdayFormat = formatToDateString(birthdayObj);
-
+    const birthdayFormat = birthday ? formatToDateString(birthday) : null;
     let tempImagesUuid = imageUrl;
     // Kiểm tra nếu không có file trong fileList
     if (fileList.length === 0) {
@@ -189,7 +189,7 @@ const AdminDirector = () => {
   };
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
+    const birthdayFormat = birthday ? formatToDateString(birthday) : null;
     let tempImagesUuid = imagesUuid
     if(fileList.length > 0) {
       const resupload = await APIUploadImage(fileList[0].originFileObj, '3');
@@ -497,12 +497,7 @@ const AdminDirector = () => {
           <Form.Item
             label="Ngày sinh"
             name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
+            rules={[]}
           >
             <DatePicker
               placeholder="Ngày sinh"
@@ -579,12 +574,7 @@ const AdminDirector = () => {
           <Form.Item
             label="Ngày sinh"
             name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
+            rules={[]}
           >
             <DatePicker
               placeholder="Ngày sinh"

@@ -13,7 +13,6 @@ import LoginAdminPage from "../pages/Admin/LoginAdminPage";
 import AdminCinemas from "../pages/Admin/Cinema/AdminCinema";
 import AdminScreen from "../pages/Admin/Screen/AdminScreen";
 import SeatLayout from "../pages/Admin/Screen/SeatLayOut";
-import AdminSchedule from "../pages/Admin/Schedule/AdminSchedule";
 import AdminShowTime from "../pages/Admin/ShowTime/AdminShowTime";
 import AdminOrder from "../pages/Admin/Order/AdminOrder";
 import AdminTicketPrice from "../pages/Admin/TicketPrice/AdminTicketPrice";
@@ -63,10 +62,6 @@ const router = createBrowserRouter([
       {
         path: "screen",
         element: <AdminScreen />,
-      },
-      {
-        path: "schedule",
-        element: <AdminSchedule />,
       },
       {
         path: "showtime",

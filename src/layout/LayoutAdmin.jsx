@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  CalendarOutlined,
   DollarOutlined,
   EnvironmentOutlined,
   FileSearchOutlined,
@@ -52,66 +51,60 @@ const items = [
   },
   {
     key: '5',
-    icon: <CalendarOutlined />,
-    label: 'Quản lý lịch chiếu phim',
-    link: '/admin/schedule'
-  },
-  {
-    key: '6',
     icon: <UnorderedListOutlined />,
     label: 'Quản lý suất chiếu phim',
     link: '/admin/showtime'
   },
   {
-    key: '7',
+    key: '6',
     icon: <ShoppingCartOutlined />,
     label: 'Quản lý đơn hàng',
     link: '/admin/order'
   },
   {
-    key: '8',
+    key: '7',
     icon: <DollarOutlined />,
     label: 'Quản lý giá vé',
     link: '/admin/ticketprice'
   },
   {
-    key: '9',
+    key: '8',
     icon: <PercentageOutlined />,
     label: 'Quản lý khuyến mãi',
     link: '/admin/coupon'
   },
   {
-    key: '10',
+    key: '9',
     icon: <FileSearchOutlined />,
     label: 'Quản lý tin tức',
     link: '/admin/news'
   },
   {
-    key: '11',
+    key: '10',
     icon: <VideoCameraAddOutlined />,
     label: 'Quản lý thể loại',
     link: '/admin/genre'
   },
   {
-    key: '12',
+    key: '11',
     icon: <GlobalOutlined />,
     label: 'Quản lý quốc gia',
     link: '/admin/region'
   },
   {
-    key: '13',
+    key: '12',
     icon: <IdcardOutlined />,
     label: 'Quản lý đạo diễn',
     link: '/admin/director'
   },
   {
-    key: '14',
+    key: '13',
     icon: <UserSwitchOutlined />,
     label: 'Quản lý diễn viên',
     link: '/admin/cast'
   },
   {
-    key: '15',
+    key: '14',
     icon: <TableOutlined />,
     label: 'Quản lý combo-nước',
     link: '/admin/combo'

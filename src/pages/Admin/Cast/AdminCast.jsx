@@ -499,12 +499,7 @@ const AdminCast = () => {
           <Form.Item
             label="Ngày sinh"
             name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
+            rules={[]}
           >
             <DatePicker
               placeholder="Ngày sinh"
@@ -585,12 +580,7 @@ const AdminCast = () => {
           <Form.Item
             label="Ngày sinh"
             name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của diễn viên!'
-              }
-            ]}
+            rules={[]}
           >
             <DatePicker
               placeholder="Ngày sinh"
