@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter,Navigate } from "react-router-dom";
 
 import HomePage from "../pages/User/HomePage";
 import AdminUser from "../pages/Admin/User/AdminUser";
@@ -24,20 +24,20 @@ import Testting from "../pages/FileDeTest";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <Navigate to="/login/admin" replace />,
   },
-  {
-    path: "/informationMovie",
-    element: <SeatLayout />,
-  },
+  // {
+  //   path: "/informationMovie",
+  //   element: <SeatLayout />,
+  // },
   {
     path: "/login/admin",
     element: <LoginAdminPage />, // Trang đăng nhập admin
   },
-  {
-    path: "/testing",
-    element: <Testting />,
-  },
+  // {
+  //   path: "/testing",
+  //   element: <Testting />,
+  // },
   {
     path: "/admin",
     element: (

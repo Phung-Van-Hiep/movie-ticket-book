@@ -6,6 +6,7 @@ import {
   GlobalOutlined,
   HomeOutlined,
   IdcardOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   PercentageOutlined,
@@ -19,7 +20,7 @@ import {
   VideoCameraOutlined
 } from '@ant-design/icons';
 import { Breadcrumb, Button, Layout, Menu, theme } from 'antd';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Item from 'antd/es/list/Item';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -118,6 +119,7 @@ const items = [
 
 const LayoutAdmin = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('');
   const [selectedKeys, setSelectedKeys] = useState(['1']);
@@ -140,6 +142,12 @@ const LayoutAdmin = () => {
       setSelectedMenuItem(selectedItem.label);
     }
   };
+  const handleLogout = () => {
+    // Clear all data from localStorage
+    localStorage.clear();
+    // Redirect to the admin login page
+    navigate('/login/admin');
+  };
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
@@ -149,7 +157,7 @@ const LayoutAdmin = () => {
         onCollapse={(value) => setCollapsed(value)}
         width={250}
       >
-        <div className="demo-logo-vertical flex justify-center items-center py-8"></div>
+        <div className="demo-logo-vertical flex justify-center items-center py-8 text-4xl font-bold	text-white bg-sky-400">ADMIN</div>
         <Menu
           theme="light"
           className="h-full"
@@ -160,32 +168,49 @@ const LayoutAdmin = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: '0 16px', background: colorBgContainer, display: 'flex', alignItems: 'center' }}>
+        <Header
+          style={{
+            padding: '0 16px',
+            background: colorBgContainer,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div className="flex items-center">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                fontSize: '16px',
+                width: 30,
+                height: 64,
+              }}
+            />
+            <Breadcrumb
+              items={[
+                {
+                  title: selectedMenuItem,
+                },
+              ]}
+              style={{
+                fontSize: '20px',
+                paddingBottom: '5px',
+                cursor: 'pointer',
+              }}
+            />
+          </div>
           <Button
             type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 30,
-              height: 64,
-            }}
-          />
-          <Breadcrumb
-            items={[
-              {
-                title: selectedMenuItem,
-              },
-            ]}
-            // onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '20px',
-              paddingBottom: '5px',
-              cursor: 'pointer',
-
-            }}
-          />
+            icon={<LogoutOutlined />}
+            onClick={handleLogout}
+            className="text-2xl"
+          >
+            Đăng xuất
+          </Button>
         </Header>
+
         <Content style={{ margin: '16px' }}>
           <Breadcrumb
             style={{ margin: '8px' }}
