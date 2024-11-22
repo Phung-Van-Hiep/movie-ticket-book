@@ -119,7 +119,7 @@ const AdminMovies = () => {
           description: moviesDetail.description,
           averageReview: moviesDetail.averageReview,
           cast: moviesDetail.cast.map((item) => item.uuid),
-          director: moviesDetail.director.cast.map((item) => item.uuid),
+          director: moviesDetail.director.uuid,
           duration: moviesDetail.duration,
           engTitle: moviesDetail.engTitle,
           genre: moviesDetail.genre.map((item) => item.uuid),
@@ -145,7 +145,7 @@ const AdminMovies = () => {
   };
   
   const onFinishUpdateMoviesInfor = async (values) => {
-    const { realeaseDate, region, imageUrl, ...restValues } = values;
+    const { realeaseDate, region, imageUrl,director, ...restValues } = values;
     const realeaseFormat = formatToDateString(new Date(realeaseDate));
     let tempImagesUuid = imageUrl;
   
@@ -175,6 +175,7 @@ const AdminMovies = () => {
       ...restValues,
       realeaseDate: realeaseFormat,
       regionUuid: region,
+      directorUuid: director,
       imagesUuid: tempImagesUuid // Gửi imagesUuid, có thể là null nếu không có ảnh
     };
   
@@ -619,7 +620,7 @@ const AdminMovies = () => {
                     required: true,
                     message: 'Hãy nhập thời lượng phim của bạn!'
                   },
-                  { type: 'number', min: 1, max: 300, message: 'Thời lượng phim chỉ từ 1 phút trở lên' }
+                  { type: 'number', min: 1, max: 300, message: 'Thời lượng phim phải từ 1 phút trở lên' }
                 ]}
                 
               >
@@ -654,7 +655,8 @@ const AdminMovies = () => {
                   {
                     required: true,
                     message: 'Hãy nhập đánh giá trung bình!'
-                  }
+                  },
+                  { type: 'number', min: 1, max: 10, message: 'Đánh giá trung bình từ 1-10'}
                 ]}
               >
                 <InputNumber className="w-full" placeholder="" />
@@ -764,7 +766,7 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item
                 label="Đạo diễn"
-                name="director"
+                name="directorUuid"
                 rules={[
                   {
                     required: true,
@@ -906,7 +908,7 @@ const AdminMovies = () => {
                     required: true,
                     message: 'Hãy nhập thời lượng phim của bạn!'
                   },
-                  { type: 'number', min: 1, max: 300, message: 'Thời lượng phim chỉ từ 1 phút trở lên' }
+                  { type: 'number', min: 1, max: 300, message: 'Thời lượng phim phải từ 1 phút trở lên' }
                 ]}
               >
                 <InputNumber className="w-full" />
@@ -940,7 +942,8 @@ const AdminMovies = () => {
                   {
                     required: true,
                     message: 'Hãy nhập đánh giá trung bình!'
-                  }
+                  },
+                  { type: 'number', min: 1, max: 10, message: 'Đánh giá trung bình từ 1-10'}
                 ]}
               >
                 <InputNumber className="w-full" placeholder="" />
