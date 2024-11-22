@@ -119,7 +119,7 @@ const AdminMovies = () => {
           description: moviesDetail.description,
           averageReview: moviesDetail.averageReview,
           cast: moviesDetail.cast.map((item) => item.uuid),
-          directorUuid: moviesDetail.directorUuid,
+          director: moviesDetail.director.cast.map((item) => item.uuid),
           duration: moviesDetail.duration,
           engTitle: moviesDetail.engTitle,
           genre: moviesDetail.genre.map((item) => item.uuid),
@@ -764,7 +764,7 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item
                 label="Đạo diễn"
-                name="directorUuid"
+                name="director"
                 rules={[
                   {
                     required: true,
@@ -1050,7 +1050,7 @@ const AdminMovies = () => {
             <Col className="gutter-row" span={12}>
               <Form.Item
                 label="Đạo diễn"
-                name="directorUuid"
+                name="director"
                 rules={[
                   {
                     required: true,
