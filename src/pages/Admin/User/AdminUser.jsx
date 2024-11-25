@@ -371,19 +371,19 @@ const AdminCast = () => {
       width: 60,
       render: (text, record) => {
         const fullURL = record?.imageUrl
-          ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${record?.imageUrl}`
+          ? `${import.meta.env.VITE_BACKEND_URL}/resources/avatars/${record?.imageUrl}`
           : null;
 
         return fullURL ? (
           <Image
-            width={70}
-            height={70}
+            width={64}
+            height={64}
             src={fullURL}
             alt="Ảnh người dùng"
             className="rounded-full object-cover"
           />
         ) : (
-          <Avatar className="flex items-center justify-center w-16 h-16 bg-slate-400 text-white rounded-full text-lg font-semibold">
+          <Avatar className="flex items-center justify-center w-24 h-24 bg-slate-400 text-white rounded-full text-lg font-semibold ">
             {record?.fullname?.charAt(0).toUpperCase() || '?'}
           </Avatar>
         );

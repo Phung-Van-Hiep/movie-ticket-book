@@ -458,6 +458,12 @@ const AdminScreen = () => {
       width: 50
     },
     {
+      title: 'Tên rạp chiếu',
+      dataIndex: 'cinemaName',
+      key: 'cinemaName',
+      width: 50,
+    },
+    {
       title: 'Tên phòng chiếu',
       dataIndex: 'screenName',
       key: 'screenName',

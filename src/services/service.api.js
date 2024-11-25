@@ -7,6 +7,9 @@ export const APILogin = (data) => {
   });
 };
 
+export const APILogOut = () => {
+  return instance.post('/api/v1/Auth/logout');
+};
 //User
 export const APIRegister = (data) => {
   return instance.post('/api/v1/User/register', data);
@@ -23,6 +26,8 @@ export const APIGetUserDetail = (data) => {
 export const APIDeleteUser = (data) => {
   return instance.post('/api/v1/User/update_user_status', data);
 };
+
+
 
 //Genre
 export const APICreateGenre = (data) => {

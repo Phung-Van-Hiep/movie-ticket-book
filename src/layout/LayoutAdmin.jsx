@@ -21,7 +21,7 @@ import {
 } from '@ant-design/icons';
 import { Breadcrumb, Button, Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import Item from 'antd/es/list/Item';
+import { APILogOut } from '../services/service.api';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -142,11 +142,18 @@ const LayoutAdmin = () => {
       setSelectedMenuItem(selectedItem.label);
     }
   };
-  const handleLogout = () => {
-    // Clear all data from localStorage
-    localStorage.clear();
-    // Redirect to the admin login page
-    navigate('/login/admin');
+  const handleLogout = async () => {
+    try {
+      const res = (await APILogOut()) ;
+      if (res && res?.data?.data !== null) {
+        localStorage.clear();
+        navigate('/login/admin');
+      } else {
+        message.error(res?.data.error.errorMessage);
+      }
+    } catch (error) {
+      console.error("Failed:", error);
+    }
   };
   return (
     <Layout style={{ minHeight: '100vh' }}>
