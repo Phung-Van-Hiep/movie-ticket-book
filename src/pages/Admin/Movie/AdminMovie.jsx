@@ -639,10 +639,10 @@ const AdminMovies = () => {
                   defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 0, label: 'P' },
-                    { value: 1, label: 'T13' },
-                    { value: 2, label: 'T16' },
-                    { value: 3, label: 'T18' }
+                    { value: 1, label: 'P' },
+                    { value: 2, label: 'T13' },
+                    { value: 3, label: 'T16' },
+                    { value: 4, label: 'T18' }
                   ]}
                 />
               </Form.Item>
@@ -926,10 +926,10 @@ const AdminMovies = () => {
                   defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
-                    { value: 0, label: 'P' },
-                    { value: 1, label: 'T13' },
-                    { value: 2, label: 'T16' },
-                    { value: 3, label: 'T18' }
+                    { value: 1, label: 'P' },
+                    { value: 2, label: 'T13' },
+                    { value: 3, label: 'T16' },
+                    { value: 4, label: 'T18' }
                   ]}
                 />
               </Form.Item>
