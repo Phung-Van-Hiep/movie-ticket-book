@@ -50,8 +50,8 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
             seatType = 1; // Nếu không nằm trong các hàng đặc biệt, thì mặc định là "Ghế thường"
           }
         }    
-        if (col > 0 && col % 2 === 1) {
-          seatType = seatRow[col - 1].type; // Gán kiểu ghế từ cột trước
+        if (col > 0 && col % 2 === 1 && seatRow[col - 1].type === 3) {
+          seatType = seatRow[col - 1].type; // Gán kiểu ghế từ cột trước nếu là ghế couple
         }
         seatRow.push({
           label: seatCode,
