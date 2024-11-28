@@ -257,7 +257,7 @@ const AdminOrder = () => {
       width: 30
     },
     {
-      title: 'Code',
+      title: 'Mã đơn hàng',
       dataIndex: 'code',
       key: 'code',
       ...getColumnSearchProps('code'),
@@ -294,7 +294,25 @@ const AdminOrder = () => {
       title: 'Trạng thái',
       dataIndex: 'state',
       key: 'state',
-      width: 50
+      width: 50,
+      render: (status) =>{
+        let statusText;
+        let colorClass;
+        switch (status) {
+          case 1:
+            statusText = 'Đã thanh toán';
+            colorClass = 'bg-green-100 text-green-600 border-green-600';
+            break;
+          case 2:
+            statusText = 'Chưa thanh toán';
+            colorClass = 'bg-red-100 text-red-600 border-red-600';
+            break;
+          default:
+            statusText = '';
+            colorClass = '';
+        }
+        return <div className={` inline-block rounded-md border ${colorClass}`}>{statusText}</div>;
+      }
     },
     {
       title: 'Tổng tiền',
