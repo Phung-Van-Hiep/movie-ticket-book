@@ -54,7 +54,7 @@ const AdminTicketPrice = () => {
       if (res && res.status === 200) {
         const ticketDetail = res.data.data;
         setTicketDetail(ticketDetail);
-        console.log("update", ticketDetail)
+        // console.log("update", ticketDetail)
         formUpdate.setFieldsValue({
           seatTypeUuid: ticketDetail.seatTypeUuid,
           screenTypeUuid: ticketDetail.screenTypeUuid,
@@ -78,7 +78,7 @@ const AdminTicketPrice = () => {
   };
   const onFinishUpdateTicketInfor = async (values) => {
     const { ...restValues } = values;
-    console.log("Cái gì đây ", restValues);
+    // console.log("Cái gì đây ", restValues);
     try {
       const res = await APICreateTicket({
         uuid: ticketDetail?.uuid,
@@ -112,7 +112,7 @@ const AdminTicketPrice = () => {
   const getAllTicket = async () => {
     try {
       const res = await APIGetAllTicket({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
+      // console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredTickets = res.data?.data?.items.filter(
@@ -130,7 +130,7 @@ const AdminTicketPrice = () => {
 
     try {
       const res = await APICreateTicket(values);
-      console.log(res);
+      // console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();

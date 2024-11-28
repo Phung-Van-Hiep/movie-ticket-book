@@ -92,7 +92,7 @@ const AdminGenre = () => {
   const getAllGenre = async () => {
     try {
       const res = await APIGetAllGenre({ pageSize: 1000, page: 1 });
-      console.log(res);
+      // console.log(res);
       if (res && res.data && res.data.data) {
         const filteredGenres = res.data?.data?.items.filter(
           (genre) => genre.status !== 0

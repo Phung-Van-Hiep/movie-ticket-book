@@ -32,7 +32,8 @@ const router = createBrowserRouter([
   // },
   {
     path: "/login/admin",
-    element: <LoginAdminPage />, // Trang đăng nhập admin
+    element: <LoginAdminPage />,
+    title: 'Trang đăng nhập Admin', // Trang đăng nhập admin
   },
   // {
   //   path: "/testing",

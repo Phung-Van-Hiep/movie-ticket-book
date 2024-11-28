@@ -22,120 +22,60 @@ import {
 import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
-  APICreateDirector,
-  APIGetAllDirector,
+  APIGetALLBill,
   APIGetDirectorDetail,
-  APIDeleteDirector,
-  APIUploadImage,
-  APIGetAllCinemas
 } from '../../../services/service.api';
-import { PlusOutlined } from '@ant-design/icons';
-import { Image, Upload } from 'antd';
-import moment from 'moment';
-const getBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
+
 
 const AdminOrder = () => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  const [listDirector, setListDirector] = useState([]);
+  const [listBill, setListBill] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
   const [directorDetail, setDirectorDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [fileList, setFileList] = useState([]);
-  const [imagesUuid, setImagesUuid] = useState('');
-  const [listCinemas, setListCinemas] = useState([]);
-
-  const handleChangeStatus = (value) =>{
-    console.log(`selected ${value}`);
-  }
-
-  const handleChangeCinemas = (value) => {
-    console.log(`selected ${value}`);
-  };
   
-  const handlePreviewCreateImage = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
 
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
-  };
-  // console.log('fileList,', fileList);
-  const dummyRequestCreateImageCast = async ({ file, onSuccess }) => {
-    console.log('Đây là file gì ' + file);
-    const res = await APIUploadImage(file, '3');
-    console.log('Check var' + res);
-    if (res && res.status === 200) {
-      console.log('UUID của ảnh:', res.data.data);
-      setImagesUuid(res.data.data);
-    }
-    onSuccess('ok');
-  };
-  const handleChangeCreateImage = ({ fileList: newFileList }) =>
-    setFileList(newFileList);
+  // const showModalUpdate = async (uuid) => {
+  //   try {
+  //     const res = await APIGetDirectorDetail({ uuid });
+  //     // console.log('update', res);
+  //     if (res && res.status === 200) {
+  //       const directorDetail = res.data.data;
+  //       setDirectorDetail(directorDetail);
+  //       //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
+  //       const imageUrl = `${
+  //         import.meta.env.VITE_BACKEND_URL
+  //       }/resources/images/${directorDetail.imageUrl}`;
+  //       formUpdate.setFieldsValue({
+  //         directorName: directorDetail.directorName,
+  //         birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
+  //         description: directorDetail.description,
+  //         imageUrl: directorDetail.imageUrl
+  //       });
+  //       setFileList([{ url: imageUrl }]);
+  //       setIsModalUpdateOpen(true);
+  //       // setFileList([]);
+  //       setPreviewImage('');
+  //     } else {
+  //       message.error('Không tìm thấy thông tin chi tiết.');
+  //     }
+  //   } catch (error) {
+  //     if (error.response) {
+  //       const errorMessage =
+  //         error.response.data?.error?.errorMessage ||
+  //         'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
+  //       message.error(errorMessage);
+  //     } else {
+  //       message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
+  //     }
+  //   }
+  // };
 
-  const uploadButton = (
-    <button style={{ border: 0, background: 'none' }} type="button">
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
-
-  const showModalUpdate = async (uuid) => {
-    try {
-      const res = await APIGetDirectorDetail({ uuid });
-      console.log('update', res);
-      if (res && res.status === 200) {
-        const directorDetail = res.data.data;
-        setDirectorDetail(directorDetail);
-        //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-        const imageUrl = `${
-          import.meta.env.VITE_BACKEND_URL
-        }/resources/images/${directorDetail.imageUrl}`;
-        formUpdate.setFieldsValue({
-          directorName: directorDetail.directorName,
-          birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-          description: directorDetail.description,
-          imageUrl: directorDetail.imageUrl
-        });
-        setFileList([{ url: imageUrl }]);
-        setIsModalUpdateOpen(true);
-        // setFileList([]);
-        setPreviewImage('');
-      } else {
-        message.error('Không tìm thấy thông tin chi tiết.');
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-        message.error(errorMessage);
-      } else {
-        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-      }
-    }
-  };
-
-  const formatToDateString = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
   const onFinishUpdateDirectorInfor = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayObj = new Date(birthday);
@@ -153,7 +93,7 @@ const AdminOrder = () => {
         form.resetFields();
         setFileList([]);
         setImagesUuid('');
-        getAllDirector();
+        getAllBill();
         handleCancelUpdate();
       }
     } catch (error) {
@@ -172,16 +112,16 @@ const AdminOrder = () => {
     }
   };
 
-  const getAllDirector = async () => {
+  const getAllBill = async () => {
     try {
-      const res = await APIGetAllDirector({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
+      const res = await APIGetALLBill({ pageSize: 1000, page: 1 });
+      // console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredDirectors = res.data?.data?.items.filter(
-          (director) => director.status !== 0
+          (bill) => bill.status !== 0
         );
-        setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
+        setListBill(filteredDirectors); // Cập nhật danh sách bill đã lọc
         form.resetFields();
         handleCancel();
       }
@@ -189,45 +129,11 @@ const AdminOrder = () => {
       message.error('Đã xảy ra lỗi khi lấy danh sách đơn hàng.');
     }
   };
-  const onFinish = async (values) => {
-    const { birthday, ...restValues } = values;
-    const birthdayFormat = formatToDateString(new Date(birthday));
-    const dataDirector = {
-      ...restValues,
-      birthday: birthdayFormat,
-      imagesUuid
-    };
-    try {
-      const res = await APICreateDirector(dataDirector);
-      console.log(res);
-      if (res && res.status === 200) {
-        message.success(res.data.error.errorMessage);
-        form.resetFields();
-        setFileList([]);
-        getAllDirector();
-      }
-      // console.log("Success:", values);
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi thêm mới.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
-  };
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
   const showModal = () => {
     setIsModalOpen(true);
-    setFileList([]);
   };
 
   const handleOk = () => {
@@ -242,7 +148,6 @@ const AdminOrder = () => {
 
   const handleCancelUpdate = () => {
     setIsModalUpdateOpen(false);
-    setFileList([]);
   };
 
   const onClose = () => {
@@ -258,49 +163,6 @@ const AdminOrder = () => {
   const handleReset = (clearFilters) => {
     clearFilters();
     setSearchText('');
-  };
-  const confirm = async (uuid) => {
-    try {
-      const res = await APIDeleteDirector({ uuid, status: 0 });
-      if (res && res.status === 200) {
-        message.success('Đã xoá thành công.');
-        getAllDirector(); // Cập nhật lại danh sách director sau khi xoá
-      } else {
-        message.error('Xoá thất bại.');
-      }
-    } catch (error) {
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.error?.errorMessage ||
-          'Đã xảy ra lỗi khi cập nhật status.';
-        message.error(errorMessage);
-      } else if (error.request) {
-        message.error(
-          'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-        );
-      } else {
-        message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-    }
-  };
-  const getAllCinemas = async () => {
-    try {
-      const res = await APIGetAllCinemas({ pageSize: 10, page: 1 });
-      console.log('API Response:', res);
-      if (res && res.data && Array.isArray(res.data.data.items)) {
-        const cinemas = res.data.data.items;
-        const cinemasOptions = cinemas.map((cinema) => ({
-          value: cinema.uuid,
-          label: cinema.cinemaName
-        }));
-
-        setListCinemas(cinemasOptions); // Cập nhật state
-      } else {
-        message.error('Không có dữ liệu đơn hàng hợp lệ.');
-      }
-    } catch (error) {
-      message.error('Đã xảy ra lỗi khi lấy danh sách đơn hàng.');
-    }
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -384,74 +246,82 @@ const AdminOrder = () => {
         text
       )
   });
-  const listDirectorMap = listDirector.map((director, index) => ({
+  const listBillMap = listBill.map((bill, index) => ({
     key: index + 1,
-    ...director
+    ...bill
   }));
   const columns = [
     {
       title: 'STT',
       dataIndex: 'key',
-      width: 50
+      width: 30
     },
     {
-      title: 'Tên phòng chiếu',
-      dataIndex: 'directorName',
-      key: 'directorName',
-      ...getColumnSearchProps('directorName'),
+      title: 'Code',
+      dataIndex: 'code',
+      key: 'code',
+      ...getColumnSearchProps('code'),
       width: 50,
-      sorter: (a, b) => a.directorName.length - b.directorName.length,
+      sorter: (a, b) => a.code.length - b.code.length,
       sortDirections: ['descend', 'ascend'],
-      render: (director, record) => {
+      render: (bill, record) => {
         return (
           <div>
-            {director} {/* Hiển thị tên quốc gia */}
+            {bill} {/* Hiển thị tên quốc gia */}
           </div>
         );
       }
     },
     {
-      title: 'Loại phòng chiếu',
-      dataIndex: 'screenType',
-      key: 'screenType',
+      title: 'Tên bộ phim',
+      dataIndex: 'movieName',
+      key: 'movieName',
       width: 50
     },
     {
-      title: 'Số hàng',
-      dataIndex: 'rowScreen',
-      key: 'rowScreen',
+      title: 'Rạp chiếu',
+      dataIndex: 'cinemaName',
+      key: 'cinemaName',
       width: 50
     },
     {
-      title: 'Số cột',
-      dataIndex: 'colScreen',
-      key: 'colScreen',
+      title: 'Phòng chiếu',
+      dataIndex: 'screenName',
+      key: 'screenName',
       width: 50
     },
-
+    {
+      title: 'Trạng thái',
+      dataIndex: 'state',
+      key: 'state',
+      width: 50
+    },
+    {
+      title: 'Tổng tiền',
+      dataIndex: 'payPrice',
+      key: 'payPrice',
+      width: 50
+    },
+    {
+      title: 'Ngày đặt',
+      dataIndex: 'showDate',
+      key: 'showDate',
+      width: 50
+    },
+    {
+      title: 'Thời gian chiếu',
+      key: 'timeRange',
+      width: 60,
+      render: (text, record) =>
+        <div className="bg-pink-100 text-pink-600 px-2 py-1 rounded-md border border-pink-600 inline-block">
+          {record.startTime} - {record.endTime}
+        </div>
+    },
     {
       title: '',
       width: 50,
       render: (record) => (
         <div className="flex gap-4">
-          <Button
-            type="text"
-            className="bg-orange-400 text-white"
-            onClick={() => showModalTableUpdate(record.uuid)}
-          >
-            <TableOutlined /> 
-          </Button>
-          <Popconfirm
-            title="Xoá đơn hàng"
-            description="Bạn muốn xoá đơn hàng này?"
-            onConfirm={() => confirm(record.uuid)}
-            okText={<>Có</>}
-            cancelText="Không"
-          >
-            <Button danger>
-              <DeleteOutlined />
-            </Button>
-          </Popconfirm>
           <Button
             type="text"
             className="bg-blue-700 text-white"
@@ -464,94 +334,10 @@ const AdminOrder = () => {
     }
   ];
   useEffect(() => {
-    getAllDirector();
-    getAllCinemas();
+    getAllBill();
   }, []);
   return (
     <>
-      <Button className="float-end mb-4" type="primary" onClick={showModal}>
-        Thêm mới phòng chiếu
-      </Button>
-      <Modal
-        title="Thêm mới phòng chiếu"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        footer={<></>}
-      >
-        <Form
-          form={form}
-          name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Rạp phim"
-            name="cinemaUuid"
-            rules={[{ required: true, message: 'Hãy chọn rạp phim!' }]}
-          >
-            <Select
-                  showSearch
-                  defaultValue=""
-                  onChange={handleChangeCinemas}
-                  options={listCinemas}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  allowClear
-                />
-          </Form.Item>
-          <Form.Item
-            label="Tên phòng chiếu"
-            name="screenName"
-            rules={[{ required: true, message: 'Hãy nhập tên phòng chiếu!' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Loại phòng chiếu"
-            name="screenType"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy chọn loại phòng chiếu!'
-              }
-            ]}
-          >
-            <Select
-                  defaultValue=""
-                  onChange={handleChangeStatus}
-                  options={[
-                    { value: 1, label: '2D' },
-                    { value: 2, label: '3D' },
-                    { value: 3, label: 'IMax' }
-                  ]}
-                />
-          </Form.Item>
-
-          <Form.Item label="Số hàng" name="rowScreen" rules={[{required: true, message: 'Nhập số hàng'}]}>
-            <Input
-              placeholder="Nhập số hàng"
-            />
-          </Form.Item>
-          <Form.Item label="Số cột" name="colScreen" rules={[{required: true, message: 'Nhập số cột'}]}>
-            <Input
-              placeholder="Nhập số cột"
-            />
-          </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Thêm mới
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
       <Modal
         title="Cập nhật đơn hàng"
         open={isModalUpdateOpen}
@@ -606,27 +392,6 @@ const AdminOrder = () => {
             />
           </Form.Item>
           <Form.Item label="Image" name="imageUrl" rules={[]}>
-            <Upload
-              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-              listType="picture-circle"
-              fileList={fileList}
-              onPreview={handlePreviewCreateImage}
-              onChange={handleChangeCreateImage}
-              customRequest={dummyRequestCreateImageCast}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{ display: 'none' }}
-                preview={{
-                  visible: previewOpen,
-                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                  afterOpenChange: (visible) => !visible && setPreviewImage('')
-                }}
-                src={previewImage}
-              />
-            )}
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
@@ -637,7 +402,7 @@ const AdminOrder = () => {
       </Modal>
       <Table
         columns={columns}
-        dataSource={listDirectorMap}
+        dataSource={listBillMap}
         scroll={{ x: 1000, y: 500 }}
         pagination={{
           showTotal: (total, range) => {

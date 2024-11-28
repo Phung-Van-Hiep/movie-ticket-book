@@ -220,6 +220,11 @@ export const APIDeleteCoupon = (data) => {
   return instance.post('/api/v1/Coupon/update_coupon_status', data);
 };
 
+//Bill
+export const APIGetALLBill = (data) => {
+  return instance.post('/api/v1/Bill/page_list_bill_admin', data);
+};
+
 //Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();

@@ -69,7 +69,7 @@ const AdminCast = () => {
       const res = await APIGetUserDetail({ uuid });
       if (res && res.status === 200) {
         const userDetail = res.data.data;
-        console.log("update gi do ", userDetail);
+        // console.log("update gi do ", userDetail);
         setUserDetail(userDetail);
         const birthdayFormat = 'YYYY-MM-DD';
         const imageUrl = `${import.meta.env.VITE_BACKEND_URL

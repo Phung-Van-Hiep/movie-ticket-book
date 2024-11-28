@@ -40,13 +40,13 @@ const AdminCoupon = () => {
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
 
   const handleChangeStatus = (value) => {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   }
 
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetCouponDetail({ uuid });
-      console.log('update', res);
+      // console.log('update', res);
       if (res && res.status === 200) {
         const couponDetail = res.data.data;
         setCouponDetail(couponDetail);
@@ -116,7 +116,7 @@ const AdminCoupon = () => {
   const getAllDirector = async () => {
     try {
       const res = await APIGetAllCoupon({ pageSize: 1000, page: 1 });
-      console.log(res.data.data);
+      // console.log(res.data.data);
       if (res && res.data && res.data.data) {
         // Lọc các region có status khác "0"
         const filteredCoupons = res.data?.data?.items.filter(
@@ -141,7 +141,7 @@ const AdminCoupon = () => {
     };
     try {
       const res = await APICreateCoupon(dataDirector);
-      console.log(res);
+      // console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();

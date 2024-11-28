@@ -76,12 +76,12 @@ const AdminCast = () => {
       if (res && res.status === 200) {
         const castDetail = res.data.data;
         setCastDetail(castDetail);
-        console.log(castDetail);
+        // console.log(castDetail);
         const birthdayFormat = 'YYYY-MM-DD';
         const imageUrl = castDetail.imageUrl
           ? `${import.meta.env.VITE_BACKEND_URL}/resources/images/${castDetail.imageUrl}`
           : null;
-          console.log("Check đường dẫn ảnh ",imageUrl);
+          // console.log("Check đường dẫn ảnh ",imageUrl);
         formUpdate.setFieldsValue({
           castName: castDetail.castName,
           birthday: castDetail.birthday ? dayjs(castDetail.birthday) : null,

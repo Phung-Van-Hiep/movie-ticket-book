@@ -25,7 +25,6 @@ import {
   APIDeleteCinemas,
 } from '../../../services/service.api';
 import { PlusOutlined } from '@ant-design/icons';
-import { time } from 'console';
 
 const AdminCinemas = () => {
   const [searchText, setSearchText] = useState('');

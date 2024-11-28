@@ -132,6 +132,7 @@ const LayoutAdmin = () => {
     if (currentItem) {
       setSelectedKeys([currentItem.key]);
       setSelectedMenuItem(currentItem.label);
+      document.title = `Admin - ${currentItem.label}`;
     }
   }, [location.pathname]);
 
@@ -147,6 +148,7 @@ const LayoutAdmin = () => {
       const res = (await APILogOut()) ;
       if (res && res?.data?.data !== null) {
         localStorage.clear();
+        document.title = 'Trang đăng nhập Admin';
         navigate('/login/admin');
       } else {
         message.error(res?.data.error.errorMessage);

@@ -88,7 +88,7 @@ const AdminShowTime = () => {
       await getAllShowTime(cinemaUuid, screenUuid, findDate);
       setCurrentPage(1);
     } catch (error) {
-      console.error("Lỗi khi tìm kiếm suất chiếu:", error);
+      // console.error("Lỗi khi tìm kiếm suất chiếu:", error);
       message.error('Đã xảy ra lỗi khi tìm kiếm suất chiếu.');
     }
   };
@@ -210,7 +210,7 @@ const AdminShowTime = () => {
       if (res && res.data && res.data.data) {
         const cinemaData = res.data.data.items;
         // if(cinemaData.length > 0 &&  cinemaData[0].screens.length > 0 ){
-          console.log("gì đó", cinemaData)
+          // console.log("gì đó", cinemaData)
           setListShowTime(cinemaData);
         // }
         form.resetFields();
@@ -358,7 +358,7 @@ const AdminShowTime = () => {
           ),
           type: screen.screenType, // Lưu type để sử dụng sau nếu cần
         }));
-        console.log("Trong này có gì", options);
+        // console.log("Trong này có gì", options);
         setListScreen(options);
       } else {
         setListScreen([]);

@@ -200,10 +200,10 @@ const AdminNew = () => {
       imagesUuid: tempImagesUuid
       // timeCreated: "2024-11-12"
     };
-    console.log("data", dataNews)
+    // console.log("data", dataNews)
     try {
       const res = await APICreateNews(dataNews);
-      console.log(res);
+      // console.log(res);
       if (res && res.status === 200) {
         message.success(res.data.error.errorMessage);
         form.resetFields();
