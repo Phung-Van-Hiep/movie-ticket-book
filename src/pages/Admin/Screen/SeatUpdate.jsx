@@ -56,7 +56,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
         seatRow.push({
           label: seatCode,
           type: seatType, // Loại ghế đã được xác định từ seatData hoặc mặc định
-          uuid: existingSeat.uuid
+          uuid: existingSeat ? existingSeat.uuid : null
         });
       }
 
@@ -139,7 +139,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
         seatType: seat.type,
         uuid: seat.uuid
       }));
-      console.log("123",flatSeats)
+      // console.log("123",flatSeats)
       onSeatsChange(flatSeats);
     }
   };

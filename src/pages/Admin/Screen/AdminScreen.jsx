@@ -164,7 +164,7 @@ const AdminScreen = () => {
         rows: restValues.row,
         status: restValues.status,
         seats: seatsData?.map(seat => ({
-          seatUuid: seat?.uuid,
+          seatUuid: seat?.uuid || null,
           seatCode: seat?.seatName,
           seatType: seat?.seatType,
         })),
