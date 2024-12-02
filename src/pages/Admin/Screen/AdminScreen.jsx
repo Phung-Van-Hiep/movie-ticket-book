@@ -74,7 +74,7 @@ const AdminScreen = () => {
     setCols(value);
   }
   const handleSeatsUpdate = (seats) => {
-    console.log("ddddddddđ", seats)
+    // console.log("ddddddddđ", seats)
     setSeatsData(seats);
     // console.log("Check trang thai", seats)
   };

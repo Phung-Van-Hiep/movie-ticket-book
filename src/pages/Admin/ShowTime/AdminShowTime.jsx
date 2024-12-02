@@ -34,8 +34,6 @@ import {
   APIGetAllScreen,
   APIGetAllMovies
 } from '../../../services/service.api';
-import { PlusOutlined } from '@ant-design/icons';
-import { Image, Upload } from 'antd';
 import dayjs from 'dayjs';
 
 const AdminShowTime = () => {
@@ -67,7 +65,6 @@ const AdminShowTime = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [updateButtonDisabled, setUpdateButtonDisabled] = useState(false);
   const [searchDate, setSearchDate] = useState(dayjs());
-
   const handlePageChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -76,12 +73,12 @@ const AdminShowTime = () => {
   const getPagedData = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    console.log("trong listSHowTime có gì", listShowTime[0].screens.length >0 && listShowTime.length >0  )
+    console.log("trong listSHowTime có gì", listShowTime[0].screens.length > 0 && listShowTime.length > 0)
     return listShowTime.slice(startIndex, endIndex);
   };
   const handleSerchShowTime = async (values) => {
     const { cinemaUuid, screenUuid, showDate } = values;
-  
+
     try {
       const findDate = dayjs(showDate).format('YYYY-MM-DD');
       setSearchDate(dayjs(showDate)); // Update the searchDate state
@@ -127,10 +124,11 @@ const AdminShowTime = () => {
         const showtimeDetail = res.data.data;
         // console.log("có một càidfjgdf", showtimeDetail)
         setShowTimeDetail(showtimeDetail);
-        const showTimeRange = [
-          dayjs(showtimeDetail.startTime, 'HH:mm:ss'),
-          dayjs(showtimeDetail.endTime, 'HH:mm:ss')
-        ];
+        // const showTimeRange = [
+        //   dayjs(showtimeDetail.startTime, 'HH:mm:ss'),
+        //   dayjs(showtimeDetail.endTime, 'HH:mm:ss')
+        // ];
+        // startTime = showtimeDetail.startTime
         setSelectedCinema(showtimeDetail.cinemaUuid);
         setSelectedScreen(showtimeDetail.screenUuid);
 
@@ -142,7 +140,8 @@ const AdminShowTime = () => {
           screenUuid: showtimeDetail.screenUuid,
           moviesUuid: showtimeDetail.moviesUuid,
           languageType: showtimeDetail.languageType,
-          showTime: showTimeRange,
+          startTime: showtimeDetail.startTime,
+          endTime: showtimeDetail.endTime,
           state: showtimeDetail.state
         });
         setIsModalUpdateOpen(true);
@@ -168,14 +167,14 @@ const AdminShowTime = () => {
       message.error('Không thể cập nhật suất chiếu đang chiếu hoặc đã chiếu.');
       return;
     }
-    const { showDate, showTime, ...restValues } = values;
+    const { showDate, ...restValues } = values;
     // Định dạng lại ngày chiếu
     const showDateFormat = dayjs(showDate).format('YYYY-MM-DD');
     // console.log("Check cái res", restValues)
     // Định dạng lại khoảng thời gian chiếu
-    const [startTime, endTime] = showTime;
-    const formattedStartTime = dayjs(startTime).format('HH:mm:ss');
-    const formattedEndTime = dayjs(endTime).format('HH:mm:ss');
+    // const [startTime, endTime] = showTime;
+    // const formattedStartTime = dayjs(startTime).format('HH:mm:ss');
+    // const formattedEndTime = dayjs(endTime).format('HH:mm:ss');
 
     try {
       const res = await APICreateShowTime({
@@ -184,8 +183,8 @@ const AdminShowTime = () => {
         screenUuid: restValues.screenUuid,
         moviesUuid: restValues.moviesUuid,
         showDate: showDateFormat,
-        startTime: formattedStartTime,
-        endTime: formattedEndTime,
+        startTime: restValues.startTime,
+        endTime: restValues.endTime,
         languageType: restValues.languageType,
       });
 
@@ -210,8 +209,8 @@ const AdminShowTime = () => {
       if (res && res.data && res.data.data) {
         const cinemaData = res.data.data.items;
         // if(cinemaData.length > 0 &&  cinemaData[0].screens.length > 0 ){
-          // console.log("gì đó", cinemaData)
-          setListShowTime(cinemaData);
+        // console.log("gì đó", cinemaData)
+        setListShowTime(cinemaData);
         // }
         form.resetFields();
         handleCancel();
@@ -221,15 +220,11 @@ const AdminShowTime = () => {
     }
   };
   const onFinish = async (values) => {
-    const { showDate, showTime, cinemaUuid, ...restValues } = values;
-    const startTime = showTime ? dayjs(showTime[0]).format("HH:mm:ss") : null;
-    const endTime = showTime ? dayjs(showTime[1]).format("HH:mm:ss") : null;
+    const { showDate, cinemaUuid, ...restValues } = values;
     const showDateFormat = formatToDateString(new Date(showDate));
     const dataShowTime = {
       ...restValues,
       showDate: showDateFormat,
-      startTime: startTime,
-      endTime: endTime,
     };
     try {
       const res = await APICreateShowTime(dataShowTime);
@@ -276,7 +271,7 @@ const AdminShowTime = () => {
     setIsModalUpdateOpen(false);
     setSelectedCinema(null);
     setSelectedScreen(null);
-    setSelectedCinemaUuid(null); 
+    setSelectedCinemaUuid(null);
   };
 
   const onClose = () => {
@@ -823,11 +818,37 @@ const AdminShowTime = () => {
               ]}
             />
           </Form.Item>
-          <Form.Item label="Thời gian chiếu"
-            name="showTime"
-            rules={[{ required: true, message: 'Hãy nhập thời gian chiếu' }]}>
-            <TimePicker.RangePicker />
+          <Form.Item label="Thời gian chiếu" required={true}>
+            <Input.Group compact>
+              <Form.Item
+                name="startTime"
+                noStyle
+                rules={[
+                  { required: true, message: 'Hãy nhập thời gian bắt đầu' },
+                  {
+                    pattern: /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/,
+                    message: 'Định dạng thời gian bắt đầu không hợp lệ. Sử dụng HH:mm:ss'
+                  }
+                ]}
+              >
+                <Input style={{ width: '50%' }} placeholder="Bắt đầu (HH:mm:ss)" />
+              </Form.Item>
+              <Form.Item
+                name="endTime"
+                noStyle
+                rules={[
+                  { required: true, message: 'Hãy nhập thời gian kết thúc' },
+                  {
+                    pattern: /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/,
+                    message: 'Định dạng thời gian kết thúc không hợp lệ. Sử dụng HH:mm:ss'
+                  }
+                ]}
+              >
+                <Input style={{ width: '50%' }} placeholder="Kết thúc (HH:mm:ss)" />
+              </Form.Item>
+            </Input.Group>
           </Form.Item>
+
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Thêm mới
@@ -936,10 +957,36 @@ const AdminShowTime = () => {
               ]}
             />
           </Form.Item>
-          <Form.Item label="Thời gian chiếu"
-            name="showTime"
-            rules={[{ required: true, message: 'Hãy nhập thời gian chiếu' }]}>
-            <TimePicker.RangePicker />
+          <Form.Item label="Thời gian chiếu" required={true}>
+            <Input.Group compact>
+              <Form.Item
+                name="startTime"
+                noStyle
+                rules={[
+                  { required: true, message: 'Hãy nhập thời gian bắt đầu' },
+                  {
+                    pattern: /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/,
+                    message: 'Định dạng thời gian bắt đầu không hợp lệ. Sử dụng HH:mm:ss'
+                  }
+                ]}
+              >
+                <Input style={{ width: '50%' }} placeholder="Bắt đầu (HH:mm:ss)" />
+              </Form.Item>
+              <Form.Item
+                name="endTime"
+                noStyle
+                rules={[
+                  { required: true, message: 'Hãy nhập thời gian kết thúc' },
+                  {
+                    pattern: /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/,
+                    message: 'Định dạng thời gian kết thúc không hợp lệ. Sử dụng HH:mm:ss'
+                  }
+                ]}
+              >
+                <Input style={{ width: '50%' }} placeholder="Kết thúc (HH:mm:ss)" />
+              </Form.Item>
+            </Input.Group>
+
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button
