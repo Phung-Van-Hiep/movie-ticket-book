@@ -10,6 +10,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
   const [selectedSeat, setSelectedSeat] = useState(null); // Lưu ghế hoặc hàng ghế được chọn
   const [seatType, setSeatType] = useState(1); // Loại ghế được chọn
 
+  // console.log("seadas", seatData)
   useEffect(() => {
     generateSeats();
   }, [seatData, rows, cols]);
@@ -34,7 +35,6 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
         }
 
         const seatCode = `${rowChar}${col + 1}`;
-
         // Kiểm tra trong seatData để xác định loại ghế, tránh bị ghi đè
         const existingSeat = seatData.find(seat => seat.seatCode === seatCode);
         if (existingSeat) {
@@ -56,6 +56,7 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
         seatRow.push({
           label: seatCode,
           type: seatType, // Loại ghế đã được xác định từ seatData hoặc mặc định
+          uuid: existingSeat.uuid
         });
       }
 
@@ -66,7 +67,9 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
     const flatSeats = newSeats.flat().map(seat => ({
       seatName: seat.label,
       seatType: seat.type,
+      uuid: seat.uuid
     }));
+    // console.log("112",flatSeats)
     onSeatsChange(flatSeats);
   };
 
@@ -129,15 +132,17 @@ const SeatUpdate = ({ seatData, rows, cols, onSeatsChange, isEditable }) => {
 
       setSeats(newSeats);
       setEditModalVisible(false);
-
+      // console.log(newSeats)
+      // console.log("12333333",newSeats);
       const flatSeats = newSeats.flat().map((seat) => ({
         seatName: seat.label,
         seatType: seat.type,
+        uuid: seat.uuid
       }));
+      console.log("123",flatSeats)
       onSeatsChange(flatSeats);
     }
   };
-
 
   const getSeatColor = (type) => {
     if (type === 1) return "#5A4FCF";

@@ -74,6 +74,7 @@ const AdminScreen = () => {
     setCols(value);
   }
   const handleSeatsUpdate = (seats) => {
+    console.log("ddddddddđ", seats)
     setSeatsData(seats);
     // console.log("Check trang thai", seats)
   };
@@ -92,12 +93,11 @@ const AdminScreen = () => {
       if (res && res.status === 200) {
         const seatDetail = res.data.data;
         setSeatDetail(seatDetail);
-        formSeatUpdate.setFieldsValue({
-          seatUuid: seatDetail.seatUuid,
-          seatName: seatDetail.seatName,
-          seatCode: seatDetail.seatCode,
-        });
-
+        // formSeatUpdate.setFieldsValue({
+        //   seatUuid: seatDetail.seatUuid,
+        //   seatName: seatDetail.seatName,
+        //   seatCode: seatDetail.seatCode,
+        // });
         setModalUpdateOpen(true);
       } else {
         message.error('Không tìm thấy thông tin chi tiết.');
@@ -113,45 +113,6 @@ const AdminScreen = () => {
       }
     }
   };
-  // const onFinishUpdateSeatInfor = async (values) => {
-  //   // const { ...restValues } = values;
-  //   try {
-  //     const res = await APIUpdateScreen({
-  //       uuid: screenDetail?.uuid,
-  //       screenName: screenDetail.screenName,
-  //       capacity: screenDetail.collumn * screenDetail.row,
-  //       cinemaUuid: screenDetail.cinemaUuid,
-  //       screenType: screenDetail.screenType,
-  //       columns: screenDetail.collumn,
-  //       rows: screenDetail.row,
-  //       status: screenDetail.status,
-  //       seats: seatsData.map(seat => ({
-  //         seatUuid: seat.seatUuid,
-  //         seatCode: seat.seatName,
-  //         seatType: seat.seatType,
-  //       })),
-  //     });
-  //     if (res && res.status === 200) {
-  //       message.success('Cập nhật thành công!');
-  //       formUpdate.resetFields(); // Đặt lại form cập nhật
-  //       getAllScreen(); // Cập nhật danh sách phòng chiếu
-  //       handleCancelUpdate();
-  //     }
-  //   } catch (error) {
-  //     if (error.response) {
-  //       const errorMessage =
-  //         error.response.data?.error?.errorMessage ||
-  //         'Đã xảy ra lỗi khi update.';
-  //       message.error(errorMessage);
-  //     } else if (error.request) {
-  //       message.error(
-  //         'Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-  //       );
-  //     } else {
-  //       message.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-  //     }
-  //   }
-  // };
   const showModalUpdate = async (uuid) => {
     try {
       const res = await APIGetScreenDetail({ uuid });
@@ -172,6 +133,7 @@ const AdminScreen = () => {
         const seatResponse = await APIGetALLSeat({ uuid });
         if (seatResponse && seatResponse.status === 200) {
           setScreenSeatsData(seatResponse.data.data);
+          // console.log("121'", screenSeatsData)
         }
         setIsModalUpdateOpen(true);
       } else {
@@ -202,9 +164,9 @@ const AdminScreen = () => {
         rows: restValues.row,
         status: restValues.status,
         seats: seatsData?.map(seat => ({
-          seatUuid: seat.seatUuid,
-          seatCode: seat.seatName,
-          seatType: seat.seatType,
+          seatUuid: seat?.uuid,
+          seatCode: seat?.seatName,
+          seatType: seat?.seatType,
         })),
       });
 
