@@ -414,9 +414,9 @@ const AdminOrder = () => {
               <div>
                 <strong>Khuyến mãi: </strong>
                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md border border-blue-600 inline-block">
-                  {billDetail?.discountPrice || 0}
+                  {billDetail?.discountPrice}
                 </span>
-                {billDetail?.discountPrice && billDetail?.couponCode && (
+                {billDetail?.couponCode && (
                   <span className="ml-2 bg-yellow-100 text-yellow-600 px-2 py-1 rounded-md border border-yellow-600 inline-block">
                     {billDetail.couponCode}
                   </span>

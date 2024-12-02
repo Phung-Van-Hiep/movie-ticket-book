@@ -986,7 +986,6 @@ const AdminShowTime = () => {
                 <Input style={{ width: '50%' }} placeholder="Kết thúc (HH:mm:ss)" />
               </Form.Item>
             </Input.Group>
-
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button
