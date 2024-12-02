@@ -225,6 +225,10 @@ export const APIGetALLBill = (data) => {
   return instance.post('/api/v1/Bill/page_list_bill_admin', data);
 };
 
+export const APIGetBillDetail = (data) => {
+  return instance.post('/api/v1/Bill/bill_detail_for_admin', data);
+};
+
 //Upload Image
 export const APIUploadImage = (FileData, Type) => {
   const formData = new FormData();

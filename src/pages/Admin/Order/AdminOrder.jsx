@@ -1,21 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  DeleteOutlined,
-  EditOutlined,
+  FileTextOutlined,
+  InfoOutlined,
   SearchOutlined,
-  TableOutlined
 } from '@ant-design/icons';
 
 import {
   Button,
-  DatePicker,
+  Col,
   Form,
   Input,
-  InputNumber,
   message,
   Modal,
-  Popconfirm,
-  Select,
+  Row,
   Space,
   Table
 } from 'antd';
@@ -23,8 +20,9 @@ import Highlighter from 'react-highlight-words';
 import '../../../css/AdminGenre.css';
 import {
   APIGetALLBill,
-  APIGetDirectorDetail,
+  APIGetBillDetail,
 } from '../../../services/service.api';
+import dayjs from 'dayjs';
 
 
 const AdminOrder = () => {
@@ -36,45 +34,32 @@ const AdminOrder = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const [directorDetail, setDirectorDetail] = useState(null);
+  const [billDetail, setBillDetail] = useState(null);
   const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
-  
 
-  // const showModalUpdate = async (uuid) => {
-  //   try {
-  //     const res = await APIGetDirectorDetail({ uuid });
-  //     // console.log('update', res);
-  //     if (res && res.status === 200) {
-  //       const directorDetail = res.data.data;
-  //       setDirectorDetail(directorDetail);
-  //       //  console.log("Lam gi thi lam ",directorDetail.imageUrl);
-  //       const imageUrl = `${
-  //         import.meta.env.VITE_BACKEND_URL
-  //       }/resources/images/${directorDetail.imageUrl}`;
-  //       formUpdate.setFieldsValue({
-  //         directorName: directorDetail.directorName,
-  //         birthday: moment(directorDetail.birthday, 'YYYY-MM-DD'),
-  //         description: directorDetail.description,
-  //         imageUrl: directorDetail.imageUrl
-  //       });
-  //       setFileList([{ url: imageUrl }]);
-  //       setIsModalUpdateOpen(true);
-  //       // setFileList([]);
-  //       setPreviewImage('');
-  //     } else {
-  //       message.error('Không tìm thấy thông tin chi tiết.');
-  //     }
-  //   } catch (error) {
-  //     if (error.response) {
-  //       const errorMessage =
-  //         error.response.data?.error?.errorMessage ||
-  //         'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
-  //       message.error(errorMessage);
-  //     } else {
-  //       message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
-  //     }
-  //   }
-  // };
+
+  const showModalUpdate = async (uuid) => {
+    try {
+      const res = await APIGetBillDetail({ uuid });
+      // console.log('update', res);
+      if (res && res.status === 200) {
+        const billDetail = res.data.data;
+        setBillDetail(billDetail);
+        setIsModalUpdateOpen(true);
+      } else {
+        message.error('Không tìm thấy thông tin chi tiết.');
+      }
+    } catch (error) {
+      if (error.response) {
+        const errorMessage =
+          error.response.data?.error?.errorMessage ||
+          'Đã xảy ra lỗi khi lấy thông tin chi tiết.';
+        message.error(errorMessage);
+      } else {
+        message.error('Đã xảy ra lỗi khi lấy thông tin chi tiết.');
+      }
+    }
+  };
 
   const onFinishUpdateDirectorInfor = async (values) => {
     const { birthday, ...restValues } = values;
@@ -82,7 +67,7 @@ const AdminOrder = () => {
     const birthdayFormat = formatToDateString(birthdayObj);
     try {
       const res = await APICreateDirector({
-        uuid: directorDetail.uuid,
+        uuid: billDetail.uuid,
         directorName: restValues.directorName,
         birthday: birthdayFormat,
         description: restValues.description,
@@ -254,7 +239,7 @@ const AdminOrder = () => {
     {
       title: 'STT',
       dataIndex: 'key',
-      width: 30
+      width: 25
     },
     {
       title: 'Mã đơn hàng',
@@ -295,7 +280,7 @@ const AdminOrder = () => {
       dataIndex: 'state',
       key: 'state',
       width: 50,
-      render: (status) =>{
+      render: (status) => {
         let statusText;
         let colorClass;
         switch (status) {
@@ -304,7 +289,7 @@ const AdminOrder = () => {
             colorClass = 'bg-green-100 text-green-600 border-green-600';
             break;
           case 2:
-            statusText = 'Chưa thanh toán';
+            statusText = 'Thanh toán thất bại';
             colorClass = 'bg-red-100 text-red-600 border-red-600';
             break;
           default:
@@ -318,7 +303,7 @@ const AdminOrder = () => {
       title: 'Tổng tiền',
       dataIndex: 'payPrice',
       key: 'payPrice',
-      width: 50
+      width: 40
     },
     {
       title: 'Ngày đặt',
@@ -342,10 +327,10 @@ const AdminOrder = () => {
         <div className="flex gap-4">
           <Button
             type="text"
-            className="bg-blue-700 text-white"
+            className="bg-orange-500 text-white"
             onClick={() => showModalUpdate(record.uuid)}
           >
-            <EditOutlined />
+            <FileTextOutlined />
           </Button>
         </div>
       )
@@ -357,66 +342,90 @@ const AdminOrder = () => {
   return (
     <>
       <Modal
-        title="Cập nhật đơn hàng"
+        title="Thông tin đơn hàng"
         open={isModalUpdateOpen}
         onCancel={() => setIsModalUpdateOpen(false)}
         footer={
-          <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
+          <div className="flex justify-center">
+            <Button onClick={() => setIsModalUpdateOpen(false)}>Đóng</Button>
+          </div>
         }
+        width={1000}
       >
-        <Form
-          form={formUpdate}
-          name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinishUpdateDirectorInfor}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Tên đơn hàng"
-            name="directorName"
-            rules={[{ required: true, message: 'Hãy nhập tên đơn hàng!' }]}
-          >
-            <Input />
-          </Form.Item>
+        <Row gutter={16}>
+          {/* Cột 1: Các thông tin khác (dòng đơn giản) */}
+          <Col span={10}>
+            <div className="flex flex-col gap-4">
+              <div><strong>Mã đơn hàng: </strong> {billDetail?.code || 'N/A'}</div>
+              <div><strong>Tên phim: </strong> <span className="text-blue-500">{billDetail?.movieName || 'N/A'}</span></div>
+              <div><strong>Rạp chiếu phim: </strong> <span className="text-blue-700"> {billDetail?.cinemaName || 'N/A'}</span></div>
+              <div><strong>Phòng chiếu phim: </strong> {billDetail?.screenName || 'N/A'}</div>
+              <div>
+                <strong>Giờ chiếu: </strong>
+                <span className='bg-pink-100 text-pink-600 px-2 py-1 rounded-md border border-pink-600 inline-block'>
+                  {billDetail?.startTime?.slice(0, 5) || 'N/A'} - {billDetail?.endTime?.slice(0, 5) || 'N/A'}
+                </span>
+              </div>
+              <div><strong>Ngày chiếu: </strong> {billDetail?.showDate || 'N/A'}</div>
+              <div><strong>Trạng thái: </strong> {
+                billDetail?.state === 1
+                  ? <span className="bg-green-100 text-green-600 px-2 py-1 rounded-md border border-green-600 inline-block">Đã thanh toán</span>
+                  : billDetail?.state === 0
+                    ? 'Chưa thanh toán'
+                    : billDetail?.state === 2
+                      ? 'Thanh toán thất bại'
+                      : 'N/A'
+              }</div>
+              <div><strong>Ngày tạo đơn hàng: </strong> {billDetail?.timeCreated ? new Date(billDetail?.timeCreated).toLocaleDateString('vi-VN') : 'N/A'}</div>
+            </div>
+          </Col>
 
-          <Form.Item
-            label="Ngày sinh"
-            name="birthday"
-            rules={[
-              {
-                required: true,
-                message: 'Hãy nhập ngày sinh của bạn!'
-              }
-            ]}
-          >
-            <DatePicker
-              placeholder="Ngày sinh"
-              variant="filled"
-              className="w-full"
-            />
-          </Form.Item>
-
-          <Form.Item label="Mô tả" name="description" rules={[]}>
-            <Input.TextArea
-              placeholder="Nhập mô tả...."
-              autoSize={{ minRows: 2, maxRows: 6 }}
-              onChange={(e) => {
-                // Optional: Handle text area change if needed
-              }}
-            />
-          </Form.Item>
-          <Form.Item label="Image" name="imageUrl" rules={[]}>
-          </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Cập nhật
-            </Button>
-          </Form.Item>
-        </Form>
+          {/* Cột 2: Thông tin khách hàng */}
+          <Col span={14}>
+            <div className="flex flex-col gap-4">
+              <div><strong>Khách hàng: </strong> <span className="text-blue-500">  {billDetail?.user?.fullname || 'N/A'}</span> </div>
+              <div><strong>Số điện thoại: </strong> {billDetail?.user?.phoneNumber || 'N/A'}</div>
+              <div><strong>Email:</strong> {billDetail?.user?.email || 'N/A'}</div>
+              <div>
+                <strong>Trạng thái: </strong>
+                {billDetail?.user?.status === 1
+                  ? 'Hoạt động'
+                  : billDetail?.user?.status === 2
+                    ? 'Đang khoá'
+                    : 'N/A'}
+              </div>
+              <div>
+                <strong>Ghế ngồi:</strong> {billDetail?.seat?.map(seat => seat.seatCode).join(', ') || null}
+                {billDetail?.totalSeatPrice && ` - Tổng tiền: ${billDetail?.totalSeatPrice}`}
+              </div>
+              <div>
+                <strong>Combo:</strong>
+                {billDetail?.combo && billDetail.combo.length > 0
+                  ? billDetail.combo
+                    .map(combo => `${combo.comboName} x ${combo.quantity}`)
+                    .join(', ')
+                  : 'Không có combo'}
+                {billDetail?.totalComboPrice && ` - Tổng tiền: ${billDetail?.totalComboPrice}` || null}
+              </div>
+              <div>
+                <strong>Tổng tiền ghế + combo: </strong>
+                {((billDetail?.totalSeatPrice || 0) + (billDetail?.totalComboPrice || 0)) || 0}
+              </div>
+              <div>
+                <strong>Khuyến mãi: </strong>
+                <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md border border-blue-600 inline-block">
+                  {billDetail?.discountPrice || 0}
+                </span>
+                {billDetail?.discountPrice && billDetail?.couponCode && (
+                  <span className="ml-2 bg-yellow-100 text-yellow-600 px-2 py-1 rounded-md border border-yellow-600 inline-block">
+                    {billDetail.couponCode}
+                  </span>
+                )}
+              </div>
+              <div className='mt-2'><strong>Thành tiền: </strong><span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md border border-blue-600 inline-block"> {billDetail?.payPrice || 0} </span></div>
+            </div>
+          </Col>
+        </Row>
       </Modal>
       <Table
         columns={columns}

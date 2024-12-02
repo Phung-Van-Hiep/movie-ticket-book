@@ -19,11 +19,10 @@ const LoginAdminPage = () => {
         localStorage.setItem("role", res.data.data.role);
 
         navigate('/admin/user');
-      } else {
-        message.error(res?.data.error.errorMessage);
       }
     } catch (error) {
-      message.error('Đăng nhập thất bại. Vui lòng kiểm tra lại.');
+      // console.log("acsacas", error?.response?.data?.error.errorMessage);
+      message.error(error?.response?.data?.error?.errorMessage);
     } finally {
       setLoading(false);
     }
