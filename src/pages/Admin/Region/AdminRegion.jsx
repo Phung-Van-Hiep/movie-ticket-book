@@ -99,7 +99,7 @@ const AdminRegion = () => {
           (region) => region.status !== 0
         );
         setListRegion(filteredRegions); // Cập nhật danh sách region đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {

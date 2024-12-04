@@ -119,7 +119,7 @@ const AdminTicketPrice = () => {
           (tickets) => tickets.status !== 0
         );
         setListTicket(filteredTickets); // Cập nhật danh sách tickets đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -166,7 +166,7 @@ const AdminTicketPrice = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {

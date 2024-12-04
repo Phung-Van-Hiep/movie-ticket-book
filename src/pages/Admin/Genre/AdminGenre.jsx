@@ -98,7 +98,7 @@ const AdminGenre = () => {
           (genre) => genre.status !== 0
         );
         setListGenre(filteredGenres); // Cập nhật danh sách genre đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {

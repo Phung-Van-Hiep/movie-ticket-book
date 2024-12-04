@@ -208,7 +208,7 @@ const AdminMovies = () => {
           (movies) => movies.status !== 0
         );
         setListMovies(filteredMovies);
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -268,7 +268,7 @@ const AdminMovies = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {

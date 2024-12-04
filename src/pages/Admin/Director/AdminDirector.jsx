@@ -180,7 +180,7 @@ const AdminDirector = () => {
           (director) => director.status !== 0
         );
         setListDirector(filteredDirectors); // Cập nhật danh sách director đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -242,7 +242,7 @@ const AdminDirector = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {

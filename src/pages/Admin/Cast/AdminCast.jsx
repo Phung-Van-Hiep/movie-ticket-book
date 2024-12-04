@@ -164,7 +164,7 @@ const AdminCast = () => {
           (cast) => cast.status !== 0
         );
         setListCast(filteredCasts);
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -229,7 +229,7 @@ const AdminCast = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {

@@ -212,7 +212,7 @@ const AdminShowTime = () => {
         // console.log("gì đó", cinemaData)
         setListShowTime(cinemaData);
         // }
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {

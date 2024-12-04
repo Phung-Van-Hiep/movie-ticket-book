@@ -262,6 +262,8 @@ const AdminScreen = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    form.resetFields();
+
   };
 
   const handleCancelUpdate = () => {

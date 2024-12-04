@@ -107,7 +107,7 @@ const AdminOrder = () => {
           (bill) => bill.status !== 0
         );
         setListBill(filteredDirectors); // Cập nhật danh sách bill đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -128,7 +128,7 @@ const AdminOrder = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {

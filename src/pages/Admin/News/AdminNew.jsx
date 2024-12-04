@@ -177,7 +177,7 @@ const AdminNew = () => {
           (news) => news.status !== 0
         );
         setListNews(filteredNews); // Cập nhật danh sách news đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -242,7 +242,7 @@ const AdminNew = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {
