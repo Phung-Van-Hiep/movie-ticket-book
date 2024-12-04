@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table } from "antd";
+import { Card, Col, Row, Select, Table } from "antd";
 import { Bar, Line } from "react-chartjs-2";
 import "chart.js/auto"; // Import để dùng Chart.js
 // import "./AdminDashboard.css"; // File CSS (nếu cần)
-import { APIGetDashboardOV,APIGetDashboardChar,APIGetDashboardMovie, APIGetDashboardCinema } from "../../../services/service.api";
+import { APIGetDashboardOV, APIGetDashboardChar, APIGetDashboardMovie, APIGetDashboardCinema } from "../../../services/service.api";
 import dayjs from "dayjs"
 const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState(0);
@@ -12,6 +12,9 @@ const AdminDashboard = () => {
   const [dashboardDataCinema, setDashboardDataCinema] = useState([]);
 
   const [currentDate, setCurrentDate] = useState("");
+  const [selectedMonthMovie, setSelectedMonthMovie] = useState(dayjs().month() + 1); // Chọn tháng cho phim
+  const [selectedMonthCinema, setSelectedMonthCinema] = useState(dayjs().month() + 1); // Chọn tháng cho rạp
+
   // Dữ liệu cho các biểu đồ
   const [lineData, setLineData] = useState({
     labels: [],
@@ -32,7 +35,7 @@ const AdminDashboard = () => {
       // console.log(res.data.data);
       if (res && res.data && res.data.data) {
         const dashboardData = res.data?.data
-        setDashboardData(dashboardData); 
+        setDashboardData(dashboardData);
       }
     } catch (error) {
       message.error('Lỗi khi lấy dữ liệu.');
@@ -43,11 +46,11 @@ const AdminDashboard = () => {
       const res = await APIGetDashboardChar();
       if (res && res.data && res.data.data) {
         const dashboardDataChar = res.data.data;
-  
+
         // Tạo dữ liệu cho biểu đồ
         const labels = dashboardDataChar.map((item) => `${item.month}/${item.year}`);
         const data = dashboardDataChar.map((item) => item.totalRevenue);
-  
+
         setDashboardDataChar(dashboardDataChar); // Cập nhật dữ liệu thô
         setLineData({
           labels: labels,
@@ -67,29 +70,35 @@ const AdminDashboard = () => {
     }
   };
 
-  const getAllDashboardMovie = async () => {
+  const getAllDashboardMovie = async (month) => {
     try {
-      const res = await APIGetDashboardMovie({month: dayjs().month() + 1, year: dayjs().year()});
-      // console.log(res.data.data);
+      const res = await APIGetDashboardMovie({ month, year: dayjs().year() });
       if (res && res.data && res.data.data) {
-        const dashboardDataMovie = res.data?.data
-        setDashboardDataMovie(dashboardDataMovie); 
+        setDashboardDataMovie(res.data.data);
       }
     } catch (error) {
-      message.error('Lỗi khi lấy dữ liệu.');
+      message.error("Lỗi khi lấy dữ liệu.");
     }
   };
-  const getAllDashboardCinema = async () => {
+
+  const getAllDashboardCinema = async (month) => {
     try {
-      const res = await APIGetDashboardCinema({month: dayjs().month() + 1, year: dayjs().year()});
-      // console.log(res.data.data);
+      const res = await APIGetDashboardCinema({ month, year: dayjs().year() });
       if (res && res.data && res.data.data) {
-        const dashboardDataCinema = res.data?.data
-        setDashboardDataCinema(dashboardDataCinema); 
+        setDashboardDataCinema(res.data.data);
       }
     } catch (error) {
-      message.error('Lỗi khi lấy dữ liệu.');
+      message.error("Lỗi khi lấy dữ liệu.");
     }
+  };
+  const handleMonthChangeMovie = (value) => {
+    setSelectedMonthMovie(value);
+    getAllDashboardMovie(value);
+  };
+
+  const handleMonthChangeCinema = (value) => {
+    setSelectedMonthCinema(value);
+    getAllDashboardCinema(value);
   };
   // Cột cho bảng "Doanh thu theo phim"
   const listMoviesMap = dashboardDataMovie.map((movie, index) => ({
@@ -101,7 +110,7 @@ const AdminDashboard = () => {
       title: "Tên phim",
       dataIndex: "movieName",
       key: "movieName",
-      render: (text) =><div> {text} </div>,
+      render: (text) => <div> {text} </div>,
     },
     {
       title: "Tổng vé bán ra",
@@ -114,7 +123,7 @@ const AdminDashboard = () => {
       key: "totalRevenue",
     },
   ];
-  
+
   // Cột cho bảng "Doanh thu theo rạp"
   const listCinemasMap = dashboardDataCinema.map((cinema, index) => ({
     key: index + 1,
@@ -125,7 +134,7 @@ const AdminDashboard = () => {
       title: "Rạp chiếu",
       dataIndex: "cinemaName",
       key: "cinema",
-      render: (text) =><div>{text} </div> ,
+      render: (text) => <div>{text} </div>,
     },
     {
       title: "Tổng vé bán ra",
@@ -143,8 +152,8 @@ const AdminDashboard = () => {
     setCurrentDate(today);
     getAllDashboardOV();
     getAllDashboardChar();
-    getAllDashboardMovie();
-    getAllDashboardCinema();
+    getAllDashboardMovie(selectedMonthMovie);
+    getAllDashboardCinema(selectedMonthCinema);
   }, []);
   return (
     <div className="p-5 bg-gray-100 min-h-screen">
@@ -169,34 +178,63 @@ const AdminDashboard = () => {
       </div>
 
       {/* Biểu đồ */}
-      <div className="grid grid-cols-2 gap-6 mb-6">
-        <Card className="border rounded-lg shadow-md">
+      <div className="flex justify-center mb-16 mt-10">
+        <Card className="border rounded-lg shadow-md w-2/3 ">
           <h3 className="text-gray-700 font-semibold">Doanh thu theo tháng</h3>
           <Line data={lineData} />
         </Card>
       </div>
 
-      {/* Bảng dữ liệu */}
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <h3 className="text-gray-700 font-semibold mb-4">Doanh thu theo phim</h3>
+      {/* Bảng Doanh thu */}
+      <Row gutter={[16, 16]}>
+        {/* Bảng Doanh thu theo phim */}
+        <Col span={12}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-gray-700 font-semibold">Doanh thu theo phim</h3>
+            <Select
+              value={selectedMonthMovie}
+              onChange={handleMonthChangeMovie}
+              style={{ width: 120 }}
+            >
+              {Array.from({ length: 12 }, (_, index) => (
+                <Select.Option key={index + 1} value={index + 1}>
+                  Tháng {index + 1}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
           <Table
             columns={columnsMovies}
             dataSource={listMoviesMap}
             pagination={{ pageSize: 5 }}
             bordered
           />
-        </div>
-        <div>
-          <h3 className="text-gray-700 font-semibold mb-4">Doanh thu theo rạp</h3>
+        </Col>
+
+        {/* Bảng Doanh thu theo rạp */}
+        <Col span={12}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-gray-700 font-semibold">Doanh thu theo rạp</h3>
+            <Select
+              value={selectedMonthCinema}
+              onChange={handleMonthChangeCinema}
+              style={{ width: 120 }}
+            >
+              {Array.from({ length: 12 }, (_, index) => (
+                <Select.Option key={index + 1} value={index + 1}>
+                  Tháng {index + 1}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
           <Table
             columns={columnsCinemas}
             dataSource={listCinemasMap}
             pagination={{ pageSize: 5 }}
             bordered
           />
-        </div>
-      </div>
+        </Col>
+      </Row>
     </div>
   );
 };
