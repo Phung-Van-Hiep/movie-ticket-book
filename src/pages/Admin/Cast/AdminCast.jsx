@@ -164,7 +164,7 @@ const AdminCast = () => {
           (cast) => cast.status !== 0
         );
         setListCast(filteredCasts);
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -229,7 +229,7 @@ const AdminCast = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -340,10 +340,12 @@ const AdminCast = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -560,7 +562,7 @@ const AdminCast = () => {
       >
         <Form
           form={formUpdate}
-          name="basic"
+          name="basic1"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}

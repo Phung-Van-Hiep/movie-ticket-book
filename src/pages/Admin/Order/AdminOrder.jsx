@@ -107,7 +107,7 @@ const AdminOrder = () => {
           (bill) => bill.status !== 0
         );
         setListBill(filteredDirectors); // Cập nhật danh sách bill đã lọc
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -128,7 +128,7 @@ const AdminOrder = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -214,10 +214,12 @@ const AdminOrder = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (

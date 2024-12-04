@@ -69,9 +69,7 @@ const AdminCast = () => {
       const res = await APIGetUserDetail({ uuid });
       if (res && res.status === 200) {
         const userDetail = res.data.data;
-        // console.log("update gi do ", userDetail);
         setUserDetail(userDetail);
-        const birthdayFormat = 'YYYY-MM-DD';
         const imageUrl = `${import.meta.env.VITE_BACKEND_URL
           }/resources/images/${userDetail.imageUrl}`;
         formUpdate.setFieldsValue({
@@ -107,16 +105,6 @@ const AdminCast = () => {
   const onFinishUpdateCastInfor = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-
-    // console.log("Checking", restValues)
-    // console.log(birthdayFormat);
-    // let tempImagesUuid = imagesUuid;
-    // if (fileList.length > 0) {
-    //   const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
-    //   if (uploadResponse && uploadResponse.status === 200) {
-    //     tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
-    //   }
-    // }
     try {
       const res = await APIUpdateUser({
         uuid: userDetail?.uuid,
@@ -124,7 +112,6 @@ const AdminCast = () => {
         birthday: birthdayFormat,
         phoneNumber: restValues.phoneNumber,
         gender: restValues.gender,
-        // imagesUuid: tempImagesUuid
         status: restValues.status,
         role: userDetail.role,
       });
@@ -162,7 +149,7 @@ const AdminCast = () => {
           (cast) => cast.status !== 0
         );
         setListCast(filteredCasts); // Cập nhật danh sách cast đã lọc
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -172,19 +159,9 @@ const AdminCast = () => {
   const onFinish = async (values) => {
     const { birthday, ...restValues } = values;
     const birthdayFormat = formatToDateString(new Date(birthday));
-    // console.log("Đây là dataUser ", restValues)
-
-    // let tempImagesUuid = imagesUuid;
-    // if (fileList.length > 0) {
-    //   const uploadResponse = await APIUploadImage(fileList[0].originFileObj, '3');
-    //   if (uploadResponse && uploadResponse.status === 200) {
-    //     tempImagesUuid = uploadResponse.data.data; // Use the returned UUID from the image upload
-    //   }
-    // }
     const dataUser = {
       ...restValues,
       birthday: birthdayFormat,
-      // imagesUuid: tempImagesUuid
     };
     try {
       const res = await APIRegister(dataUser);
@@ -226,7 +203,7 @@ const AdminCast = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -337,10 +314,12 @@ const AdminCast = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -651,7 +630,7 @@ const AdminCast = () => {
       >
         <Form
           form={formUpdate}
-          name="basic"
+          name="basic1"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
@@ -746,7 +725,7 @@ const AdminCast = () => {
                 rules={[{ required: true, message: 'Hãy chọn trạng thái!' }]}
               >
                 <Select
-                  defaultValue=""
+                  // defaultValue=""
                   options={[
                     { value: 1, label: 'Hoạt động' },
                     { value: 2, label: 'Đã khoá' },

@@ -212,7 +212,7 @@ const AdminShowTime = () => {
         // console.log("gì đó", cinemaData)
         setListShowTime(cinemaData);
         // }
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -263,7 +263,7 @@ const AdminShowTime = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
     setSelectedCinemaUuid(null)
   };
 
@@ -472,10 +472,12 @@ const AdminShowTime = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -654,7 +656,7 @@ const AdminShowTime = () => {
         </Button>
         <Form
           form={formSearch}
-          name="basic"
+          name="basic1"
           layout="inline"
           onFinish={handleSerchShowTime}
           onFinishFailed={onFinishFailed}
@@ -870,7 +872,7 @@ const AdminShowTime = () => {
       >
         <Form
           form={formUpdate}
-          name="basic"
+          name="basic2"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}

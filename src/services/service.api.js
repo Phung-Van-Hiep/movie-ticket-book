@@ -241,3 +241,18 @@ export const APIUploadImage = (FileData, Type) => {
   };
   return instance.put(`/api/v1/Upload/upload-image`, formData, config);
 };
+
+
+//Dashboard API
+export const APIGetDashboardOV = (data) => {
+  return instance.post('/api/v1/Dashboard/dashboard_overview', data);
+};
+export const APIGetDashboardChar = (data) => {
+  return instance.post('/api/v1/Dashboard/dashboard_chart', data);
+};
+export const APIGetDashboardMovie = (data) => {
+  return instance.post('api/v1/Dashboard/dashboard_list_revenue_by_movies', data);
+};
+export const APIGetDashboardCinema = (data) => {
+  return instance.post('/api/v1/Dashboard/dashboard_list_revenue_by_cinemas', data);
+};

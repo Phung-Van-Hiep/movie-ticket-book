@@ -119,7 +119,7 @@ const AdminTicketPrice = () => {
           (tickets) => tickets.status !== 0
         );
         setListTicket(filteredTickets); // Cập nhật danh sách tickets đã lọc
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -166,7 +166,7 @@ const AdminTicketPrice = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -315,10 +315,12 @@ const AdminTicketPrice = () => {
       }[record[dataIndex]] || 'Không xác định';
       return seatTypeName.toLowerCase().includes(value.toLowerCase());
     },
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -581,7 +583,7 @@ const AdminTicketPrice = () => {
       >
         <Form
           form={formUpdate}
-          name="basic"
+          name="basic1"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}

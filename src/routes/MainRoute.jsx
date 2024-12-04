@@ -19,6 +19,8 @@ import AdminTicketPrice from "../pages/Admin/TicketPrice/AdminTicketPrice";
 import AdminCoupon from "../pages/Admin/Coupon/AdminCoupon";
 import AdminNew from "../pages/Admin/News/AdminNew";
 import AdminCombo from "../pages/Admin/Combo/AdminCombo";
+import AdminDashboard from "../pages/Admin/DashBoard/AdminDashboard";
+
 import Testting from "../pages/FileDeTest";
 
 const router = createBrowserRouter([
@@ -48,8 +50,12 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "user",
+        path: "dashboard",
         index: true,
+        element: <AdminDashboard />,
+      },
+      {
+        path: "user",
         element: <AdminUser />,
       },
       {

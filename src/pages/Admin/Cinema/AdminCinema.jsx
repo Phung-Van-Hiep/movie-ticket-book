@@ -115,7 +115,7 @@ const AdminCinemas = () => {
           (cinema) => cinema.status !== 0
         );
         setListCinemas(filteredCinemas); // Cập nhật danh sách cinema đã lọc
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -164,7 +164,7 @@ const AdminCinemas = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
     setMapUrl(null);
   };
 
@@ -275,10 +275,12 @@ const AdminCinemas = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (

@@ -123,7 +123,7 @@ const AdminCoupon = () => {
           (coupon) => coupon.status !== 0
         );
         setListCoupon(filteredCoupons); // Cập nhật danh sách coupon đã lọc
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -177,7 +177,7 @@ const AdminCoupon = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -287,10 +287,12 @@ const AdminCoupon = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -519,7 +521,7 @@ const AdminCoupon = () => {
       >
         <Form
           form={formUpdate}
-          name="basic"
+          name="basic1"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}

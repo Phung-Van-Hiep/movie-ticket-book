@@ -208,7 +208,7 @@ const AdminMovies = () => {
           (movies) => movies.status !== 0
         );
         setListMovies(filteredMovies);
-        form.resetFields();
+        // form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -268,7 +268,7 @@ const AdminMovies = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    // form.resetFields();
   };
 
   const handleCancelUpdate = () => {
@@ -427,10 +427,12 @@ const AdminMovies = () => {
     ),
     onFilter: (value, record) =>
       record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
+    filterDropdownProps: {
+      onOpenChange: (visible) => {
+        if (visible) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
     },
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -636,7 +638,6 @@ const AdminMovies = () => {
                 rules={[{ required: true, message: 'Hãy chọn độ tuổi!' }]}
               >
                 <Select
-                  defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
                     { value: 1, label: 'P' },
@@ -694,7 +695,6 @@ const AdminMovies = () => {
                 ]}
               >
                 <Select
-                  defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
                     { value: 1, label: 'Đang chiếu' },
@@ -776,7 +776,6 @@ const AdminMovies = () => {
               >
                 <Select
                   showSearch
-                  defaultValue=""
                   onChange={handleChangeDirector}
                   options={listDirector}
                   filterOption={(input, option) =>
@@ -923,7 +922,6 @@ const AdminMovies = () => {
                 rules={[{ required: true, message: 'Hãy chọn độ tuổi!' }]}
               >
                 <Select
-                  defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
                     { value: 1, label: 'P' },
@@ -981,7 +979,6 @@ const AdminMovies = () => {
                 ]}
               >
                 <Select
-                  defaultValue=""
                   onChange={handleChangeStatus}
                   options={[
                     { value: 1, label: 'Đang chiếu' },
@@ -1063,7 +1060,6 @@ const AdminMovies = () => {
               >
                 <Select
                   showSearch
-                  defaultValue=""
                   onChange={handleChangeDirector}
                   options={listDirector}
                   filterOption={(input, option) =>
