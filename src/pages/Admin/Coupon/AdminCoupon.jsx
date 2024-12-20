@@ -177,7 +177,7 @@ const AdminCoupon = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {

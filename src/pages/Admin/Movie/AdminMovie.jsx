@@ -512,10 +512,8 @@ const AdminMovies = () => {
           case 3:
             statusText = 'Chiếu sớm';
             break;
-          case 4:
-            statusText = 'Không còn chiếu';
           default:
-            statusText = 'Không sử dụng'; // Giá trị mặc định nếu không khớp với bất kỳ trạng thái nào
+            statusText = 'Không còn chiếu'; // Giá trị mặc định nếu không khớp với bất kỳ trạng thái nào
         }
         return <div className="truncate-description">{statusText}</div>;
       }

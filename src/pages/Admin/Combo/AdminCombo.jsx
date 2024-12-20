@@ -168,7 +168,7 @@ const AdminCombo = () => {
           (combo) => combo.status !== 0
         );
         setListCombo(filteredCombo); // Cập nhật danh sách combo đã lọc
-        // form.resetFields();
+        form.resetFields();
         handleCancel();
       }
     } catch (error) {
@@ -227,7 +227,7 @@ const AdminCombo = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    // form.resetFields();
+    form.resetFields();
   };
 
   const handleCancelUpdate = () => {
