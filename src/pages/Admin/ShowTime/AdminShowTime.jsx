@@ -396,7 +396,8 @@ const AdminShowTime = () => {
       APIGetAllMovies,
       (movie) => ({
         value: movie.uuid,
-        label: (
+        label: movie.title, // Đặt label là chuỗi
+        renderLabel: (
           <div className="flex justify-between items-center">
             <span>{movie.title}</span>
             <span className="text-gray-500 text-xl">{movie.duration} phút</span>
@@ -407,6 +408,7 @@ const AdminShowTime = () => {
       setListMovies
     );
   };
+
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -783,13 +785,12 @@ const AdminShowTime = () => {
           >
             <Select
               showSearch
-              defaultValue=""
-              // onChange={handleChangeCinemas}
               options={listMovies}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                option?.label?.toLowerCase().includes(input.toLowerCase())
               }
               allowClear
+              optionLabelProp="renderLabel" // Sử dụng JSX từ renderLabel để hiển thị
             />
           </Form.Item>
           <Form.Item
@@ -922,11 +923,11 @@ const AdminShowTime = () => {
           >
             <Select
               showSearch
-              defaultValue=""
+              // defaultValue=""
               // onChange={handleChangeCinemas}
               options={listMovies}
               filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
               allowClear
             />
