@@ -399,7 +399,7 @@ const AdminShowTime = () => {
         label: movie.title, // Đặt label là chuỗi
         renderLabel: (
           <div className="flex justify-between items-center">
-            <span>{movie.title}</span>
+            <span className="truncate max-w-[200px]">{movie.title}</span>
             <span className="text-gray-500 text-xl">{movie.duration} phút</span>
           </div>
         ),
