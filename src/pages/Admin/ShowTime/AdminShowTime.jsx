@@ -923,13 +923,12 @@ const AdminShowTime = () => {
           >
             <Select
               showSearch
-              // defaultValue=""
-              // onChange={handleChangeCinemas}
               options={listMovies}
               filterOption={(input, option) =>
-                String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                option?.label?.toLowerCase().includes(input.toLowerCase())
               }
               allowClear
+              optionLabelProp="renderLabel" // Sử dụng JSX từ renderLabel để hiển thị
             />
           </Form.Item>
           <Form.Item

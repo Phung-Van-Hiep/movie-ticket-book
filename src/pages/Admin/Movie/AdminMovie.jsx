@@ -677,7 +677,7 @@ const AdminMovies = () => {
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
                   allowClear
-                  mode="tags"
+                  mode="multiple"
                 />
               </Form.Item>
             </Col>
@@ -719,7 +719,7 @@ const AdminMovies = () => {
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
                   allowClear
-                  mode="tags"
+                  mode="multiple"
                 />
               </Form.Item>
             </Col>
@@ -737,7 +737,7 @@ const AdminMovies = () => {
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
                   allowClear
-                  mode="tags"
+                  mode="multiple"
                 />
               </Form.Item>
             </Col>
@@ -780,6 +780,7 @@ const AdminMovies = () => {
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
                   allowClear
+                  // mode="multiple"
                 />
               </Form.Item>
             </Col>
