@@ -21,7 +21,6 @@ import AdminNew from "../pages/Admin/News/AdminNew";
 import AdminCombo from "../pages/Admin/Combo/AdminCombo";
 import AdminDashboard from "../pages/Admin/DashBoard/AdminDashboard";
 
-import Testting from "../pages/FileDeTest";
 
 const router = createBrowserRouter([
   {
